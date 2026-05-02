@@ -1,0 +1,51 @@
+# Production override — used with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+
+services:
+  db:
+    ports: []   # ne pas exposer PostgreSQL en dehors du réseau Docker
+
+  backend:
+    ports: []   # Nginx gère l'accès externe
+    environment:
+      NODE_ENV: production
+      CORS_ORIGIN: https://impala-agence.com
+      FRONTEND_URL: https://impala-agence.com
+
+  frontend:
+    ports: []   # Nginx gère l'accès externe
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: https://impala-agence.com/api
+    environment:
+      NEXT_PUBLIC_API_URL: https://impala-agence.com/api
+
+  nginx:
+    image: nginx:1.25-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    depends_on:
+      - frontend
+      - backend
+
+  certbot:
+    image: certbot/certbot:latest
+    restart: "no"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    # Renouvellement automatique toutes les 12h
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done;'"
+
+volumes:
+  pgdata:
+  user_uploads:
+  certbot_www:
+
