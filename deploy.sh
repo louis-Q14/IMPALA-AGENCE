@@ -10,7 +10,7 @@ set -e
 DOMAIN="impala-agence.com"
 EMAIL="admin@impala-agence.com"   # email Let's Encrypt
 APP_DIR="/opt/impala-agence"
-REPO_URL="https://github.com/VOTRE_USER/VOTRE_REPO.git"   # ← à modifier
+REPO_URL="https://github.com/louis-Q14/IMPALA-AGENCE.git"
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 info()    { echo -e "${GREEN}[INFO]${NC} $1"; }
