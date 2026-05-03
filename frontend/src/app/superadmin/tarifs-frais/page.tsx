@@ -52,7 +52,7 @@ interface Tarif {
 }
 
 const emptyForm = (): Partial<Tarif> => ({
-  nom: "", type: "frais_fixe", service: "general",
+  nom: "", type: "frais_fixe",
   montant: 0, unite: "CDF", description: "", actif: true,
 });
 
@@ -204,8 +204,8 @@ if (t.service === "automobile") {
   };
 
   const handleSave = async () => {
-    if (!form.nom || form.montant === undefined) {
-      setError("Le nom et le montant sont requis."); return;
+    if (!form.nom || form.montant === undefined || !form.service) {
+      setError("Le nom, le service et le montant sont requis."); return;
     }
     setSaving(true); setError("");
     try {
@@ -896,8 +896,9 @@ if (t.service === "automobile") {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Service</label>
-                  <select value={form.service || "general"} onChange={e => setForm(f => ({ ...f, service: e.target.value as Tarif["service"] }))}
+                  <select value={form.service || ""} onChange={e => setForm(f => ({ ...f, service: e.target.value as Tarif["service"] }))}
                     className="w-full px-3 py-2 rounded-xl bg-white/10 dark:bg-white/5 border border-white/30 dark:border-white/10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-400/50">
+                    <option value="" disabled>— Sélectionner un service —</option>
                     {SERVICES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </div>

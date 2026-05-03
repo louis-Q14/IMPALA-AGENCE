@@ -52,7 +52,7 @@ interface Tarif {
 }
 
 const emptyForm = (): Partial<Tarif> => ({
-  nom: "", type: "frais_fixe", service: "general",
+  nom: "", type: "frais_fixe",
   montant: 0, unite: "CDF", description: "", actif: true,
 });
 
@@ -128,8 +128,8 @@ export default function TarifsFraisPage() {
   const openEdit = (t: Tarif) => { setEditing(t); setForm({ ...t }); setError(""); setShowForm(true); };
 
   const handleSave = async () => {
-    if (!form.nom || form.montant === undefined) {
-      setError("Le nom et le montant sont requis."); return;
+    if (!form.nom || form.montant === undefined || !form.service) {
+      setError("Le nom, le service et le montant sont requis."); return;
     }
     setSaving(true); setError("");
     try {
@@ -576,8 +576,9 @@ export default function TarifsFraisPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1">Service</label>
-                  <select value={form.service || "general"} onChange={e => setForm(f => ({ ...f, service: e.target.value as Tarif["service"] }))}
+                  <select value={form.service || ""} onChange={e => setForm(f => ({ ...f, service: e.target.value as Tarif["service"] }))}
                     className="w-full px-3 py-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-violet-400">
+                    <option value="" disabled>— Sélectionner un service —</option>
                     {SERVICES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                   </select>
                 </div>
