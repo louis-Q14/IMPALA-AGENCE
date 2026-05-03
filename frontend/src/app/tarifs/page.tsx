@@ -351,7 +351,7 @@ export default function TarifsPage() {
   const getPrice = (key: string) =>
     annual ? Math.round((prices[key] || 0) * 10) : (prices[key] || 0);
 
-  const fmt = (n: number) => Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/\.?0+$/, "");
+  const fmt = (n: number) => Math.round(n).toLocaleString("fr-FR");
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
@@ -481,7 +481,7 @@ export default function TarifsPage() {
 
                 <div className="mt-6 flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-[var(--text-primary)]">
-                    {getPrice(plan.id)} {currency}
+                    {fmt(getPrice(plan.id))} {currency}
                   </span>
                   <span className="text-[var(--text-muted)]">
                     /{annual ? "an" : "mois"}
@@ -542,13 +542,13 @@ export default function TarifsPage() {
               <div className="text-right">
                 {globalPromo && (
                   <div className="text-sm text-[var(--text-muted)] line-through">
-                    {getPrice("trashBasic")} {currency}
+                    {fmt(getPrice("trashBasic"))} {currency}
                   </div>
                 )}
                 <span className={`text-3xl font-bold ${globalPromo ? "text-amber-600 dark:text-amber-400" : "text-[var(--text-primary)]"}`}>
                   {globalPromo
                     ? fmt(Math.round(getPrice("trashBasic") * (1 - globalPromo.percent / 100)))
-                    : getPrice("trashBasic")} {currency}
+                    : fmt(getPrice("trashBasic"))} {currency}
                 </span>
                 <span className="text-[var(--text-muted)]">/{annual ? "an" : "mois"}</span>
               </div>
@@ -593,7 +593,7 @@ export default function TarifsPage() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1 flex-wrap">
-                  <span className={`text-lg font-bold ${svc.textColor}`}>{prices[svc.id] || svc.defaultRate} {currency}</span>
+                  <span className={`text-lg font-bold ${svc.textColor}`}>{fmt(prices[svc.id] || svc.defaultRate)} {currency}</span>
                   <span className="text-xs text-[var(--text-muted)]">/ {svc.unitLabel} · HT</span>
                 </div>
               </div>
