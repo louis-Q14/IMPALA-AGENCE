@@ -99,6 +99,7 @@ function InscriptionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState(1);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [role, setRole] = useState<"user" | "pro" | "visiteur">("user");
@@ -136,6 +137,7 @@ function InscriptionContent() {
   const [telephoneFixe, setTelephoneFixe] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // General
@@ -185,7 +187,8 @@ function InscriptionContent() {
     adresse.trim().length >= 5 &&
     telephonePortable.trim().length >= 8 &&
     email.includes("@") &&
-    password.length >= 8;
+    password.length >= 8 &&
+    confirmPassword === password;
 
   const handleSubmit = async () => {
     if (!acceptCGU) return;
@@ -809,6 +812,31 @@ function InscriptionContent() {
                   )}
                 </div>
 
+                {/* Confirm Password */}
+                <div>
+                  <label className={labelClass}>Confirmer le mot de passe *</label>
+                  <div className="relative">
+                    <LockClosedIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Répétez votre mot de passe"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={`${inputClass} pl-12 pr-12 ${step3Attempted && confirmPassword !== password ? "border-red-500 ring-1 ring-red-500" : confirmPassword.length > 0 && confirmPassword === password ? "border-green-500 ring-1 ring-green-500" : ""}`}
+                    />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
+                      {showConfirmPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {confirmPassword.length > 0 && confirmPassword !== password && (
+                    <p className="text-xs text-red-500 mt-1">Les mots de passe ne correspondent pas</p>
+                  )}
+                  {confirmPassword.length > 0 && confirmPassword === password && password.length >= 8 && (
+                    <p className="text-xs text-green-500 mt-1">Les mots de passe correspondent ✓</p>
+                  )}
+                </div>
+
                 {step3Attempted && !isStep3Valid && (
                   <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500">
                     <div className="flex items-start gap-2">
@@ -824,6 +852,7 @@ function InscriptionContent() {
                           {telephonePortable.trim().length < 8 && <li>Téléphone portable (min. 8 chiffres)</li>}
                           {!email.includes("@") && <li>Adresse mail valide</li>}
                           {password.length < 8 && <li>Mot de passe (min. 8 caractères)</li>}
+                          {confirmPassword !== password && <li>Les mots de passe ne correspondent pas</li>}
                         </ul>
                       </div>
                     </div>
