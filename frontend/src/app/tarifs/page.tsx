@@ -20,7 +20,6 @@ const plans = [
   {
     id: "real_estate",
     name: "Pack Immobilier",
-    price: 29,
     period: "mois",
     description: "Pour les professionnels de l'immobilier",
     icon: HomeIcon,
@@ -39,7 +38,6 @@ const plans = [
   {
     id: "auto",
     name: "Pack Automobile",
-    price: 29,
     period: "mois",
     description: "Pour garages et loueurs",
     icon: TruckIcon,
@@ -58,7 +56,6 @@ const plans = [
   {
     id: "immo-auto",
     name: "Pack Immo & Auto",
-    price: 49,
     period: "mois",
     description: "Immobilier + Automobile à prix réduit",
     icon: SparklesIcon,
@@ -79,7 +76,6 @@ const plans = [
 const trashPlan = {
   id: "trash",
   name: "Pack Poubelles",
-  price: 9,
   period: "mois",
   description: "Collecte 1 bac hebdomadaire",
   icon: TrashIcon,
@@ -100,7 +96,6 @@ const multiImpalaServices = [
     title: "Nettoyage de bureau",
     subtitle: "Service professionnel d'entretien de vos espaces",
     href: "/multi-impala/nettoyage",
-    defaultRate: 40,
     unitLabel: "heure",
     color: "from-blue-400 to-cyan-500",
     bg: "bg-blue-500/10",
@@ -120,7 +115,6 @@ const multiImpalaServices = [
     title: "Repassage \u00e0 domicile",
     subtitle: "Vos v\u00eatements repass\u00e9s \u00e0 domicile par nos agents",
     href: "/multi-impala/repassage",
-    defaultRate: 25,
     unitLabel: "heure",
     color: "from-purple-400 to-violet-500",
     bg: "bg-purple-500/10",
@@ -140,7 +134,6 @@ const multiImpalaServices = [
     title: "D\u00e9m\u00e9nagement",
     subtitle: "Transport et installation de vos biens",
     href: "/multi-impala/demenagement",
-    defaultRate: 35,
     unitLabel: "heure",
     color: "from-orange-400 to-amber-500",
     bg: "bg-orange-500/10",
@@ -160,7 +153,6 @@ const multiImpalaServices = [
     title: "Ramassage de poubelles",
     subtitle: "Collecte ponctuelle à domicile par nos agents",
     href: "/multi-impala/poubelles",
-    defaultRate: 3000,
     unitLabel: "passage",
     color: "from-emerald-400 to-green-500",
     bg: "bg-emerald-500/10",
@@ -206,11 +198,11 @@ export default function TarifsPage() {
   const router = useRouter();
   const [annual, setAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [currency, setCurrency] = useState("$");
+  const [currency, setCurrency] = useState("CDF");
   const [globalPromo, setGlobalPromo] = useState<{ type: string; percent: number; startsAt: string; endsAt: string } | null>(null);
   const [prices, setPrices] = useState<Record<string, number>>({
-    real_estate: 29, auto: 29, "immo-auto": 49, trashBasic: 9,
-    nettoyage: 40, repassage: 25, demenagement: 35, poubelles: 3000,
+    real_estate: 0, auto: 0, "immo-auto": 0, trashBasic: 0,
+    nettoyage: 0, repassage: 0, demenagement: 0, poubelles: 0,
   });
 
   // Add-service modal state
@@ -480,12 +472,16 @@ export default function TarifsPage() {
                 <p className="text-sm text-[var(--text-muted)] mt-1">{plan.description}</p>
 
                 <div className="mt-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-[var(--text-primary)]">
-                    {fmt(getPrice(plan.id))} {currency}
-                  </span>
-                  <span className="text-[var(--text-muted)]">
-                    /{annual ? "an" : "mois"}
-                  </span>
+                  {getPrice(plan.id) > 0 ? (
+                    <>
+                      <span className="text-4xl font-bold text-[var(--text-primary)]">
+                        {fmt(getPrice(plan.id))} {currency}
+                      </span>
+                      <span className="text-[var(--text-muted)]">/{annual ? "an" : "mois"}</span>
+                    </>
+                  ) : (
+                    <span className="text-2xl font-semibold text-[var(--text-muted)] animate-pulse">Chargement...</span>
+                  )}
                 </div>
 
                 <button
@@ -540,17 +536,23 @@ export default function TarifsPage() {
             </div>
             <div className="flex items-center gap-4 flex-shrink-0">
               <div className="text-right">
-                {globalPromo && (
+                {globalPromo && getPrice("trashBasic") > 0 && (
                   <div className="text-sm text-[var(--text-muted)] line-through">
                     {fmt(getPrice("trashBasic"))} {currency}
                   </div>
                 )}
-                <span className={`text-3xl font-bold ${globalPromo ? "text-amber-600 dark:text-amber-400" : "text-[var(--text-primary)]"}`}>
-                  {globalPromo
-                    ? fmt(Math.round(getPrice("trashBasic") * (1 - globalPromo.percent / 100)))
-                    : fmt(getPrice("trashBasic"))} {currency}
-                </span>
-                <span className="text-[var(--text-muted)]">/{annual ? "an" : "mois"}</span>
+                {getPrice("trashBasic") > 0 ? (
+                  <>
+                    <span className={`text-3xl font-bold ${globalPromo ? "text-amber-600 dark:text-amber-400" : "text-[var(--text-primary)]"}`}>
+                      {globalPromo
+                        ? fmt(Math.round(getPrice("trashBasic") * (1 - globalPromo.percent / 100)))
+                        : fmt(getPrice("trashBasic"))} {currency}
+                    </span>
+                    <span className="text-[var(--text-muted)]">/{annual ? "an" : "mois"}</span>
+                  </>
+                ) : (
+                  <span className="text-xl font-semibold text-[var(--text-muted)] animate-pulse">Chargement...</span>
+                )}
               </div>
               <button
                 onClick={() => handleServiceClick("trash", "Ramassage de Poubelles", "/multi-impala/poubelles")}
@@ -593,7 +595,9 @@ export default function TarifsPage() {
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1 flex-wrap">
-                  <span className={`text-lg font-bold ${svc.textColor}`}>{fmt(prices[svc.id] || svc.defaultRate)} {currency}</span>
+                  <span className={`text-lg font-bold ${svc.textColor}`}>
+                    {(prices[svc.id] || 0) > 0 ? `${fmt(prices[svc.id])} ${currency}` : <span className="text-sm font-normal text-[var(--text-muted)] animate-pulse">Chargement...</span>}
+                  </span>
                   <span className="text-xs text-[var(--text-muted)]">/ {svc.unitLabel} · HT</span>
                 </div>
               </div>
@@ -603,14 +607,19 @@ export default function TarifsPage() {
                 <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Grille tarifaire</p>
                 <div className="space-y-1">
                   {svc.tiers.map((tier, i) => {
-                    const base = prices[svc.id] || svc.defaultRate;
-                    const computed = fmt(Math.round(base * tier.mult * 100) / 100);
+                    const base = prices[svc.id] || 0;
                     return (
                       <div key={i} className="flex items-center justify-between text-xs py-1 border-b border-[var(--border-color)] last:border-0">
                         <span className="text-[var(--text-secondary)] mr-2">{tier.label}</span>
                         <div className="text-right flex-shrink-0">
-                          <span className={`font-semibold ${svc.textColor}`}>{computed} {currency}</span>
-                          <span className="text-[var(--text-muted)] ml-0.5">(×{tier.mult})</span>
+                          {base > 0 ? (
+                            <>
+                              <span className={`font-semibold ${svc.textColor}`}>{fmt(Math.round(base * tier.mult))} {currency}</span>
+                              <span className="text-[var(--text-muted)] ml-0.5">(×{tier.mult})</span>
+                            </>
+                          ) : (
+                            <span className="text-[var(--text-muted)] animate-pulse">—</span>
+                          )}
                         </div>
                       </div>
                     );
