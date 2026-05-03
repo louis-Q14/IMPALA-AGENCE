@@ -24,7 +24,6 @@ import {
   XMarkIcon,
   ExclamationTriangleIcon,
   ScissorsIcon,
-  EnvelopeIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
