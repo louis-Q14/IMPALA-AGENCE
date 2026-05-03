@@ -7,6 +7,7 @@ const fs = require("fs");
 const db = require("../db");
 const { authenticateToken } = require("../middleware/auth");
 const { sendSMS, generateOTP, normalizePhone, maskPhone } = require("../services/smsService");
+const { generateEmailToken, sendVerificationEmail } = require("../services/emailService");
 
 const router = express.Router();
 const SALT_ROUNDS = 12;
@@ -180,10 +181,24 @@ router.post("/register", upload.single("piece_identite"), async (req, res) => {
       // Don't block registration if SMS fails — OTP still readable in dev logs
     }
 
+    // Generate email verification token and send email
+    const emailToken = generateEmailToken();
+    const emailTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    await db.query(
+      `UPDATE users SET email_token = $1, email_token_expires = $2 WHERE id = $3`,
+      [emailToken, emailTokenExpires, user.id]
+    );
+    try {
+      await sendVerificationEmail(email, fullName || full_name, emailToken);
+    } catch (emailErr) {
+      console.error("Email send error:", emailErr.message);
+    }
+
     res.status(201).json({
       requires_verification: true,
       user_id: user.id,
       phone_masked: maskPhone(phone || ""),
+      email_masked: email.replace(/(.)(.*)(@.*)/, (_, a, b, c) => a + "*".repeat(Math.max(2, b.length)) + c),
     });
   } catch (err) {
     // Clean up temp file on error
@@ -238,6 +253,71 @@ router.post("/login", async (req, res) => {
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Erreur lors de la connexion" });
+  }
+});
+
+// GET /api/auth/verify-email/:token
+// Verifies a user's email address via the token sent by email → activates account
+router.get("/verify-email/:token", async (req, res) => {
+  try {
+    const { token } = req.params;
+    if (!token || token.length !== 64) {
+      return res.status(400).json({ error: "Token invalide" });
+    }
+
+    const result = await db.query(
+      `SELECT id, email, full_name, role, email_verified, email_token_expires
+       FROM users WHERE email_token = $1`,
+      [token]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Lien invalide ou déjà utilisé" });
+    }
+
+    const user = result.rows[0];
+
+    if (user.email_verified) {
+      return res.status(400).json({ error: "Email déjà vérifié" });
+    }
+    if (new Date() > new Date(user.email_token_expires)) {
+      return res.status(400).json({ error: "Lien expiré. Créez un nouveau compte ou contactez le support." });
+    }
+
+    // Activate account via email verification
+    await db.query(
+      `UPDATE users
+       SET email_verified = TRUE, status = 'approved', is_verified = TRUE,
+           email_token = NULL, email_token_expires = NULL
+       WHERE id = $1`,
+      [user.id]
+    );
+
+    // Fetch full user for token
+    const fullResult = await db.query(
+      `SELECT u.id, u.email, u.full_name, u.phone, u.role, u.status, u.is_verified,
+              u.nom, u.post_nom, u.prenom, u.adresse, u.created_at,
+              COALESCE(
+                json_agg(json_build_object('service', us.service_type, 'status', us.subscription_status))
+                FILTER (WHERE us.id IS NOT NULL), '[]'
+              ) as services
+       FROM users u
+       LEFT JOIN user_services us ON u.id = us.user_id
+       WHERE u.id = $1
+       GROUP BY u.id`,
+      [user.id]
+    );
+    const fullUser = fullResult.rows[0];
+
+    const jwtToken = jwt.sign(
+      { userId: fullUser.id, email: fullUser.email, role: fullUser.role, full_name: fullUser.full_name },
+      process.env.JWT_SECRET,
+      { expiresIn: "30d" }
+    );
+
+    res.json({ success: true, user: fullUser, access_token: jwtToken });
+  } catch (err) {
+    console.error("Verify-email error:", err);
+    res.status(500).json({ error: "Erreur serveur" });
   }
 });
 

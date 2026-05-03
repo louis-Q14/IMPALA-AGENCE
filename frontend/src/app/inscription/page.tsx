@@ -148,6 +148,7 @@ function InscriptionContent() {
   // OTP verification
   const [userId, setUserId] = useState("");
   const [phoneMasked, setPhoneMasked] = useState("");
+  const [emailMasked, setEmailMasked] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [otpError, setOtpError] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
@@ -230,6 +231,7 @@ function InscriptionContent() {
       if (res.ok && data.requires_verification) {
         setUserId(data.user_id);
         setPhoneMasked(data.phone_masked || telephonePortable);
+        setEmailMasked(data.email_masked || email);
         setOtpResendCooldown(60);
         setStep(5);
       } else if (!res.ok) {
@@ -1007,9 +1009,17 @@ function InscriptionContent() {
               <p className="text-sm text-[var(--text-secondary)] mb-1">
                 Un code à 6 chiffres a été envoyé au
               </p>
-              <p className="text-base font-semibold text-[var(--text-primary)] mb-6">
+              <p className="text-base font-semibold text-[var(--text-primary)] mb-4">
                 {phoneMasked}
               </p>
+
+              {/* Email verification notice */}
+              <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-left mb-6">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  📧 Un lien de vérification a aussi été envoyé à <strong>{emailMasked}</strong>.<br />
+                  Vous pouvez activer votre compte via le SMS <em>ou</em> en cliquant sur le lien dans l&apos;email.
+                </p>
+              </div>
 
               <input
                 type="text"
