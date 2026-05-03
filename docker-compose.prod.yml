@@ -7,6 +7,8 @@ services:
 
   backend:
     ports: []   # Nginx gère l'accès externe
+    env_file:
+      - .env
     environment:
       NODE_ENV: production
       CORS_ORIGIN: https://impala-agence.com
