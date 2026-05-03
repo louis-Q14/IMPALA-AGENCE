@@ -121,11 +121,7 @@ export default function Footer() {
           <p className="text-sm text-[var(--text-muted)]">
             © {new Date().getFullYear()} IMPALA-AGENCE. Tous droits réservés.
           </p>
-          <div className="flex items-center gap-4">
-            <span className="text-xs text-[var(--text-muted)]">
-              Made with ❤️ in France
-            </span>
-          </div>
+
         </div>
       </div>
     </footer>
