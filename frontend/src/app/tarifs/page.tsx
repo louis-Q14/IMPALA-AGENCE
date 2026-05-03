@@ -325,6 +325,7 @@ export default function TarifsPage() {
       { service: "nettoyage", key: "nettoyage", type: "frais_fixe" },
       { service: "repassage", key: "repassage", type: "frais_fixe" },
       { service: "demenagement", key: "demenagement", type: "frais_fixe" },
+      { service: "poubelles", key: "poubelles", type: "frais_fixe" },
     ];
     mappings.forEach(({ service, key, type }) => {
       fetch(`${API}/tarifs-frais/public?service=${service}`)
