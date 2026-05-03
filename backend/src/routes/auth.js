@@ -189,7 +189,7 @@ router.post("/register", upload.single("piece_identite"), async (req, res) => {
       [emailToken, emailTokenExpires, user.id]
     );
     try {
-      await sendVerificationEmail(email, fullName || full_name, emailToken);
+      await sendVerificationEmail(email, full_name, emailToken);
     } catch (emailErr) {
       console.error("Email send error:", emailErr.message);
     }
