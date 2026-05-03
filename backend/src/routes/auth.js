@@ -6,8 +6,8 @@ const path = require("path");
 const fs = require("fs");
 const db = require("../db");
 const { authenticateToken } = require("../middleware/auth");
-const { generateOTP } = require("../services/smsService");
-const { generateEmailToken, sendOTPEmail, sendVerificationEmail } = require("../services/emailService");
+const { sendSMS, generateOTP, normalizePhone, maskPhone } = require("../services/smsService");
+const { generateEmailToken, sendVerificationEmail } = require("../services/emailService");
 
 const router = express.Router();
 const SALT_ROUNDS = 12;
@@ -161,9 +161,10 @@ router.post("/register", upload.single("piece_identite"), async (req, res) => {
       }
     }
 
-    // Generate OTP and send via email
+    // Generate OTP and send via SMS
     const otp = generateOTP();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const normalizedPhone = normalizePhone(phone || "");
 
     await db.query(
       `UPDATE users SET phone_otp = $1, phone_otp_expires = $2, phone_otp_sent_at = NOW() WHERE id = $3`,
@@ -171,23 +172,24 @@ router.post("/register", upload.single("piece_identite"), async (req, res) => {
     );
 
     try {
-      await sendOTPEmail(email, full_name, otp);
-    } catch (emailErr) {
-      console.error("OTP email send error:", emailErr.message);
-      // Don't block registration if email fails
+      await sendSMS(
+        normalizedPhone || phone,
+        `Votre code de vérification IMPALA-AGENCE est : ${otp}. Valide 10 minutes.`
+      );
+    } catch (smsErr) {
+      console.error("SMS send error:", smsErr.message);
+      // Don't block registration if SMS fails
     }
 
-    // Generate email verification link (alternative activation method)
+    // Generate email verification token (link as fallback)
     const emailToken = generateEmailToken();
-    const emailTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+    const emailTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await db.query(
       `UPDATE users SET email_token = $1, email_token_expires = $2 WHERE id = $3`,
       [emailToken, emailTokenExpires, user.id]
     );
     try {
-      // Only send the verification link if OTP email succeeded (avoid double email)
-      // We embed both in a single email — handled by sendOTPEmail above for OTP
-      // sendVerificationEmail is kept for future use or manual resend
+      await sendVerificationEmail(email, full_name, emailToken);
     } catch (emailErr) {
       console.error("Email send error:", emailErr.message);
     }
@@ -197,6 +199,7 @@ router.post("/register", upload.single("piece_identite"), async (req, res) => {
     res.status(201).json({
       requires_verification: true,
       user_id: user.id,
+      phone_masked: maskPhone(phone || ""),
       email_masked: emailMasked,
     });
   } catch (err) {
@@ -322,19 +325,20 @@ router.get("/verify-email/:token", async (req, res) => {
 
 // POST /api/auth/send-otp
 // Resend OTP to the user's email (rate-limited: 1 per 60 seconds)
+// Resend OTP to the user's phone (rate-limited: 1 per 60 seconds)
 router.post("/send-otp", async (req, res) => {
   try {
     const { user_id } = req.body;
     if (!user_id) return res.status(400).json({ error: "user_id requis" });
 
     const result = await db.query(
-      "SELECT id, email, full_name, phone_otp_sent_at, phone_verified FROM users WHERE id = $1",
+      "SELECT id, phone, phone_otp_sent_at, phone_verified FROM users WHERE id = $1",
       [user_id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Utilisateur introuvable" });
 
     const user = result.rows[0];
-    if (user.phone_verified) return res.status(400).json({ error: "Compte déjà vérifié" });
+    if (user.phone_verified) return res.status(400).json({ error: "Numéro déjà vérifié" });
 
     // Rate limit: 1 OTP per 60 seconds
     if (user.phone_otp_sent_at) {
@@ -353,15 +357,18 @@ router.post("/send-otp", async (req, res) => {
       [otp, otpExpires, user_id]
     );
 
+    const normalizedPhone = normalizePhone(user.phone || "");
     try {
-      await sendOTPEmail(user.email, user.full_name, otp);
-    } catch (emailErr) {
-      console.error("OTP resend error:", emailErr.message);
-      return res.status(500).json({ error: "Impossible d'envoyer le code. Réessayez." });
+      await sendSMS(
+        normalizedPhone || user.phone,
+        `Votre code de vérification IMPALA-AGENCE est : ${otp}. Valide 10 minutes.`
+      );
+    } catch (smsErr) {
+      console.error("SMS resend error:", smsErr.message);
+      return res.status(500).json({ error: "Impossible d'envoyer le SMS. Réessayez." });
     }
 
-    const emailMasked = user.email.replace(/(.)(.*)(@.*)/, (_, a, b, c) => a + "*".repeat(Math.max(2, b.length)) + c);
-    res.json({ success: true, message: "Code envoyé", email_masked: emailMasked });
+    res.json({ success: true, message: "Code envoyé", phone_masked: maskPhone(user.phone || "") });
   } catch (err) {
     console.error("Send-OTP error:", err);
     res.status(500).json({ error: "Erreur serveur" });
