@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { EnvelopeIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { EnvelopeIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/outline";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ nom: "", email: "", sujet: "", message: "" });
@@ -44,6 +44,16 @@ export default function ContactPage() {
                 >
                   contact@impala-agence.com
                 </a>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4 mt-5">
+              <div className="w-10 h-10 rounded-xl bg-[var(--bg-tertiary)] flex items-center justify-center shrink-0">
+                <PhoneIcon className="w-5 h-5 text-[var(--text-secondary)]" />
+              </div>
+              <div>
+                <p className="text-xs text-[var(--text-secondary)] uppercase tracking-wide mb-1">Téléphone</p>
+                <p className="text-sm font-medium text-[var(--text-primary)]">—</p>
               </div>
             </div>
 
