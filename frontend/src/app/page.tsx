@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import {
   type Variants,
@@ -12,9 +13,6 @@ import {
   animate as fmAnimate,
 } from "framer-motion";
 import {
-  HomeIcon,
-  TruckIcon,
-  SparklesIcon,
   ArrowRightIcon,
   ShieldCheckIcon,
   CreditCardIcon,
@@ -64,7 +62,7 @@ const services = [
   {
     title: "Immobilier",
     description: "Trouvez la maison de vos rêves. Vente et location avec carte interactive.",
-    icon: HomeIcon,
+    icon: "/immobilier-icon.png",
     href: "/immobilier",
     color: "from-blue-500 to-blue-700",
     bgLight: "bg-blue-50 dark:bg-blue-950/30",
@@ -75,7 +73,7 @@ const services = [
   {
     title: "Automobile",
     description: "Vendez ou louez votre véhicule. Réservation avec calendrier intégré.",
-    icon: TruckIcon,
+    icon: "/automobile-icon.png",
     href: "/automobile",
     color: "from-amber-500 to-orange-600",
     bgLight: "bg-amber-50 dark:bg-amber-950/30",
@@ -86,7 +84,7 @@ const services = [
   {
     title: "Multi-Impala",
     description: "L'offre tout-en-un : immobilier, automobile, nettoyage & collecte réunis sur une seule plateforme.",
-    icon: SparklesIcon,
+    icon: "/multi-impala-icon.png",
     href: "/multi-impala",
     color: "from-violet-500 to-purple-700",
     bgLight: "bg-violet-50 dark:bg-violet-950/30",
@@ -351,7 +349,7 @@ export default function HomePage() {
                     whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <service.icon className="w-7 h-7 text-white" />
+                    <Image src={service.icon} alt={service.title} width={28} height={28} className="w-7 h-7 object-contain" />
                   </motion.div>
                   <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{service.title}</h3>
                   <p className="text-[var(--text-secondary)] mb-6 leading-relaxed">{service.description}</p>
