@@ -5,15 +5,32 @@ import { EnvelopeIcon, MapPinIcon, PhoneIcon } from "@heroicons/react/24/outline
 export default function ContactPage() {
   const [form, setForm] = useState({ nom: "", email: "", sujet: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError(null);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // Placeholder: intégrer un service d'envoi d'email ici
-    setSent(true);
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur lors de l'envoi");
+      setSent(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Erreur lors de l'envoi");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -178,11 +195,15 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold
-                    text-sm transition-colors"
+                  disabled={loading}
+                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60
+                    text-white font-semibold text-sm transition-colors"
                 >
-                  Envoyer le message
+                  {loading ? "Envoi en cours..." : "Envoyer le message"}
                 </button>
+                {error && (
+                  <p className="text-sm text-red-500 text-center">{error}</p>
+                )}
               </form>
             </>
           )}
