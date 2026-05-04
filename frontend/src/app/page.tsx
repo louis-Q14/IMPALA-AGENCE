@@ -13,6 +13,7 @@ import {
   animate as fmAnimate,
 } from "framer-motion";
 import {
+  HomeIcon,
   ArrowRightIcon,
   ShieldCheckIcon,
   CreditCardIcon,
