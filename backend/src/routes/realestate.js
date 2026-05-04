@@ -3,7 +3,7 @@ const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
 const db = require("../db");
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, requireSubscription } = require("../middleware/auth");
 
 const router = express.Router();
 const UPLOADS_DIR = path.join(__dirname, "../../uploads");
@@ -95,7 +95,7 @@ router.get("/ads", async (req, res) => {
 });
 
 // POST /api/real-estate/ads
-router.post("/ads", authenticateToken, imageUpload.array("images", 25), async (req, res) => {
+router.post("/ads", authenticateToken, requireSubscription("real_estate"), imageUpload.array("images", 25), async (req, res) => {
   try {
     const { title, description, price, rent_price, charges, surface, rooms, bedrooms, address, city, postal_code, ad_type } = req.body;
 
@@ -209,7 +209,7 @@ router.get("/ads/:id", async (req, res) => {
 });
 
 // PUT /api/real-estate/ads/:id  — owner or admin/super_admin
-router.put("/ads/:id", authenticateToken, imageUpload.array("newImages", 25), async (req, res) => {
+router.put("/ads/:id", authenticateToken, requireSubscription("real_estate"), imageUpload.array("newImages", 25), async (req, res) => {
   const adId = req.params.id;
   try {
     const adRes = await db.query("SELECT * FROM real_estate_ads WHERE id = $1", [adId]);

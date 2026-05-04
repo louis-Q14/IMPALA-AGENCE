@@ -3,7 +3,7 @@ const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
 const db = require("../db");
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, requireSubscription } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -205,7 +205,7 @@ owner_name,owner_phone,owner_email,owner_address,owner_type,
 insurance_status,insurance_expiry_date,ct_status,vehicle_status,notes`.replace(/\n/g,"");
 
 // POST /api/auto/ads — create
-router.post("/ads", authenticateToken, imageUpload.array("photos", 15), async (req, res) => {
+router.post("/ads", authenticateToken, requireSubscription("auto"), imageUpload.array("photos", 15), async (req, res) => {
   try {
     const { brand, model, year, ad_type, photos } = req.body;
     if (!brand || !model || !year || !ad_type) return res.status(400).json({ error: "Marque, modèle, année et type requis" });
@@ -237,7 +237,7 @@ router.post("/ads", authenticateToken, imageUpload.array("photos", 15), async (r
 });
 
 // PUT /api/auto/ads/:id — update
-router.put("/ads/:id", authenticateToken, async (req, res) => {
+router.put("/ads/:id", authenticateToken, requireSubscription("auto"), async (req, res) => {
   try {
     const vals = buildValues(req.body, req.user.userId);
     const colList = COLS.split(",").slice(1); // skip user_id
@@ -268,7 +268,7 @@ router.patch("/ads/:id/status", authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/auto/ads/:id
-router.delete("/ads/:id", authenticateToken, async (req, res) => {
+router.delete("/ads/:id", authenticateToken, requireSubscription("auto"), async (req, res) => {
   try {
     await db.query(`DELETE FROM ad_photos WHERE ad_id=$1 AND ad_type='auto'`, [req.params.id]);
     const result = await db.query(`DELETE FROM auto_ads WHERE id=$1 RETURNING id`, [req.params.id]);

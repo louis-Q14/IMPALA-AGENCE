@@ -33,14 +33,14 @@ export function useServiceGuard(service: string | string[]) {
     const primaryService = services[0];
 
     Promise.all([
-      fetch(`${API}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
-      fetch(`${API}/api/subscriptions/mine`, { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API}/subscriptions/mine`, { headers: { Authorization: `Bearer ${token}` } })
         .then((r) => (r.ok ? r.json() : null))
         .catch(() => null),
     ]).then(([me, subs]) => {
-      // Si les deux appels ont echoue, on ne redirige pas (fail-open)
+      // Si les deux appels ont echoue (réseau), on ne redirige pas
       if (me === null && subs === null) return;
 
       const userServices: { service: string; status: string }[] = Array.isArray(me?.services) ? me.services : [];
