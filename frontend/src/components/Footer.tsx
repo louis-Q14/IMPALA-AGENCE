@@ -8,8 +8,6 @@ const footerLinks = {
   services: [
     { name: "Immobilier", href: "/immobilier" },
     { name: "Automobile", href: "/automobile" },
-    { name: "Ramassage Poubelles", href: "/poubelles" },
-    { name: "Tarifs", href: "/tarifs" },
   ],
   entreprise: [
     { name: "À propos", href: "/a-propos" },
@@ -21,7 +19,6 @@ const footerLinks = {
     { name: "Mentions légales", href: "/mentions-legales" },
     { name: "CGU", href: "/cgu" },
     { name: "Politique de confidentialité", href: "/confidentialite" },
-    { name: "Cookies", href: "/cookies" },
   ],
 };
 
