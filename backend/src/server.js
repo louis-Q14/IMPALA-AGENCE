@@ -18,6 +18,7 @@ const tarifsfraisRoutes = require("./routes/tarifs-frais");
 const messagesRoutes = require("./routes/messages");
 const servicesRoutes = require("./routes/services");
 const contactRoutes = require("./routes/contact");
+const blogRoutes = require("./routes/blog");
 const { auditActions } = require("./middleware/auditActions");
 const { ensureAuditFile } = require("./services/actionAudit");
 const { ensureFolderSchema } = require("./db/ensureFolderSchema");
@@ -67,6 +68,7 @@ app.use("/api/tarifs-frais", tarifsfraisRoutes);
 app.use("/api/messages", messagesRoutes);
 app.use("/api/services", servicesRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/blog", blogRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
