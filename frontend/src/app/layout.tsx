@@ -5,7 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "IMPALA | Immobilier, Automobile & Services",
+  title: "IMPALA",
   description: "Plateforme multiservices : annonces immobilières, vente et location automobiles, ramassage poubelles.",
   icons: {
     icon: "/icon.svg",
