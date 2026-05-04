@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Left black square -->
+  <rect x="0" y="0" width="20" height="32" fill="black"/>
+  <!-- White I bar -->
+  <rect x="8" y="5" width="4" height="22" fill="white"/>
+  <!-- Right white square with black border -->
+  <rect x="12" y="0" width="20" height="32" fill="white" stroke="black" stroke-width="1.5"/>
+  <!-- A shape centered in right square (center x=22) -->
+  <path d="M22 5 L30 27 M22 5 L14 27 M16 20 H28" stroke="black" stroke-width="3.5" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+</svg>
