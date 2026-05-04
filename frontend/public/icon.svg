@@ -1,10 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Left black square -->
-  <rect x="0" y="0" width="20" height="32" fill="black"/>
-  <!-- White I bar -->
-  <rect x="8" y="5" width="4" height="22" fill="white"/>
-  <!-- Right white square with black border -->
-  <rect x="12" y="0" width="20" height="32" fill="white" stroke="black" stroke-width="1.5"/>
-  <!-- A shape centered in right square (center x=22) -->
-  <path d="M22 5 L30 27 M22 5 L14 27 M16 20 H28" stroke="black" stroke-width="3.5" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Purple background -->
+  <rect width="64" height="64" rx="10" fill="#7c3aed"/>
+  <!-- White I (left half) - thick vertical bar -->
+  <rect x="9" y="10" width="10" height="44" fill="white" rx="1"/>
+  <!-- White A (right half) using stroke paths -->
+  <path d="M32 54 L42 10 L52 54" stroke="white" stroke-width="7" stroke-linejoin="round" fill="none"/>
+  <line x1="35" y1="38" x2="49" y2="38" stroke="white" stroke-width="6" stroke-linecap="round"/>
 </svg>
