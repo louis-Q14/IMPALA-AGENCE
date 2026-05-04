@@ -8,6 +8,7 @@ const footerLinks = {
   services: [
     { name: "Immobilier", href: "/immobilier" },
     { name: "Automobile", href: "/automobile" },
+    { name: "Multi-Impala", href: "/multi-impala" },
   ],
   entreprise: [
     { name: "À propos", href: "/a-propos" },
