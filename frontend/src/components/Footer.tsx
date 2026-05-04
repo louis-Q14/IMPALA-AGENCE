@@ -14,7 +14,6 @@ const footerLinks = {
     { name: "À propos", href: "/a-propos" },
     { name: "Contact", href: "/contact" },
     { name: "Blog", href: "/blog" },
-    { name: "Carrières", href: "/carrieres" },
   ],
   legal: [
     { name: "Mentions légales", href: "/mentions-legales" },
