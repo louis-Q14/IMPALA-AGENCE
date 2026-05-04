@@ -1,11 +1,8 @@
 ﻿"use client";
-import { usePathname } from "next/navigation";import Link from "next/link";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { LogoFull } from "./Logo";
-import {
-  HomeIcon,
-  TruckIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
 
 const footerLinks = {
   services: [
@@ -46,13 +43,17 @@ export default function Footer() {
               Votre plateforme multiservices pour l&apos;immobilier, l&apos;automobile et le ramassage de poubelles.
             </p>
             <div className="flex gap-3">
-              {[HomeIcon, TruckIcon, TrashIcon].map((Icon, i) => (
+              {[
+                { src: "/immobilier-icon.png", alt: "Immobilier" },
+                { src: "/automobile-icon.png", alt: "Automobile" },
+                { src: "/multi-impala-icon.png", alt: "Multi-Impala" },
+              ].map((icon) => (
                 <div
-                  key={i}
+                  key={icon.alt}
                   className="w-10 h-10 rounded-xl bg-[var(--bg-tertiary)] flex items-center justify-center
-                    border border-[var(--border-color)]"
+                    border border-[var(--border-color)] p-1.5"
                 >
-                  <Icon className="w-5 h-5 text-primary" />
+                  <Image src={icon.src} alt={icon.alt} width={28} height={28} className="object-contain" />
                 </div>
               ))}
             </div>
