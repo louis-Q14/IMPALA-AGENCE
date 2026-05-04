@@ -160,5 +160,39 @@ async function sendVerificationEmail(email, fullName, token) {
   });
 }
 
-module.exports = { generateEmailToken, sendOTPEmail, sendVerificationEmail };
+/**
+ * Send a password reset link to the user's email.
+ */
+async function sendResetPasswordEmail(email, fullName, token) {
+  const frontendUrl = process.env.FRONTEND_URL || "https://impala-agence.com";
+  const resetUrl = `${frontendUrl}/reinitialiser-mot-de-passe?token=${token}`;
+
+  const bodyContent = `
+    <h2 style="margin:0 0 12px;color:#111827;font-size:20px;">Bonjour ${fullName} 👋</h2>
+    <p style="margin:0 0 24px;color:#6b7280;font-size:15px;line-height:1.6;">
+      Vous avez demand&eacute; la r&eacute;initialisation de votre mot de passe IMPALA-AGENCE.<br/>
+      Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.
+    </p>
+    <div style="text-align:center;margin:32px 0;">
+      <a href="${resetUrl}"
+         style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;">
+        🔐 R&eacute;initialiser mon mot de passe
+      </a>
+    </div>
+    <p style="margin:0 0 8px;color:#9ca3af;font-size:13px;text-align:center;">
+      Ce lien est valable <strong>1 heure</strong>.
+    </p>
+    <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">
+      Si vous n&apos;avez pas fait cette demande, ignorez cet email &mdash; votre mot de passe ne sera pas modifi&eacute;.
+    </p>`;
+
+  await sendEmail({
+    to: email,
+    subject: "Réinitialisation de votre mot de passe — IMPALA-AGENCE",
+    html: buildEmailHtml(frontendUrl, bodyContent),
+    text: `Bonjour ${fullName},\n\nRéinitialisez votre mot de passe en cliquant sur ce lien (valable 1h) :\n${resetUrl}\n\nSi vous n'avez pas fait cette demande, ignorez cet email.\n\n— IMPALA-AGENCE`,
+  });
+}
+
+module.exports = { generateEmailToken, sendOTPEmail, sendVerificationEmail, sendResetPasswordEmail };
 

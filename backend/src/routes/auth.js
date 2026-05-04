@@ -7,7 +7,7 @@ const fs = require("fs");
 const db = require("../db");
 const { authenticateToken } = require("../middleware/auth");
 const { generateOTP } = require("../services/smsService");
-const { generateEmailToken, sendOTPEmail, sendVerificationEmail } = require("../services/emailService");
+const { generateEmailToken, sendOTPEmail, sendVerificationEmail, sendResetPasswordEmail } = require("../services/emailService");
 
 const router = express.Router();
 const SALT_ROUNDS = 12;
@@ -533,4 +533,71 @@ router.get("/stats", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
+
+// POST /api/auth/forgot-password
+// Send a password reset link to the user's email
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email requis" });
+
+    const result = await db.query("SELECT id, full_name FROM users WHERE email = $1", [email]);
+
+    // Always return 200 to avoid email enumeration
+    if (result.rows.length === 0) {
+      return res.json({ success: true, message: "Si cet email existe, un lien a été envoyé." });
+    }
+
+    const user = result.rows[0];
+    const token = require("crypto").randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await db.query(
+      "UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3",
+      [token, expires, user.id]
+    );
+
+    try {
+      await sendResetPasswordEmail(email, user.full_name, token);
+    } catch (emailErr) {
+      console.error("Reset email error:", emailErr.message);
+    }
+
+    res.json({ success: true, message: "Si cet email existe, un lien a été envoyé." });
+  } catch (err) {
+    console.error("Forgot-password error:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// POST /api/auth/reset-password
+// Validate token and set new password
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: "Token et mot de passe requis" });
+    if (password.length < 8) return res.status(400).json({ error: "Le mot de passe doit contenir au moins 8 caractères" });
+
+    const result = await db.query(
+      "SELECT id FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()",
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "Lien invalide ou expiré. Faites une nouvelle demande." });
+    }
+
+    const hashed = await bcrypt.hash(password, SALT_ROUNDS);
+    await db.query(
+      "UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2",
+      [hashed, result.rows[0].id]
+    );
+
+    res.json({ success: true, message: "Mot de passe mis à jour avec succès." });
+  } catch (err) {
+    console.error("Reset-password error:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 module.exports = router;
