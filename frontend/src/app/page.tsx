@@ -136,7 +136,7 @@ export default function HomePage() {
     id: string; brand: string; model: string; year?: number | null;
     ad_type: string; price: number | null; rent_price_day?: number | null;
     mileage?: number | null; photos?: string[];
-  }>>([];
+  }>>([]); 
 
   const [annoncesTab, setAnnoncesTab] = useState<"immobilier" | "automobile">("immobilier");
 
@@ -165,7 +165,7 @@ export default function HomePage() {
     };
     load();
     loadAutos();
-  }, [];
+  }, []);
 
   const statsRef = useRef<HTMLElement>(null);
   const statsInView = useInView(statsRef, { once: true, amount: 0.3 });
