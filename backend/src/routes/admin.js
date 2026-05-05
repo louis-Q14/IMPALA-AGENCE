@@ -718,12 +718,17 @@ router.patch("/users/:id/services/statuses", async (req, res) => {
     const { statuses } = req.body;
     if (!statuses || typeof statuses !== 'object') return res.status(400).json({ error: 'statuses requis' });
     for (const [service, svcStatus] of Object.entries(statuses)) {
-      await db.query(
-        "UPDATE user_services SET subscription_status = $1 WHERE user_id = $2 AND service_type = $3",
-        [svcStatus === 'approved' ? 'active' : svcStatus, id, service]
-      );
       const normalized = svcStatus === 'approved' ? 'active' : svcStatus;
       if (normalized === 'active') {
+        // Set subscription_start if not already set, and subscription_end to +30 days
+        await db.query(
+          `UPDATE user_services
+           SET subscription_status = 'active',
+               subscription_start = COALESCE(subscription_start, NOW()),
+               subscription_end   = COALESCE(subscription_end, NOW() + INTERVAL '30 days')
+           WHERE user_id = $1 AND service_type = $2`,
+          [id, service]
+        );
         const svcToReqType = { real_estate: 'immobilier', auto: 'automobile', nettoyage: 'nettoyage', trash: 'poubelles' };
         const reqType = svcToReqType[service];
         if (reqType) {
@@ -732,6 +737,11 @@ router.patch("/users/:id/services/statuses", async (req, res) => {
             [id, reqType]
           );
         }
+      } else {
+        await db.query(
+          "UPDATE user_services SET subscription_status = $1 WHERE user_id = $2 AND service_type = $3",
+          [normalized, id, service]
+        );
       }
     }
     res.json({ success: true });

@@ -213,10 +213,12 @@ function AbonnementContent() {
           const me = await meRes.json();
           if (svcType && Array.isArray(me.services)) {
             const svc = me.services.find((s: { service: string; status: string; startDate?: string; endDate?: string }) => s.service === svcType && s.status === "active");
-            if (svc?.startDate) {
-              const endIso = svc.endDate || new Date(new Date(svc.startDate).getTime() + 30 * 86400000).toISOString();
-              const isAnnual = svc.endDate ? Math.round((new Date(svc.endDate).getTime() - new Date(svc.startDate).getTime()) / 86400000) > 60 : false;
-              setBackendSub({ startDate: svc.startDate, endDate: endIso, annual: isAnnual });
+            if (svc) {
+              // Service is active — clear pending regardless of whether startDate is set
+              const startIso = svc.startDate || new Date().toISOString();
+              const endIso = svc.endDate || new Date(new Date(startIso).getTime() + 30 * 86400000).toISOString();
+              const isAnnual = svc.endDate ? Math.round((new Date(svc.endDate).getTime() - new Date(startIso).getTime()) / 86400000) > 60 : false;
+              setBackendSub({ startDate: startIso, endDate: endIso, annual: isAnnual });
               setPendingRequest(null);
               localStorage.removeItem(`pending_${serviceKey}`);
               if (!saved) setTab("suivi");
