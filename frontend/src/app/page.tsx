@@ -123,15 +123,7 @@ const testimonials = [
   },
 ];
 
-/* ── Floating hero dots ── */
-const heroDots = [
-  { top: "18%", left: "14%", size: "w-2 h-2", color: "bg-blue-400/50", duration: 4, delay: 0 },
-  { top: "72%", left: "10%", size: "w-3 h-3", color: "bg-violet-400/40", duration: 5.5, delay: 0.8, diamond: true },
-  { top: "28%", right: "16%", size: "w-2.5 h-2.5", color: "bg-purple-400/50", duration: 6, delay: 0.4 },
-  { top: "58%", right: "20%", size: "w-2 h-2", color: "bg-blue-300/40", duration: 4.5, delay: 1.6, diamond: true },
-  { top: "45%", left: "7%", size: "w-1.5 h-1.5", color: "bg-indigo-400/40", duration: 7, delay: 1.2 },
-  { top: "35%", right: "8%", size: "w-1.5 h-1.5", color: "bg-pink-400/30", duration: 5, delay: 2 },
-];
+/* ── (heroDots removed — new teal Hero uses inline decorative elements) ── */
 
 export default function HomePage() {
   const [latestAds, setLatestAds] = useState<Array<{
@@ -162,135 +154,117 @@ export default function HomePage() {
   const { scrollY, scrollYProgress } = useScroll();
   const blob1Y = useTransform(scrollY, [0, 600], [0, -120]);
   const blob2Y = useTransform(scrollY, [0, 600], [0, -70]);
-  const blob3Y = useTransform(scrollY, [0, 600], [0, -160]);
+  const heroImg1Y = useTransform(scrollY, [0, 600], [0, -45]);
+  const heroImg2Y = useTransform(scrollY, [0, 600], [0, 28]);
 
   return (
     <div>
       {/* ── Scroll progress bar ── */}
       <motion.div
-        className="fixed top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-violet-500 to-purple-500 z-[100] origin-left"
+        className="fixed top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 z-[100] origin-left"
         style={{ scaleX: scrollYProgress }}
       />
 
-      {/* ===== HERO ===== */}
-      <section className="relative overflow-hidden">
-        <div className="gradient-hero">
-          {/* Dot grid overlay */}
-          <div className="absolute inset-0 hero-grid opacity-25 pointer-events-none" />
+      {/* ===== HERO — UI/UX Pro Max: Exaggerated Minimalism · Teal Real-Estate palette ===== */}
+      <section className="relative overflow-hidden hero-teal min-h-screen flex items-center">
+        {/* Dot grid */}
+        <div className="absolute inset-0 hero-grid opacity-10 pointer-events-none" />
 
-          {/* Parallax blobs */}
-          <motion.div style={{ y: blob1Y }} className="absolute top-20 left-10 pointer-events-none">
-            <motion.div
-              className="w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"
-              animate={{ x: [0, 40, -20, 0], y: [0, -30, 20, 0], scale: [1, 1.08, 0.95, 1] }}
-              transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </motion.div>
-          <motion.div style={{ y: blob2Y }} className="absolute bottom-10 right-10 pointer-events-none">
-            <motion.div
-              className="w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
-              animate={{ x: [0, -50, 30, 0], y: [0, 30, -40, 0], scale: [1, 1.05, 0.92, 1] }}
-              transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </motion.div>
-          <motion.div style={{ y: blob3Y }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-            <motion.div
-              className="w-64 h-64 bg-indigo-500/8 rounded-full blur-3xl"
-              animate={{ x: [0, 25, 0], y: [0, 25, 0], scale: [1, 1.1, 1] }}
-              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </motion.div>
-          {/* 4th subtle blob bottom-left */}
-          <motion.div className="absolute bottom-0 left-1/4 pointer-events-none">
-            <motion.div
-              className="w-56 h-56 bg-pink-500/8 rounded-full blur-3xl"
-              animate={{ x: [0, 30, -10, 0], scale: [1, 1.12, 0.9, 1] }}
-              transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            />
-          </motion.div>
+        {/* Parallax background blobs */}
+        <motion.div style={{ y: blob1Y }} className="absolute -top-32 -left-32 pointer-events-none">
+          <div className="w-[560px] h-[560px] bg-teal-300/8 rounded-full blur-3xl" />
+        </motion.div>
+        <motion.div style={{ y: blob2Y }} className="absolute -bottom-16 right-0 pointer-events-none">
+          <div className="w-96 h-96 bg-teal-400/8 rounded-full blur-3xl" />
+        </motion.div>
 
-          {/* Floating mini elements */}
-          {heroDots.map((dot, i) => (
-            <motion.div
-              key={i}
-              className={`absolute ${dot.size} ${dot.color} ${dot.diamond ? "rounded-sm rotate-45" : "rounded-full"} pointer-events-none`}
-              style={{ top: dot.top, left: (dot as { left?: string }).left, right: (dot as { right?: string }).right }}
-              animate={{
-                y: [0, -18, 0],
-                opacity: [0.3, 0.8, 0.3],
-                rotate: dot.diamond ? [45, 90, 45] : 0,
-              }}
-              transition={{ duration: dot.duration, delay: dot.delay, repeat: Infinity, ease: "easeInOut" }}
-            />
-          ))}
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-28 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-          {/* Hero content */}
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
+            {/* ── Left: Text content ── */}
             <motion.div
-              className="text-center max-w-4xl mx-auto"
               initial="hidden"
               animate="visible"
               variants={stagger}
+              className="order-2 lg:order-1"
             >
+              {/* Eyebrow badge */}
               <motion.div
                 variants={fadeUp}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6"
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-400/20 border border-teal-400/30 mb-8"
               >
                 <motion.span
-                  className="w-2 h-2 rounded-full bg-primary block"
+                  className="w-2 h-2 rounded-full bg-teal-400 block"
                   animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 />
-                <span className="text-sm font-medium text-primary">Plateforme multiservices</span>
+                <span
+                  className="text-sm font-medium text-teal-200 tracking-widest uppercase"
+                  style={{ fontFamily: "var(--font-josefin), sans-serif" }}
+                >
+                  Plateforme multiservices
+                </span>
               </motion.div>
 
-              <motion.h1
-                variants={fadeUp}
-                className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white leading-tight"
-              >
-                Bienvenue sur{" "}
-                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient-text">
+              {/* Giant heading — Exaggerated Minimalism */}
+              <motion.h1 variants={fadeUp} className="leading-none">
+                <span
+                  className="block font-black text-white"
+                  style={{
+                    fontFamily: "var(--font-cinzel), serif",
+                    fontSize: "clamp(3.8rem, 9vw, 8.5rem)",
+                    letterSpacing: "-0.04em",
+                    lineHeight: 0.92,
+                  }}
+                >
                   IMPALA
+                </span>
+                <span
+                  className="block text-teal-300 font-semibold mt-3"
+                  style={{
+                    fontFamily: "var(--font-josefin), sans-serif",
+                    fontSize: "clamp(1rem, 2.4vw, 1.75rem)",
+                    letterSpacing: "0.18em",
+                  }}
+                >
+                  TOUS VOS SERVICES
                 </span>
               </motion.h1>
 
-              <motion.p variants={fadeUp} className="mt-4 text-xl sm:text-2xl font-semibold text-slate-200">
-                Tous vos services, une seule plateforme.
+              <motion.p
+                variants={fadeUp}
+                className="mt-6 text-base sm:text-lg text-teal-100/80 max-w-md leading-relaxed"
+                style={{ fontFamily: "var(--font-josefin), sans-serif" }}
+              >
+                Immobilier, automobile, nettoyage &amp; collecte — réunis sur une seule plateforme moderne.
               </motion.p>
 
-              <motion.p variants={fadeUp} className="mt-4 text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                Que vous achetiez un bien, vendiez votre voiture ou organisiez le ramassage de vos
-                déchets… nous avons réuni l&apos;indispensable là où vous en avez besoin.
-              </motion.p>
-
-              <motion.p variants={fadeUp} className="mt-3 text-base sm:text-lg font-medium text-primary">
-                Gagnez du temps. Simplifiez-vous la vie. Centralisez tout.
-              </motion.p>
-
-              <motion.div variants={fadeUp} className="mt-10 max-w-2xl mx-auto">
-                <div className="flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-2">
-                  <MagnifyingGlassIcon className="w-6 h-6 text-slate-400 ml-3 flex-shrink-0" />
+              {/* Search bar */}
+              <motion.div variants={fadeUp} className="mt-8 max-w-lg">
+                <div className="flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-teal-400/30 p-2">
+                  <MagnifyingGlassIcon className="w-5 h-5 text-teal-300 ml-3 flex-shrink-0" />
                   <input
                     type="text"
-                    placeholder="Rechercher une annonce immobilière, automobile..."
-                    className="flex-1 bg-transparent px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none text-base"
+                    placeholder="Rechercher un bien, un véhicule..."
+                    className="flex-1 bg-transparent px-4 py-2.5 text-white placeholder:text-teal-300/50 focus:outline-none text-sm"
                   />
                   <motion.button
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.97 }}
-                    className="px-6 py-3 bg-primary hover:bg-primary-hover text-white font-medium rounded-xl transition-colors"
+                    className="px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-white font-medium rounded-xl transition-colors text-sm whitespace-nowrap"
                   >
                     Rechercher
                   </motion.button>
                 </div>
               </motion.div>
 
-              <motion.div variants={fadeUp} className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+              {/* CTAs */}
+              <motion.div variants={fadeUp} className="mt-8 flex flex-col sm:flex-row items-start gap-4">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
                   <Link
                     href="/inscription"
-                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-primary
-                      text-white font-semibold hover:bg-primary-hover shadow-lg hover:shadow-xl transition-colors text-base"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400
+                      text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-400/40 transition-all text-base"
                   >
                     Commencer gratuitement
                     <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
@@ -302,13 +276,181 @@ export default function HomePage() {
                   <Link
                     href="/tarifs"
                     className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl
-                      text-white font-medium border border-white/20 hover:bg-white/10 transition-colors text-base"
+                      text-white font-medium border border-teal-400/40 hover:bg-white/10 transition-colors text-base"
                   >
                     Voir les tarifs
                   </Link>
                 </motion.div>
               </motion.div>
+
+              {/* Mini stats row */}
+              <motion.div variants={fadeUp} className="mt-10 flex items-center gap-0">
+                {[
+                  { value: "10K+", label: "Annonces" },
+                  { value: "5K+",  label: "Utilisateurs" },
+                  { value: "98%",  label: "Satisfaction" },
+                ].map((s, i) => (
+                  <div
+                    key={s.label}
+                    className={`pr-8 ${i > 0 ? "pl-8 border-l border-teal-400/25" : ""}`}
+                  >
+                    <p
+                      className="text-2xl font-black text-white leading-none"
+                      style={{ fontFamily: "var(--font-josefin), sans-serif" }}
+                    >
+                      {s.value}
+                    </p>
+                    <p className="text-[11px] text-teal-300/70 uppercase tracking-widest mt-1">{s.label}</p>
+                  </div>
+                ))}
+              </motion.div>
             </motion.div>
+
+            {/* ── Right: Animated image collage ── */}
+            <div className="relative h-[400px] sm:h-[500px] lg:h-[580px] order-1 lg:order-2">
+
+              {/* ① Main image — top-right, slow float + parallax scroll */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.88, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.95, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute top-0 right-0 w-[68%] h-[68%] rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
+                style={{ y: heroImg1Y }}
+              >
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  className="w-full h-full relative"
+                >
+                  <Image
+                    src="/villa.jpg"
+                    alt="Villa moderne à Kinshasa"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 50vw, 35vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/65 via-teal-900/10 to-transparent" />
+                  {/* Floating price badge */}
+                  <motion.div
+                    className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg"
+                    animate={{ y: [0, -5, 0] }}
+                    transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Villa moderne · Kinshasa</p>
+                    <p className="text-sm font-bold text-teal-700">850 000 FC</p>
+                  </motion.div>
+                </motion.div>
+              </motion.div>
+
+              {/* ② Second image — bottom-left, opposite float phase + parallax */}
+              <motion.div
+                initial={{ opacity: 0, x: -35, y: 20 }}
+                animate={{ opacity: 1, x: 0, y: 0 }}
+                transition={{ duration: 0.95, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute bottom-0 left-0 w-[52%] h-[50%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50"
+                style={{ y: heroImg2Y }}
+              >
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
+                  className="w-full h-full relative"
+                >
+                  <Image
+                    src="/bungalow-ELEPHANT ROYAL_Page_4.jpg"
+                    alt="Bungalow moderne"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 30vw, 20vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/50 to-transparent" />
+                </motion.div>
+              </motion.div>
+
+              {/* ③ Third image — middle overlap, faster float */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.95, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute bottom-[20%] left-[33%] w-[42%] h-[40%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50 z-10"
+              >
+                <motion.div
+                  animate={{ y: [0, -12, 0] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+                  className="w-full h-full relative"
+                >
+                  <Image
+                    src="/car 1.png"
+                    alt="SUV automobile"
+                    fill
+                    className="object-cover object-center"
+                    sizes="(max-width: 1024px) 25vw, 18vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/40 to-transparent" />
+                </motion.div>
+              </motion.div>
+
+              {/* Floating badge — nb services */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0, rotate: -12 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                transition={{ delay: 1.1, type: "spring", stiffness: 280, damping: 18 }}
+                className="absolute top-4 left-2 z-20"
+              >
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="bg-teal-500 text-white rounded-2xl px-4 py-3 shadow-lg shadow-teal-500/40"
+                >
+                  <p
+                    className="text-2xl font-black leading-none"
+                    style={{ fontFamily: "var(--font-josefin), sans-serif" }}
+                  >
+                    3+
+                  </p>
+                  <p className="text-[11px] font-medium text-teal-100 mt-0.5 uppercase tracking-wide">Services</p>
+                </motion.div>
+              </motion.div>
+
+              {/* Floating badge — verified */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.4, type: "spring", stiffness: 280, damping: 18 }}
+                className="absolute top-[27%] -right-1 z-20"
+              >
+                <motion.div
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                  className="bg-white text-teal-700 rounded-xl px-3 py-2 shadow-xl"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheckIcon className="w-4 h-4 text-teal-500" />
+                    <span className="text-xs font-bold">Vérifié</span>
+                  </div>
+                </motion.div>
+              </motion.div>
+
+              {/* Decorative teal pulse dots */}
+              <motion.div
+                className="absolute w-2.5 h-2.5 bg-teal-400 rounded-full pointer-events-none z-20"
+                style={{ top: "7%", left: "28%" }}
+                animate={{ scale: [1, 2, 1], opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 2.8, repeat: Infinity }}
+              />
+              <motion.div
+                className="absolute w-2 h-2 bg-teal-400 rounded-full pointer-events-none z-20"
+                style={{ top: "52%", right: "1%" }}
+                animate={{ scale: [1, 2, 1], opacity: [0.4, 1, 0.4] }}
+                transition={{ duration: 3.5, delay: 0.7, repeat: Infinity }}
+              />
+              <motion.div
+                className="absolute w-3 h-3 bg-teal-300 rounded-full pointer-events-none z-20"
+                style={{ bottom: "6%", left: "52%" }}
+                animate={{ scale: [1, 1.8, 1], opacity: [0.3, 0.9, 0.3] }}
+                transition={{ duration: 4, delay: 1.4, repeat: Infinity }}
+              />
+            </div>
+
           </div>
         </div>
       </section>

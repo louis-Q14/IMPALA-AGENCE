@@ -97,6 +97,11 @@ body {
   background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%);
 }
 
+/* UI/UX Pro Max – Teal hero (Exaggerated Minimalism, Real-Estate palette) */
+.hero-teal {
+  background: linear-gradient(135deg, #052e2a 0%, #0f766e 45%, #134e4a 100%);
+}
+
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
