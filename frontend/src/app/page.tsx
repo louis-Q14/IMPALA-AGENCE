@@ -132,6 +132,14 @@ export default function HomePage() {
     surface?: number | null; rooms?: number | null; photos?: string[];
   }>>([]);
 
+  const [latestAutos, setLatestAutos] = useState<Array<{
+    id: string; brand: string; model: string; year?: number | null;
+    ad_type: string; price: number | null; rent_price_day?: number | null;
+    mileage?: number | null; photos?: string[];
+  }>>([];
+
+  const [annoncesTab, setAnnoncesTab] = useState<"immobilier" | "automobile">("immobilier");
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -144,8 +152,20 @@ export default function HomePage() {
         setLatestAds(Array.isArray(data.data) ? data.data.slice(0, 6) : []);
       } catch { setLatestAds([]); }
     };
+    const loadAutos = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auto/ads?limit=6`,
+          { cache: "no-store" }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        setLatestAutos(Array.isArray(data.data) ? data.data.slice(0, 6) : []);
+      } catch { setLatestAutos([]); }
+    };
     load();
-  }, []);
+    loadAutos();
+  }, [];
 
   const statsRef = useRef<HTMLElement>(null);
   const statsInView = useInView(statsRef, { once: true, amount: 0.3 });
@@ -572,173 +592,147 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== LATEST ADS — Cover Flow 3D ===== */}
-      <section className="py-20 bg-[var(--bg-secondary)] overflow-hidden">
+      {/* ===== LATEST ADS — Grid with tabs ===== */}
+      <section className="py-20 bg-[var(--bg-secondary)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Header + tabs */}
           <motion.div
-            className="flex items-end justify-between gap-4 mb-12"
+            className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10"
             initial="hidden" whileInView="visible"
             viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
           >
             <div>
               <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
-                Dernières annonces immobilières
+                Dernières annonces
               </h2>
-              <p className="mt-3 text-[var(--text-secondary)]">
+              <p className="mt-2 text-[var(--text-secondary)] text-sm">
                 Les annonces publiées apparaissent automatiquement ici.
               </p>
             </div>
-            <Link href="/immobilier" className="text-primary font-medium hover:underline whitespace-nowrap">
-              Voir tout
-            </Link>
+            <div className="flex items-center gap-3">
+              {/* Tab switcher */}
+              <div className="flex items-center bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-1 gap-1">
+                <button
+                  onClick={() => setAnnoncesTab("immobilier")}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                    annoncesTab === "immobilier"
+                      ? "bg-teal-500 text-white shadow"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  Immobilier
+                </button>
+                <button
+                  onClick={() => setAnnoncesTab("automobile")}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                    annoncesTab === "automobile"
+                      ? "bg-teal-500 text-white shadow"
+                      : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                  }`}
+                >
+                  Automobile
+                </button>
+              </div>
+              <Link
+                href={annoncesTab === "immobilier" ? "/immobilier" : "/automobile"}
+                className="text-primary font-medium hover:underline whitespace-nowrap text-sm"
+              >
+                Voir tout
+              </Link>
+            </div>
           </motion.div>
 
-          {/* ── Cover Flow stage ── pure CSS 3D transforms ── */}
-          {(() => {
-            const demoCards = [
+          {/* Immobilier grid */}
+          {annoncesTab === "immobilier" && (() => {
+            const demoImmo = [
               { id: "d1", title: "Villa moderne", address: "Kinshasa, Gombe", city: "Kinshasa", ad_type: "sale" as const, price: 850000, rent_price: null, surface: 240, rooms: 5, photos: ["/villa.jpg"] },
               { id: "d2", title: "Bungalow tropical", address: "Kinshasa, Ngaliema", city: "Kinshasa", ad_type: "rent" as const, price: null, rent_price: 120000, surface: 140, rooms: 3, photos: ["/bungalow-ELEPHANT ROYAL_Page_4.jpg"] },
-              { id: "d3", title: "SUV Premium", address: "Kinshasa, Limete", city: "Kinshasa", ad_type: "sale" as const, price: 450000, rent_price: null, surface: null, rooms: null, photos: ["/car 1.png"] },
-              { id: "d4", title: "Appartement standing", address: "Kinshasa, Bandal", city: "Kinshasa", ad_type: "rent" as const, price: null, rent_price: 95000, surface: 85, rooms: 2, photos: [] },
+              { id: "d3", title: "Appartement standing", address: "Kinshasa, Bandal", city: "Kinshasa", ad_type: "rent" as const, price: null, rent_price: 95000, surface: 85, rooms: 2, photos: [] },
             ];
-            const cards = latestAds.length > 0 ? latestAds : demoCards;
-            const total = cards.length;
-            const prev = () => { setCoverIdx((i) => (i - 1 + total) % total); setCoverPaused(true); };
-            const next = () => { setCoverIdx((i) => (i + 1) % total); setCoverPaused(true); };
-
+            const cards = latestAds.length > 0 ? latestAds : demoImmo;
             return (
-              <div
-                onMouseEnter={() => setCoverPaused(true)}
-                onMouseLeave={() => setCoverPaused(false)}
+              <motion.div
+                key="immo-grid"
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                {/* 3D stage — perspective on wrapper, cards centred with CSS */}
-                <div
-                  style={{
-                    position: "relative",
-                    height: "460px",
-                    perspective: "1000px",
-                    perspectiveOrigin: "50% 50%",
-                  }}
-                >
-                  {cards.map((ad, i) => {
-                    const offset = i - coverIdx;
-                    const half = Math.floor(total / 2);
-                    const wo = ((offset + total + half) % total) - half; // wrapped offset
-                    const abs = Math.abs(wo);
-                    if (abs > 2) return null;
-
-                    /* CoverFlow geometry */
-                    const CARD_W = 260;
-                    const rotY  = wo === 0 ? 0 : wo < 0 ?  60 : -60;
-                    const tx    = wo * 200;                 // px from centre
-                    const tz    = abs === 0 ? 0 : -120;    // push side cards back
-                    const sc    = abs === 0 ? 1 : abs === 1 ? 0.82 : 0.65;
-                    const op    = abs === 0 ? 1 : abs === 1 ? 0.88 : 0.50;
-                    const zIdx  = 30 - abs * 8;
-
-                    return (
-                      <div
-                        key={ad.id}
-                        onClick={() => abs > 0 && setCoverIdx(i)}
-                        style={{
-                          position:  "absolute",
-                          left:      "50%",
-                          top:       "50%",
-                          width:     `${CARD_W}px`,
-                          marginLeft: `${-CARD_W / 2}px`,
-                          marginTop:  "-195px",
-                          zIndex:     zIdx,
-                          opacity:    op,
-                          cursor:     abs === 0 ? "default" : "pointer",
-                          transform:  `translateX(${tx}px) translateZ(${tz}px) rotateY(${rotY}deg) scale(${sc})`,
-                          transition: "transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.45s ease",
-                        }}
-                      >
-                        {/* Card body */}
-                        <Link
-                          href={`/immobilier/${ad.id}`}
-                          onClick={(e) => abs > 0 && e.preventDefault()}
-                          style={{
-                            display: "block",
-                            borderRadius: "16px",
-                            overflow: "hidden",
-                            boxShadow: abs === 0
-                              ? "0 28px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.1)"
-                              : "0 10px 24px rgba(0,0,0,0.38)",
-                          }}
-                        >
-                          {/* Photo */}
-                          <div style={{ height: "285px", background: "#0f4c3f", overflow: "hidden" }}>
-                            {ad.photos?.[0] ? (
-                              <img
-                                src={ad.photos[0]}
-                                alt={ad.title}
-                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                              />
-                            ) : (
-                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#0f766e,#1e293b)" }}>
-                                <HomeIcon style={{ width: 56, height: 56, color: "rgba(94,234,212,0.5)" }} />
-                              </div>
-                            )}
-                          </div>
-                          {/* Info */}
-                          <div style={{ padding: "14px 16px", background: "var(--bg-card)" }}>
-                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
-                              <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
-                              <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, color: "#fff", flexShrink: 0, background: ad.ad_type === "sale" ? "#2563eb" : "#059669" }}>
-                                {ad.ad_type === "sale" ? "Vente" : "Location"}
-                              </span>
-                            </div>
-                            <div style={{ fontSize: 15, fontWeight: 900, color: "#0d9488", marginBottom: 4 }}>
-                              {Number(ad.price ?? ad.rent_price ?? 0).toLocaleString("fr-FR")} FC{ad.ad_type === "rent" ? "/mois" : ""}
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--text-muted)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                              <MapPinIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
-                              {[ad.address, ad.city].filter(Boolean).join(", ")}
-                            </div>
-                          </div>
-                        </Link>
+                {cards.map((ad) => (
+                  <Link key={ad.id} href={`/immobilier/${ad.id}`} className="group block rounded-xl overflow-hidden bg-[var(--bg-card)] border border-[var(--border)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div className="h-52 overflow-hidden bg-teal-900/30">
+                      {ad.photos?.[0] ? (
+                        <img src={ad.photos[0]} alt={ad.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-teal-800/40 to-slate-800/40">
+                          <HomeIcon className="w-14 h-14 text-teal-400/40" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="font-semibold text-[var(--text-primary)] text-sm truncate flex-1">{ad.title}</span>
+                        <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${ad.ad_type === "sale" ? "bg-blue-600" : "bg-emerald-600"}`}>
+                          {ad.ad_type === "sale" ? "Vente" : "Location"}
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
+                      <p className="text-base font-black text-teal-600 dark:text-teal-400 mb-2">
+                        {Number(ad.price ?? ad.rent_price ?? 0).toLocaleString("fr-FR")} FC{ad.ad_type === "rent" ? "/mois" : ""}
+                      </p>
+                      <div className="flex items-center gap-1 text-xs text-[var(--text-muted)] truncate">
+                        <MapPinIcon className="w-3.5 h-3.5 shrink-0" />
+                        {[ad.address, ad.city].filter(Boolean).join(", ")}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </motion.div>
+            );
+          })()}
 
-                {/* Controls */}
-                <div className="flex items-center justify-center gap-6 mt-6">
-                  <motion.button
-                    onClick={prev}
-                    whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
-                    className="w-10 h-10 rounded-full bg-teal-500/20 hover:bg-teal-500/40 border border-teal-500/30 flex items-center justify-center text-teal-500 transition-colors cursor-pointer"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
-                  </motion.button>
-                  <div className="flex items-center gap-2">
-                    {cards.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => { setCoverIdx(i); setCoverPaused(true); }}
-                        style={{
-                          width:  i === coverIdx ? 24 : 8,
-                          height: 8,
-                          borderRadius: 999,
-                          border: "none",
-                          cursor: "pointer",
-                          background: i === coverIdx ? "#14b8a6" : "#94a3b8",
-                          transition: "width 0.3s ease, background 0.3s ease",
-                          padding: 0,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <motion.button
-                    onClick={next}
-                    whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
-                    className="w-10 h-10 rounded-full bg-teal-500/20 hover:bg-teal-500/40 border border-teal-500/30 flex items-center justify-center text-teal-500 transition-colors cursor-pointer"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                  </motion.button>
-                </div>
-              </div>
+          {/* Automobile grid */}
+          {annoncesTab === "automobile" && (() => {
+            const demoAuto = [
+              { id: "a1", brand: "Toyota", model: "Land Cruiser", year: 2022, ad_type: "sale", price: 95000000, rent_price_day: null, mileage: 18000, photos: ["/car 1.png"] },
+              { id: "a2", brand: "Mercedes", model: "GLE 350", year: 2021, ad_type: "sale", price: 120000000, rent_price_day: null, mileage: 32000, photos: [] },
+              { id: "a3", brand: "BMW", model: "X5", year: 2020, ad_type: "rent", price: null, rent_price_day: 250000, mileage: 45000, photos: [] },
+            ];
+            const cars = latestAutos.length > 0 ? latestAutos : demoAuto;
+            return (
+              <motion.div
+                key="auto-grid"
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+              >
+                {cars.map((car) => (
+                  <Link key={car.id} href={`/automobile/${car.id}`} className="group block rounded-xl overflow-hidden bg-[var(--bg-card)] border border-[var(--border)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                    <div className="h-52 overflow-hidden bg-slate-800/30">
+                      {car.photos?.[0] ? (
+                        <img src={car.photos[0]} alt={`${car.brand} ${car.model}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-700/40 to-slate-900/40">
+                          <svg className="w-14 h-14 text-slate-400/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zm10 0a2 2 0 11-4 0 2 2 0 014 0zM2 12l2-5h14l2 5M2 12h18" /></svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="font-semibold text-[var(--text-primary)] text-sm truncate flex-1">{car.brand} {car.model} {car.year ? `(${car.year})` : ""}</span>
+                        <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${car.ad_type === "sale" ? "bg-blue-600" : "bg-emerald-600"}`}>
+                          {car.ad_type === "sale" ? "Vente" : "Location"}
+                        </span>
+                      </div>
+                      <p className="text-base font-black text-teal-600 dark:text-teal-400 mb-2">
+                        {Number(car.price ?? car.rent_price_day ?? 0).toLocaleString("fr-FR")} FC{car.ad_type === "rent" ? "/jour" : ""}
+                      </p>
+                      {car.mileage != null && (
+                        <p className="text-xs text-[var(--text-muted)]">{Number(car.mileage).toLocaleString("fr-FR")} km</p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </motion.div>
             );
           })()}
         </div>
