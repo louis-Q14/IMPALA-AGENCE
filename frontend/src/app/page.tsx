@@ -309,25 +309,25 @@ export default function HomePage() {
             {/* ── Right: Animated image collage ── */}
             <div className="relative h-[520px] sm:h-[640px] lg:h-[740px] order-1 lg:order-2">
 
-              {/* ① Main image — top-right, slow float + parallax scroll */}
+              {/* ① Main image — pleine largeur en haut, visible entièrement */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.88, y: 40 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.95, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute top-0 right-0 w-[76%] h-[78%] rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
+                className="absolute top-0 left-0 w-full h-[70%] rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
                 style={{ y: heroImg1Y }}
               >
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-full h-full relative"
+                  className="w-full h-full relative bg-teal-900/40"
                 >
                   <Image
                     src="/villa.jpg"
                     alt="Villa moderne à Kinshasa"
                     fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 50vw, 35vw"
+                    className="object-contain"
+                    sizes="(max-width: 1024px) 90vw, 50vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-teal-900/65 via-teal-900/10 to-transparent" />
                   {/* Floating price badge */}
@@ -342,12 +342,12 @@ export default function HomePage() {
                 </motion.div>
               </motion.div>
 
-              {/* ② Second image — bottom-left, opposite float phase + parallax */}
+              {/* ② Second image — bottom-right, bungalow */}
               <motion.div
                 initial={{ opacity: 0, x: -35, y: 20 }}
                 animate={{ opacity: 1, x: 0, y: 0 }}
                 transition={{ duration: 0.95, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-0 left-0 w-[52%] h-[50%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50"
+                className="absolute bottom-0 right-0 w-[46%] h-[34%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50"
                 style={{ y: heroImg2Y }}
               >
                 <motion.div
@@ -366,26 +366,25 @@ export default function HomePage() {
                 </motion.div>
               </motion.div>
 
-              {/* ③ Third image — middle overlap, faster float */}
+              {/* ③ Voiture — bottom-left, pleine largeur, visible entièrement */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.95, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-[20%] left-[33%] w-[42%] h-[40%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50 z-10"
+                className="absolute bottom-0 left-0 w-[58%] h-[34%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50 z-10"
               >
                 <motion.div
                   animate={{ y: [0, -12, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-                  className="w-full h-full relative"
+                  className="w-full h-full relative bg-white/8"
                 >
                   <Image
                     src="/car 1.png"
                     alt="SUV automobile"
                     fill
-                    className="object-cover object-center"
-                    sizes="(max-width: 1024px) 25vw, 18vw"
+                    className="object-contain object-center"
+                    sizes="(max-width: 1024px) 55vw, 32vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/40 to-transparent" />
                 </motion.div>
               </motion.div>
 
@@ -394,7 +393,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, scale: 0, rotate: -12 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ delay: 1.1, type: "spring", stiffness: 280, damping: 18 }}
-                className="absolute top-4 left-2 z-20"
+                className="absolute top-[72%] left-2 z-20"
               >
                 <motion.div
                   animate={{ y: [0, -6, 0] }}
@@ -416,7 +415,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.4, type: "spring", stiffness: 280, damping: 18 }}
-                className="absolute top-[27%] -right-1 z-20"
+                className="absolute top-[62%] right-2 z-20"
               >
                 <motion.div
                   animate={{ y: [0, -5, 0] }}
