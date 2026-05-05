@@ -307,30 +307,29 @@ export default function HomePage() {
             </motion.div>
 
             {/* ── Right: Animated image collage ── */}
-            <div className="relative h-[520px] sm:h-[640px] lg:h-[740px] order-1 lg:order-2">
+            <div className="relative h-[480px] sm:h-[560px] lg:h-[640px] order-1 lg:order-2">
 
-              {/* ① Main image — pleine largeur en haut, visible entièrement */}
+              {/* ① Villa — dominante haut-droite */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.88, y: 40 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.95, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute top-0 left-0 w-full h-[70%] rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
+                className="absolute top-0 right-0 w-[68%] h-[58%] rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
                 style={{ y: heroImg1Y }}
               >
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-full h-full relative bg-teal-900/40"
+                  className="w-full h-full relative"
                 >
                   <Image
                     src="/villa.jpg"
                     alt="Villa moderne à Kinshasa"
                     fill
-                    className="object-contain"
-                    sizes="(max-width: 1024px) 90vw, 50vw"
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 55vw, 38vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/65 via-teal-900/10 to-transparent" />
-                  {/* Floating price badge */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-transparent to-transparent" />
                   <motion.div
                     className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg"
                     animate={{ y: [0, -5, 0] }}
@@ -342,12 +341,12 @@ export default function HomePage() {
                 </motion.div>
               </motion.div>
 
-              {/* ② Second image — bottom-right, bungalow */}
+              {/* ② Bungalow — gauche, carte verticale */}
               <motion.div
-                initial={{ opacity: 0, x: -35, y: 20 }}
+                initial={{ opacity: 0, x: -30, y: 20 }}
                 animate={{ opacity: 1, x: 0, y: 0 }}
                 transition={{ duration: 0.95, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-0 right-0 w-[46%] h-[34%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50"
+                className="absolute top-[5%] left-0 w-[30%] h-[56%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50"
                 style={{ y: heroImg2Y }}
               >
                 <motion.div
@@ -360,62 +359,57 @@ export default function HomePage() {
                     alt="Bungalow moderne"
                     fill
                     className="object-cover"
-                    sizes="(max-width: 1024px) 30vw, 20vw"
+                    sizes="(max-width: 1024px) 22vw, 15vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-teal-900/50 to-transparent" />
                 </motion.div>
               </motion.div>
 
-              {/* ③ Voiture — bottom-left, pleine largeur, visible entièrement */}
+              {/* ③ Voiture — bande basse, pleine largeur, object-contain */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.95, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-0 left-0 w-[58%] h-[34%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50 z-10"
+                className="absolute bottom-0 left-[3%] w-[94%] h-[38%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50 bg-teal-800/30 z-10"
               >
                 <motion.div
-                  animate={{ y: [0, -12, 0] }}
+                  animate={{ y: [0, -8, 0] }}
                   transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-                  className="w-full h-full relative bg-white/8"
+                  className="w-full h-full relative"
                 >
                   <Image
                     src="/car 1.png"
                     alt="SUV automobile"
                     fill
                     className="object-contain object-center"
-                    sizes="(max-width: 1024px) 55vw, 32vw"
+                    sizes="(max-width: 1024px) 80vw, 50vw"
                   />
                 </motion.div>
               </motion.div>
 
-              {/* Floating badge — nb services */}
+              {/* Badge 3+ services — flottant entre bungalow et villa */}
               <motion.div
                 initial={{ opacity: 0, scale: 0, rotate: -12 }}
                 animate={{ opacity: 1, scale: 1, rotate: 0 }}
                 transition={{ delay: 1.1, type: "spring", stiffness: 280, damping: 18 }}
-                className="absolute top-[72%] left-2 z-20"
+                className="absolute top-[3%] left-[28%] z-20"
               >
                 <motion.div
                   animate={{ y: [0, -6, 0] }}
                   transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
                   className="bg-teal-500 text-white rounded-2xl px-4 py-3 shadow-lg shadow-teal-500/40"
                 >
-                  <p
-                    className="text-2xl font-black leading-none"
-                    style={{ fontFamily: "var(--font-century-gothic)" }}
-                  >
-                    3+
-                  </p>
+                  <p className="text-2xl font-black leading-none" style={{ fontFamily: "var(--font-century-gothic)" }}>3+</p>
                   <p className="text-[11px] font-medium text-teal-100 mt-0.5 uppercase tracking-wide">Services</p>
                 </motion.div>
               </motion.div>
 
-              {/* Floating badge — verified */}
+              {/* Badge Vérifié — bord droit entre villa et voiture */}
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.4, type: "spring", stiffness: 280, damping: 18 }}
-                className="absolute top-[62%] right-2 z-20"
+                className="absolute top-[59%] right-1 z-20"
               >
                 <motion.div
                   animate={{ y: [0, -5, 0] }}
@@ -429,22 +423,22 @@ export default function HomePage() {
                 </motion.div>
               </motion.div>
 
-              {/* Decorative teal pulse dots */}
+              {/* Pulse dots décoratifs */}
               <motion.div
                 className="absolute w-2.5 h-2.5 bg-teal-400 rounded-full pointer-events-none z-20"
-                style={{ top: "7%", left: "28%" }}
+                style={{ top: "2%", right: "3%" }}
                 animate={{ scale: [1, 2, 1], opacity: [0.4, 1, 0.4] }}
                 transition={{ duration: 2.8, repeat: Infinity }}
               />
               <motion.div
                 className="absolute w-2 h-2 bg-teal-400 rounded-full pointer-events-none z-20"
-                style={{ top: "52%", right: "1%" }}
+                style={{ top: "63%", left: "2%" }}
                 animate={{ scale: [1, 2, 1], opacity: [0.4, 1, 0.4] }}
                 transition={{ duration: 3.5, delay: 0.7, repeat: Infinity }}
               />
               <motion.div
                 className="absolute w-3 h-3 bg-teal-300 rounded-full pointer-events-none z-20"
-                style={{ bottom: "6%", left: "52%" }}
+                style={{ bottom: "40%", left: "29%" }}
                 animate={{ scale: [1, 1.8, 1], opacity: [0.3, 0.9, 0.3] }}
                 transition={{ duration: 4, delay: 1.4, repeat: Infinity }}
               />
