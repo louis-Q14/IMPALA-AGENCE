@@ -189,7 +189,7 @@ export default function HomePage() {
         </motion.div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-28 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[5fr_7fr] gap-8 lg:gap-12 items-center">
 
             {/* ── Left: Text content ── */}
             <motion.div
@@ -318,7 +318,7 @@ export default function HomePage() {
 
             {/* ── Right: CoverFlow 3D Hero ── */}
             <motion.div
-              className="order-1 lg:order-2 flex flex-col items-center justify-center"
+              className="order-1 lg:order-2 flex flex-col items-center justify-center lg:-mr-6"
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
@@ -334,8 +334,8 @@ export default function HomePage() {
                 const total = heroCards.length;
                 const heroPrev = () => { setCoverIdx((i) => (i - 1 + total) % total); setCoverPaused(true); };
                 const heroNext = () => { setCoverIdx((i) => (i + 1) % total); setCoverPaused(true); };
-                const CARD_W = 310;
-                const PHOTO_H = 330;
+                const CARD_W = 390;
+                const PHOTO_H = 420;
 
                 return (
                   <div
@@ -347,8 +347,8 @@ export default function HomePage() {
                     <div
                       style={{
                         position: "relative",
-                        height: "560px",
-                        perspective: "1100px",
+                        height: "720px",
+                        perspective: "1400px",
                         perspectiveOrigin: "50% 50%",
                       }}
                     >
@@ -358,11 +358,11 @@ export default function HomePage() {
                         const wo = ((offset + total + half) % total) - half;
                         const abs = Math.abs(wo);
                         if (abs > 2) return null;
-                        const rotY = wo === 0 ? 0 : wo < 0 ? 58 : -58;
-                        const tx   = wo * 220;
-                        const tz   = abs === 0 ? 0 : -130;
-                        const sc   = abs === 0 ? 1 : abs === 1 ? 0.80 : 0.62;
-                        const op   = abs === 0 ? 1 : abs === 1 ? 0.85 : 0.45;
+                        const rotY = wo === 0 ? 0 : wo < 0 ? 55 : -55;
+                        const tx   = wo * 270;
+                        const tz   = abs === 0 ? 0 : -160;
+                        const sc   = abs === 0 ? 1 : abs === 1 ? 0.82 : 0.63;
+                        const op   = abs === 0 ? 1 : abs === 1 ? 0.88 : 0.48;
                         const zIdx = 30 - abs * 8;
 
                         return (
@@ -375,7 +375,7 @@ export default function HomePage() {
                               top: "50%",
                               width: `${CARD_W}px`,
                               marginLeft: `${-CARD_W / 2}px`,
-                              marginTop: "-230px",
+                              marginTop: "-290px",
                               zIndex: zIdx,
                               opacity: op,
                               cursor: abs === 0 ? "default" : "pointer",
@@ -410,17 +410,17 @@ export default function HomePage() {
                                 )}
                               </div>
                               {/* Info */}
-                              <div style={{ padding: "16px 18px", background: "rgba(15,25,40,0.92)", backdropFilter: "blur(12px)" }}>
+                              style={{ padding: "18px 22px", background: "rgba(15,25,40,0.92)", backdropFilter: "blur(12px)" }}
                                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                                  <span style={{ fontWeight: 700, fontSize: 14, color: "#fff", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
-                                  <span style={{ padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, background: ad.ad_type === "sale" ? "#2563eb" : "#059669" }}>
+                                  <span style={{ fontWeight: 700, fontSize: 15, color: "#fff", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
+                                  <span style={{ padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0, background: ad.ad_type === "sale" ? "#2563eb" : "#059669" }}>
                                     {ad.ad_type === "sale" ? "Vente" : "Location"}
                                   </span>
                                 </div>
-                                <div style={{ fontSize: 17, fontWeight: 900, color: "#2dd4bf", marginBottom: 5 }}>
+                                <div style={{ fontSize: 20, fontWeight: 900, color: "#2dd4bf", marginBottom: 6 }}>
                                   {Number(ad.price ?? ad.rent_price ?? 0).toLocaleString("fr-FR")} FC{ad.ad_type === "rent" ? "/mois" : ""}
                                 </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "rgba(148,220,210,0.75)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "rgba(148,220,210,0.8)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
                                   <MapPinIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
                                   {[ad.address, ad.city].filter(Boolean).join(", ")}
                                 </div>
