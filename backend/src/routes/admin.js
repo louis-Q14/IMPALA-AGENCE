@@ -895,9 +895,37 @@ router.get("/service-subscribers", async (req, res) => {
     if (!service || !validServices.includes(service)) {
       return res.status(400).json({ error: 'Service invalide' });
     }
+
+    // Backfill NULL dates from subscription_requests for this service on-the-fly
+    const reqTypeFilter = service === 'real_estate'
+      ? `sr.service_type IN ('immobilier', 'immo-auto')`
+      : service === 'auto'
+        ? `sr.service_type IN ('automobile', 'immo-auto')`
+        : `sr.service_type = '${service}'`;
+
+    await db.query(
+      `UPDATE user_services us
+       SET subscription_start = COALESCE(us.subscription_start, sub.reviewed_at, sub.created_at),
+           subscription_end   = COALESCE(us.subscription_end,
+             sub.reviewed_at + (CASE WHEN sub.annual THEN INTERVAL '365 days' ELSE INTERVAL '30 days' END),
+             sub.created_at  + (CASE WHEN sub.annual THEN INTERVAL '365 days' ELSE INTERVAL '30 days' END))
+       FROM (
+         SELECT DISTINCT ON (sr.user_id) sr.user_id, sr.reviewed_at, sr.created_at, sr.annual
+         FROM subscription_requests sr
+         WHERE sr.status = 'approved' AND ${reqTypeFilter}
+         ORDER BY sr.user_id, COALESCE(sr.reviewed_at, sr.created_at) DESC
+       ) sub
+       WHERE us.user_id = sub.user_id
+         AND us.service_type = $1
+         AND (us.subscription_start IS NULL OR us.subscription_end IS NULL)`,
+      [service]
+    );
+
     const result = await db.query(
       `SELECT u.id, u.email, u.full_name, u.phone, u.adresse,
-              us.subscription_status, us.subscription_start, us.subscription_end,
+              us.subscription_status,
+              us.subscription_start,
+              us.subscription_end,
               u.created_at as user_created_at
        FROM user_services us
        JOIN users u ON us.user_id = u.id
