@@ -200,7 +200,7 @@ export default function HomePage() {
                 />
                 <span
                   className="text-sm font-medium text-teal-200 tracking-widest uppercase"
-                  style={{ fontFamily: "var(--font-josefin), sans-serif" }}
+                  style={{ fontFamily: "var(--font-century-gothic)" }}
                 >
                   Plateforme multiservices
                 </span>
@@ -211,7 +211,7 @@ export default function HomePage() {
                 <span
                   className="block font-black text-white"
                   style={{
-                    fontFamily: "var(--font-cinzel), serif",
+                    fontFamily: "var(--font-century-gothic)",
                     fontSize: "clamp(3.8rem, 9vw, 8.5rem)",
                     letterSpacing: "-0.04em",
                     lineHeight: 0.92,
@@ -222,7 +222,7 @@ export default function HomePage() {
                 <span
                   className="block text-teal-300 font-semibold mt-3"
                   style={{
-                    fontFamily: "var(--font-josefin), sans-serif",
+                    fontFamily: "var(--font-century-gothic)",
                     fontSize: "clamp(1rem, 2.4vw, 1.75rem)",
                     letterSpacing: "0.18em",
                   }}
@@ -234,7 +234,7 @@ export default function HomePage() {
               <motion.p
                 variants={fadeUp}
                 className="mt-6 text-base sm:text-lg text-teal-100/80 max-w-md leading-relaxed"
-                style={{ fontFamily: "var(--font-josefin), sans-serif" }}
+                style={{ fontFamily: "var(--font-century-gothic)" }}
               >
                 Immobilier, automobile, nettoyage &amp; collecte — réunis sur une seule plateforme moderne.
               </motion.p>
@@ -296,7 +296,7 @@ export default function HomePage() {
                   >
                     <p
                       className="text-2xl font-black text-white leading-none"
-                      style={{ fontFamily: "var(--font-josefin), sans-serif" }}
+                      style={{ fontFamily: "var(--font-century-gothic)" }}
                     >
                       {s.value}
                     </p>
@@ -307,14 +307,14 @@ export default function HomePage() {
             </motion.div>
 
             {/* ── Right: Animated image collage ── */}
-            <div className="relative h-[400px] sm:h-[500px] lg:h-[580px] order-1 lg:order-2">
+            <div className="relative h-[520px] sm:h-[640px] lg:h-[740px] order-1 lg:order-2">
 
               {/* ① Main image — top-right, slow float + parallax scroll */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.88, y: 40 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.95, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute top-0 right-0 w-[68%] h-[68%] rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
+                className="absolute top-0 right-0 w-[76%] h-[78%] rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
                 style={{ y: heroImg1Y }}
               >
                 <motion.div
@@ -403,7 +403,7 @@ export default function HomePage() {
                 >
                   <p
                     className="text-2xl font-black leading-none"
-                    style={{ fontFamily: "var(--font-josefin), sans-serif" }}
+                    style={{ fontFamily: "var(--font-century-gothic)" }}
                   >
                     3+
                   </p>

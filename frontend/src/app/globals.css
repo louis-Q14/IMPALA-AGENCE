@@ -20,6 +20,7 @@
 
 /* ===== LIGHT THEME ===== */
 :root {
+  --font-century-gothic: 'Century Gothic', 'CenturyGothic', 'AppleGothic', 'Trebuchet MS', sans-serif;
   --bg-primary: #ffffff;
   --bg-secondary: #f8fafc;
   --bg-tertiary: #f1f5f9;
