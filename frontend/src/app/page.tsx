@@ -582,40 +582,50 @@ export default function HomePage() {
                 onMouseEnter={() => setCoverPaused(true)}
                 onMouseLeave={() => setCoverPaused(false)}
               >
-                {/* 3D stage */}
+                {/* 3D stage — cards centred via left:50%/top:50% + negative margins */}
                 <div
-                  className="relative h-[420px] flex items-center justify-center select-none"
-                  style={{ perspective: "1200px", perspectiveOrigin: "50% 45%" }}
+                  className="relative h-[440px] select-none"
+                  style={{ perspective: "1100px", perspectiveOrigin: "50% 50%" }}
                 >
                   {cards.map((ad, i) => {
                     const offset = i - coverIdx;
-                    // Wrap around: pick shortest path
-                    const wrappedOffset = ((offset + total + Math.floor(total / 2)) % total) - Math.floor(total / 2);
+                    const half = Math.floor(total / 2);
+                    const wrappedOffset = ((offset + total + half) % total) - half;
                     const abs = Math.abs(wrappedOffset);
                     if (abs > 2) return null;
-                    const rotY = wrappedOffset === 0 ? 0 : (wrappedOffset < 0 ? 52 : -52);
-                    const tx = wrappedOffset * 230;
-                    const tz = abs === 0 ? 80 : -140;
-                    const sc = abs === 0 ? 1 : 0.78;
-                    const op = abs >= 2 ? 0.5 : 1;
-                    const zIdx = 10 - abs;
+                    // CoverFlow angles: side cards fan inward
+                    const rotY = wrappedOffset === 0 ? 0 : wrappedOffset < 0 ? 55 : -55;
+                    // X offset from centre — side cards overlap slightly
+                    const tx = wrappedOffset * 210;
+                    const sc = abs === 0 ? 1 : abs === 1 ? 0.8 : 0.64;
+                    const op = abs === 0 ? 1 : abs === 1 ? 0.9 : 0.55;
+                    const zIdx = 20 - abs * 5;
                     return (
                       <motion.div
                         key={ad.id}
-                        animate={{ rotateY: rotY, x: tx, z: tz, scale: sc, opacity: op }}
-                        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                        style={{ position: "absolute", zIndex: zIdx, transformStyle: "preserve-3d", cursor: abs === 0 ? "default" : "pointer", transformOrigin: wrappedOffset < 0 ? "right center" : wrappedOffset > 0 ? "left center" : "center center" }}
+                        animate={{ rotateY: rotY, x: tx, scale: sc, opacity: op }}
+                        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        style={{
+                          position: "absolute",
+                          left: "50%",
+                          top: "50%",
+                          marginLeft: "-130px",   /* half of 260px card */
+                          marginTop:  "-190px",   /* half of ~380px card */
+                          zIndex: zIdx,
+                          transformStyle: "preserve-3d",
+                          cursor: abs === 0 ? "default" : "pointer",
+                        }}
                         onClick={() => abs > 0 && setCoverIdx(i)}
                       >
                         {/* Card */}
                         <Link
                           href={`/immobilier/${ad.id}`}
                           onClick={(e) => abs > 0 && e.preventDefault()}
-                          className="block w-[220px] sm:w-[260px] rounded-2xl overflow-hidden shadow-2xl"
-                          style={{ boxShadow: abs === 0 ? "0 30px 60px rgba(0,0,0,0.45)" : "0 15px 30px rgba(0,0,0,0.3)" }}
+                          className="block w-[260px] rounded-2xl overflow-hidden"
+                          style={{ boxShadow: abs === 0 ? "0 32px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)" : "0 12px 28px rgba(0,0,0,0.35)" }}
                         >
                           {/* Photo */}
-                          <div className="h-[240px] sm:h-[280px] bg-teal-900 overflow-hidden">
+                          <div className="h-[280px] bg-teal-900 overflow-hidden">
                             {ad.photos?.[0] ? (
                               <img src={ad.photos[0]} alt={ad.title} className="w-full h-full object-cover" />
                             ) : (
