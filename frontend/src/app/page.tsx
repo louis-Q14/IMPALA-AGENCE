@@ -410,7 +410,7 @@ export default function HomePage() {
                                 )}
                               </div>
                               {/* Info */}
-                              style={{ padding: "18px 22px", background: "rgba(15,25,40,0.92)", backdropFilter: "blur(12px)" }}
+                              <div style={{ padding: "18px 22px", background: "rgba(15,25,40,0.92)", backdropFilter: "blur(12px)" }}>
                                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
                                   <span style={{ fontWeight: 700, fontSize: 15, color: "#fff", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
                                   <span style={{ padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0, background: ad.ad_type === "sale" ? "#2563eb" : "#059669" }}>
