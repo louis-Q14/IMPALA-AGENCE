@@ -383,11 +383,32 @@ export default function HomePage() {
                               transition: "transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease",
                             }}
                           >
+                            {/* ── Glassmorphism halo ── */}
+                            <div
+                              style={{
+                                position: "absolute",
+                                inset: "-50px",
+                                borderRadius: "38px",
+                                background: abs === 0
+                                  ? "rgba(255,255,255,0.10)"
+                                  : "rgba(255,255,255,0.055)",
+                                backdropFilter: "blur(28px)",
+                                WebkitBackdropFilter: "blur(28px)",
+                                border: "1px solid rgba(255,255,255,0.15)",
+                                boxShadow: abs === 0
+                                  ? "0 0 60px rgba(45,212,191,0.18), inset 0 1px 0 rgba(255,255,255,0.2)"
+                                  : "0 0 30px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.08)",
+                                zIndex: 0,
+                                pointerEvents: "none",
+                              }}
+                            />
                             <Link
                               href={`/immobilier/${ad.id}`}
                               onClick={(e) => abs > 0 && e.preventDefault()}
                               style={{
                                 display: "block",
+                                position: "relative",
+                                zIndex: 1,
                                 borderRadius: "20px",
                                 overflow: "hidden",
                                 boxShadow: abs === 0
