@@ -564,7 +564,7 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          {/* ── Cover Flow stage ── */}
+          {/* ── Cover Flow stage ── pure CSS 3D transforms ── */}
           {(() => {
             const demoCards = [
               { id: "d1", title: "Villa moderne", address: "Kinshasa, Gombe", city: "Kinshasa", ad_type: "sale" as const, price: 850000, rent_price: null, surface: 240, rooms: 5, photos: ["/villa.jpg"] },
@@ -582,92 +582,100 @@ export default function HomePage() {
                 onMouseEnter={() => setCoverPaused(true)}
                 onMouseLeave={() => setCoverPaused(false)}
               >
-                {/* 3D stage — cards centred via left:50%/top:50% + negative margins */}
+                {/* 3D stage — perspective on wrapper, cards centred with CSS */}
                 <div
-                  className="relative h-[440px] select-none"
-                  style={{ perspective: "1100px", perspectiveOrigin: "50% 50%" }}
+                  style={{
+                    position: "relative",
+                    height: "460px",
+                    perspective: "1000px",
+                    perspectiveOrigin: "50% 50%",
+                  }}
                 >
                   {cards.map((ad, i) => {
                     const offset = i - coverIdx;
                     const half = Math.floor(total / 2);
-                    const wrappedOffset = ((offset + total + half) % total) - half;
-                    const abs = Math.abs(wrappedOffset);
+                    const wo = ((offset + total + half) % total) - half; // wrapped offset
+                    const abs = Math.abs(wo);
                     if (abs > 2) return null;
-                    // CoverFlow angles: side cards fan inward
-                    const rotY = wrappedOffset === 0 ? 0 : wrappedOffset < 0 ? 55 : -55;
-                    // X offset from centre — side cards overlap slightly
-                    const tx = wrappedOffset * 210;
-                    const sc = abs === 0 ? 1 : abs === 1 ? 0.8 : 0.64;
-                    const op = abs === 0 ? 1 : abs === 1 ? 0.9 : 0.55;
-                    const zIdx = 20 - abs * 5;
+
+                    /* CoverFlow geometry */
+                    const CARD_W = 260;
+                    const rotY  = wo === 0 ? 0 : wo < 0 ?  60 : -60;
+                    const tx    = wo * 200;                 // px from centre
+                    const tz    = abs === 0 ? 0 : -120;    // push side cards back
+                    const sc    = abs === 0 ? 1 : abs === 1 ? 0.82 : 0.65;
+                    const op    = abs === 0 ? 1 : abs === 1 ? 0.88 : 0.50;
+                    const zIdx  = 30 - abs * 8;
+
                     return (
-                      <motion.div
+                      <div
                         key={ad.id}
-                        animate={{ rotateY: rotY, x: tx, scale: sc, opacity: op }}
-                        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        style={{
-                          position: "absolute",
-                          left: "50%",
-                          top: "50%",
-                          marginLeft: "-130px",   /* half of 260px card */
-                          marginTop:  "-190px",   /* half of ~380px card */
-                          zIndex: zIdx,
-                          transformStyle: "preserve-3d",
-                          cursor: abs === 0 ? "default" : "pointer",
-                        }}
                         onClick={() => abs > 0 && setCoverIdx(i)}
+                        style={{
+                          position:  "absolute",
+                          left:      "50%",
+                          top:       "50%",
+                          width:     `${CARD_W}px`,
+                          marginLeft: `${-CARD_W / 2}px`,
+                          marginTop:  "-195px",
+                          zIndex:     zIdx,
+                          opacity:    op,
+                          cursor:     abs === 0 ? "default" : "pointer",
+                          transform:  `translateX(${tx}px) translateZ(${tz}px) rotateY(${rotY}deg) scale(${sc})`,
+                          transition: "transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.45s ease",
+                        }}
                       >
-                        {/* Card */}
+                        {/* Card body */}
                         <Link
                           href={`/immobilier/${ad.id}`}
                           onClick={(e) => abs > 0 && e.preventDefault()}
-                          className="block w-[260px] rounded-2xl overflow-hidden"
-                          style={{ boxShadow: abs === 0 ? "0 32px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)" : "0 12px 28px rgba(0,0,0,0.35)" }}
+                          style={{
+                            display: "block",
+                            borderRadius: "16px",
+                            overflow: "hidden",
+                            boxShadow: abs === 0
+                              ? "0 28px 56px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.1)"
+                              : "0 10px 24px rgba(0,0,0,0.38)",
+                          }}
                         >
                           {/* Photo */}
-                          <div className="h-[280px] bg-teal-900 overflow-hidden">
+                          <div style={{ height: "285px", background: "#0f4c3f", overflow: "hidden" }}>
                             {ad.photos?.[0] ? (
-                              <img src={ad.photos[0]} alt={ad.title} className="w-full h-full object-cover" />
+                              <img
+                                src={ad.photos[0]}
+                                alt={ad.title}
+                                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                              />
                             ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-teal-700 to-slate-800 flex items-center justify-center">
-                                <HomeIcon className="w-16 h-16 text-teal-300/60" />
+                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#0f766e,#1e293b)" }}>
+                                <HomeIcon style={{ width: 56, height: 56, color: "rgba(94,234,212,0.5)" }} />
                               </div>
                             )}
                           </div>
                           {/* Info */}
-                          <div className="p-4 bg-[var(--bg-card)]">
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <h3 className="font-bold text-[var(--text-primary)] text-sm line-clamp-1 flex-1">{ad.title}</h3>
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold text-white flex-shrink-0 ${ad.ad_type === "sale" ? "bg-blue-600" : "bg-emerald-600"}`}>
+                          <div style={{ padding: "14px 16px", background: "var(--bg-card)" }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
+                              <span style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
+                              <span style={{ padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700, color: "#fff", flexShrink: 0, background: ad.ad_type === "sale" ? "#2563eb" : "#059669" }}>
                                 {ad.ad_type === "sale" ? "Vente" : "Location"}
                               </span>
                             </div>
-                            <div className="text-base font-black text-teal-600 mb-1">
+                            <div style={{ fontSize: 15, fontWeight: 900, color: "#0d9488", marginBottom: 4 }}>
                               {Number(ad.price ?? ad.rent_price ?? 0).toLocaleString("fr-FR")} FC{ad.ad_type === "rent" ? "/mois" : ""}
                             </div>
-                            <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
-                              <MapPinIcon className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span className="line-clamp-1">{[ad.address, ad.city].filter(Boolean).join(", ")}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--text-muted)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                              <MapPinIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
+                              {[ad.address, ad.city].filter(Boolean).join(", ")}
                             </div>
                           </div>
                         </Link>
-                        {/* Reflection */}
-                        {abs === 0 && (
-                          <div
-                            aria-hidden
-                            className="w-full mt-1 rounded-b-2xl overflow-hidden"
-                            style={{ height: "60px", transform: "scaleY(-1)", opacity: 0.18, maskImage: "linear-gradient(to bottom, black 0%, transparent 100%)" }}
-                          >
-                            {ad.photos?.[0] && <img src={ad.photos[0]} alt="" className="w-full h-[280px] object-cover object-top" />}
-                          </div>
-                        )}
-                      </motion.div>
+                      </div>
                     );
                   })}
                 </div>
 
                 {/* Controls */}
-                <div className="flex items-center justify-center gap-6 mt-4">
+                <div className="flex items-center justify-center gap-6 mt-6">
                   <motion.button
                     onClick={prev}
                     whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
@@ -677,11 +685,19 @@ export default function HomePage() {
                   </motion.button>
                   <div className="flex items-center gap-2">
                     {cards.map((_, i) => (
-                      <motion.button
+                      <button
                         key={i}
                         onClick={() => { setCoverIdx(i); setCoverPaused(true); }}
-                        animate={{ scale: i === coverIdx ? 1.4 : 1, backgroundColor: i === coverIdx ? "#14b8a6" : "#94a3b8" }}
-                        className="w-2 h-2 rounded-full cursor-pointer"
+                        style={{
+                          width:  i === coverIdx ? 24 : 8,
+                          height: 8,
+                          borderRadius: 999,
+                          border: "none",
+                          cursor: "pointer",
+                          background: i === coverIdx ? "#14b8a6" : "#94a3b8",
+                          transition: "width 0.3s ease, background 0.3s ease",
+                          padding: 0,
+                        }}
                       />
                     ))}
                   </div>
