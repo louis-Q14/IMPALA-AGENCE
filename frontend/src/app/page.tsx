@@ -164,8 +164,8 @@ export default function HomePage() {
   const { scrollY, scrollYProgress } = useScroll();
   const blob1Y = useTransform(scrollY, [0, 600], [0, -120]);
   const blob2Y = useTransform(scrollY, [0, 600], [0, -70]);
-  const heroImg1Y = useTransform(scrollY, [0, 600], [0, -45]);
-  const heroImg2Y = useTransform(scrollY, [0, 600], [0, 28]);
+  const heroImg1Y = useTransform(scrollY, [0, 600], [0, -45]); // kept for potential reuse
+  const heroImg2Y = useTransform(scrollY, [0, 600], [0, 28]);  // kept for potential reuse
 
   return (
     <div>
@@ -316,143 +316,160 @@ export default function HomePage() {
               </motion.div>
             </motion.div>
 
-            {/* ── Right: Animated image collage ── */}
-            <div className="relative h-[480px] sm:h-[560px] lg:h-[640px] order-1 lg:order-2">
+            {/* ── Right: CoverFlow 3D Hero ── */}
+            <motion.div
+              className="order-1 lg:order-2 flex flex-col items-center justify-center"
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {(() => {
+                const heroDemoCards = [
+                  { id: "d1", title: "Villa Toronto, Villa Modern", address: "345 Patu, Bandaiungwa Makelele, Kinsh", city: "Kinshasa", ad_type: "sale" as const, price: 100000000, rent_price: null, surface: 240, rooms: 5, photos: ["/villa.jpg"] },
+                  { id: "d2", title: "villa nouvellement construit", address: "345 Seed, Bandaiungwea Limete", city: "Kinshasa", ad_type: "sale" as const, price: 1500000000, rent_price: null, surface: 320, rooms: 6, photos: ["/bungalow-ELEPHANT ROYAL_Page_4.jpg"] },
+                  { id: "d3", title: "villa préfabriquée de lux.", address: "345 Design, Bandaiungwa Limete, Kns", city: "Kinshasa", ad_type: "sale" as const, price: 400000000, rent_price: null, surface: 180, rooms: 4, photos: ["/car 1.png"] },
+                  { id: "d4", title: "Appartement standing", address: "Kinshasa, Bandal", city: "Kinshasa", ad_type: "rent" as const, price: null, rent_price: 95000, surface: 85, rooms: 2, photos: [] },
+                ];
+                const heroCards = latestAds.length > 0 ? latestAds : heroDemoCards;
+                const total = heroCards.length;
+                const heroPrev = () => { setCoverIdx((i) => (i - 1 + total) % total); setCoverPaused(true); };
+                const heroNext = () => { setCoverIdx((i) => (i + 1) % total); setCoverPaused(true); };
+                const CARD_W = 310;
+                const PHOTO_H = 330;
 
-              {/* ① Villa — dominante haut-droite */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.88, y: 40 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.95, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute top-0 right-0 w-[68%] h-[58%] rounded-3xl overflow-hidden shadow-2xl shadow-black/50"
-                style={{ y: heroImg1Y }}
-              >
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                  className="w-full h-full relative"
-                >
-                  <Image
-                    src="/villa.jpg"
-                    alt="Villa moderne à Kinshasa"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 55vw, 38vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/60 via-transparent to-transparent" />
-                  <motion.div
-                    className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg"
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                return (
+                  <div
+                    onMouseEnter={() => setCoverPaused(true)}
+                    onMouseLeave={() => setCoverPaused(false)}
+                    className="w-full"
                   >
-                    <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wide">Villa moderne · Kinshasa</p>
-                    <p className="text-sm font-bold text-teal-700">850 000 FC</p>
-                  </motion.div>
-                </motion.div>
-              </motion.div>
+                    {/* 3D stage */}
+                    <div
+                      style={{
+                        position: "relative",
+                        height: "560px",
+                        perspective: "1100px",
+                        perspectiveOrigin: "50% 50%",
+                      }}
+                    >
+                      {heroCards.map((ad, i) => {
+                        const offset = i - coverIdx;
+                        const half = Math.floor(total / 2);
+                        const wo = ((offset + total + half) % total) - half;
+                        const abs = Math.abs(wo);
+                        if (abs > 2) return null;
+                        const rotY = wo === 0 ? 0 : wo < 0 ? 58 : -58;
+                        const tx   = wo * 220;
+                        const tz   = abs === 0 ? 0 : -130;
+                        const sc   = abs === 0 ? 1 : abs === 1 ? 0.80 : 0.62;
+                        const op   = abs === 0 ? 1 : abs === 1 ? 0.85 : 0.45;
+                        const zIdx = 30 - abs * 8;
 
-              {/* ② Bungalow — gauche, carte verticale */}
-              <motion.div
-                initial={{ opacity: 0, x: -30, y: 20 }}
-                animate={{ opacity: 1, x: 0, y: 0 }}
-                transition={{ duration: 0.95, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute top-[5%] left-0 w-[30%] h-[56%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50"
-                style={{ y: heroImg2Y }}
-              >
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1.2 }}
-                  className="w-full h-full relative"
-                >
-                  <Image
-                    src="/bungalow-ELEPHANT ROYAL_Page_4.jpg"
-                    alt="Bungalow moderne"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 22vw, 15vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-teal-900/50 to-transparent" />
-                </motion.div>
-              </motion.div>
+                        return (
+                          <div
+                            key={ad.id}
+                            onClick={() => abs > 0 && setCoverIdx(i)}
+                            style={{
+                              position: "absolute",
+                              left: "50%",
+                              top: "50%",
+                              width: `${CARD_W}px`,
+                              marginLeft: `${-CARD_W / 2}px`,
+                              marginTop: "-230px",
+                              zIndex: zIdx,
+                              opacity: op,
+                              cursor: abs === 0 ? "default" : "pointer",
+                              transform: `translateX(${tx}px) translateZ(${tz}px) rotateY(${rotY}deg) scale(${sc})`,
+                              transition: "transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.45s ease",
+                            }}
+                          >
+                            <Link
+                              href={`/immobilier/${ad.id}`}
+                              onClick={(e) => abs > 0 && e.preventDefault()}
+                              style={{
+                                display: "block",
+                                borderRadius: "20px",
+                                overflow: "hidden",
+                                boxShadow: abs === 0
+                                  ? "0 32px 64px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.15)"
+                                  : "0 12px 28px rgba(0,0,0,0.45)",
+                              }}
+                            >
+                              {/* Photo */}
+                              <div style={{ height: `${PHOTO_H}px`, background: "#0f4c3f", overflow: "hidden" }}>
+                                {ad.photos?.[0] ? (
+                                  <img
+                                    src={ad.photos[0]}
+                                    alt={ad.title}
+                                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                  />
+                                ) : (
+                                  <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#0f766e,#1e293b)" }}>
+                                    <HomeIcon style={{ width: 64, height: 64, color: "rgba(94,234,212,0.5)" }} />
+                                  </div>
+                                )}
+                              </div>
+                              {/* Info */}
+                              <div style={{ padding: "16px 18px", background: "rgba(15,25,40,0.92)", backdropFilter: "blur(12px)" }}>
+                                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
+                                  <span style={{ fontWeight: 700, fontSize: 14, color: "#fff", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
+                                  <span style={{ padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, background: ad.ad_type === "sale" ? "#2563eb" : "#059669" }}>
+                                    {ad.ad_type === "sale" ? "Vente" : "Location"}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: 17, fontWeight: 900, color: "#2dd4bf", marginBottom: 5 }}>
+                                  {Number(ad.price ?? ad.rent_price ?? 0).toLocaleString("fr-FR")} FC{ad.ad_type === "rent" ? "/mois" : ""}
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, color: "rgba(148,220,210,0.75)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                                  <MapPinIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
+                                  {[ad.address, ad.city].filter(Boolean).join(", ")}
+                                </div>
+                              </div>
+                            </Link>
+                          </div>
+                        );
+                      })}
+                    </div>
 
-              {/* ③ Voiture — bande basse, pleine largeur, object-contain */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.95, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute bottom-0 left-[3%] w-[94%] h-[38%] rounded-2xl overflow-hidden shadow-xl shadow-black/40 ring-[3px] ring-teal-900/50 bg-teal-800/30 z-10"
-              >
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
-                  className="w-full h-full relative"
-                >
-                  <Image
-                    src="/car 1.png"
-                    alt="SUV automobile"
-                    fill
-                    className="object-contain object-center"
-                    sizes="(max-width: 1024px) 80vw, 50vw"
-                  />
-                </motion.div>
-              </motion.div>
-
-              {/* Badge 3+ services — flottant entre bungalow et villa */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0, rotate: -12 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                transition={{ delay: 1.1, type: "spring", stiffness: 280, damping: 18 }}
-                className="absolute top-[3%] left-[28%] z-20"
-              >
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-                  className="bg-teal-500 text-white rounded-2xl px-4 py-3 shadow-lg shadow-teal-500/40"
-                >
-                  <p className="text-2xl font-black leading-none" style={{ fontFamily: "var(--font-century-gothic)" }}>3+</p>
-                  <p className="text-[11px] font-medium text-teal-100 mt-0.5 uppercase tracking-wide">Services</p>
-                </motion.div>
-              </motion.div>
-
-              {/* Badge Vérifié — bord droit entre villa et voiture */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.4, type: "spring", stiffness: 280, damping: 18 }}
-                className="absolute top-[59%] right-1 z-20"
-              >
-                <motion.div
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
-                  className="bg-white text-teal-700 rounded-xl px-3 py-2 shadow-xl"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <ShieldCheckIcon className="w-4 h-4 text-teal-500" />
-                    <span className="text-xs font-bold">Vérifié</span>
+                    {/* Controls */}
+                    <div className="flex items-center justify-center gap-6 mt-4">
+                      <motion.button
+                        onClick={heroPrev}
+                        whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
+                        className="w-11 h-11 rounded-full bg-white/10 hover:bg-teal-500/50 border border-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                      </motion.button>
+                      <div className="flex items-center gap-2">
+                        {heroCards.map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => { setCoverIdx(i); setCoverPaused(true); }}
+                            style={{
+                              width: i === coverIdx ? 28 : 8,
+                              height: 8,
+                              borderRadius: 999,
+                              border: "none",
+                              cursor: "pointer",
+                              background: i === coverIdx ? "#2dd4bf" : "rgba(255,255,255,0.35)",
+                              transition: "width 0.3s ease, background 0.3s ease",
+                              padding: 0,
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <motion.button
+                        onClick={heroNext}
+                        whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
+                        className="w-11 h-11 rounded-full bg-white/10 hover:bg-teal-500/50 border border-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                      </motion.button>
+                    </div>
                   </div>
-                </motion.div>
-              </motion.div>
-
-              {/* Pulse dots décoratifs */}
-              <motion.div
-                className="absolute w-2.5 h-2.5 bg-teal-400 rounded-full pointer-events-none z-20"
-                style={{ top: "2%", right: "3%" }}
-                animate={{ scale: [1, 2, 1], opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 2.8, repeat: Infinity }}
-              />
-              <motion.div
-                className="absolute w-2 h-2 bg-teal-400 rounded-full pointer-events-none z-20"
-                style={{ top: "63%", left: "2%" }}
-                animate={{ scale: [1, 2, 1], opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 3.5, delay: 0.7, repeat: Infinity }}
-              />
-              <motion.div
-                className="absolute w-3 h-3 bg-teal-300 rounded-full pointer-events-none z-20"
-                style={{ bottom: "40%", left: "29%" }}
-                animate={{ scale: [1, 1.8, 1], opacity: [0.3, 0.9, 0.3] }}
-                transition={{ duration: 4, delay: 1.4, repeat: Infinity }}
-              />
-            </div>
+                );
+              })()}
+            </motion.div>
 
           </div>
         </div>
