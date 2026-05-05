@@ -237,17 +237,8 @@ export default function HomePage() {
                     letterSpacing: "0.18em",
                   }}
                 >
-                  TOUS VOS SERVICES
                 </span>
               </motion.h1>
-
-              <motion.p
-                variants={fadeUp}
-                className="mt-6 text-base sm:text-lg text-teal-100/80 max-w-md leading-relaxed"
-                style={{ fontFamily: "var(--font-century-gothic)" }}
-              >
-                Immobilier, automobile, nettoyage &amp; collecte — réunis sur une seule plateforme moderne.
-              </motion.p>
 
               {/* Search bar */}
               <motion.div variants={fadeUp} className="mt-8 max-w-lg">
