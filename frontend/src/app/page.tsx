@@ -150,6 +150,16 @@ export default function HomePage() {
   const statsRef = useRef<HTMLElement>(null);
   const statsInView = useInView(statsRef, { once: true, amount: 0.3 });
 
+  /* Cover Flow state */
+  const [coverIdx, setCoverIdx] = useState(0);
+  const [coverPaused, setCoverPaused] = useState(false);
+
+  useEffect(() => {
+    if (coverPaused) return;
+    const t = setInterval(() => setCoverIdx((i) => (i + 1) % Math.max(1, latestAds.length || 4)), 3200);
+    return () => clearInterval(t);
+  }, [coverPaused, latestAds.length]);
+
   /* Scroll progress + parallax */
   const { scrollY, scrollYProgress } = useScroll();
   const blob1Y = useTransform(scrollY, [0, 600], [0, -120]);
@@ -533,11 +543,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== LATEST ADS ===== */}
-      <section className="py-20 bg-[var(--bg-secondary)]">
+      {/* ===== LATEST ADS — Cover Flow 3D ===== */}
+      <section className="py-20 bg-[var(--bg-secondary)] overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            className="flex items-end justify-between gap-4 mb-10"
+            className="flex items-end justify-between gap-4 mb-12"
             initial="hidden" whileInView="visible"
             viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
           >
@@ -554,62 +564,128 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          {latestAds.length > 0 ? (
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
-              variants={stagger} initial="hidden" whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-            >
-              {latestAds.map((ad) => (
-                <motion.div
-                  key={ad.id} variants={fadeUp}
-                  whileHover={{ y: -6, transition: { type: "spring", stiffness: 400, damping: 22 } }}
+          {/* ── Cover Flow stage ── */}
+          {(() => {
+            const demoCards = [
+              { id: "d1", title: "Villa moderne", address: "Kinshasa, Gombe", city: "Kinshasa", ad_type: "sale" as const, price: 850000, rent_price: null, surface: 240, rooms: 5, photos: ["/villa.jpg"] },
+              { id: "d2", title: "Bungalow tropical", address: "Kinshasa, Ngaliema", city: "Kinshasa", ad_type: "rent" as const, price: null, rent_price: 120000, surface: 140, rooms: 3, photos: ["/bungalow-ELEPHANT ROYAL_Page_4.jpg"] },
+              { id: "d3", title: "SUV Premium", address: "Kinshasa, Limete", city: "Kinshasa", ad_type: "sale" as const, price: 450000, rent_price: null, surface: null, rooms: null, photos: ["/car 1.png"] },
+              { id: "d4", title: "Appartement standing", address: "Kinshasa, Bandal", city: "Kinshasa", ad_type: "rent" as const, price: null, rent_price: 95000, surface: 85, rooms: 2, photos: [] },
+            ];
+            const cards = latestAds.length > 0 ? latestAds : demoCards;
+            const total = cards.length;
+            const prev = () => { setCoverIdx((i) => (i - 1 + total) % total); setCoverPaused(true); };
+            const next = () => { setCoverIdx((i) => (i + 1) % total); setCoverPaused(true); };
+
+            return (
+              <div
+                onMouseEnter={() => setCoverPaused(true)}
+                onMouseLeave={() => setCoverPaused(false)}
+              >
+                {/* 3D stage */}
+                <div
+                  className="relative h-[420px] flex items-center justify-center select-none"
+                  style={{ perspective: "1200px", perspectiveOrigin: "50% 45%" }}
                 >
-                  <Link
-                    href={`/immobilier/${ad.id}`}
-                    className="group rounded-2xl overflow-hidden border border-[var(--border-color)]
-                      bg-[var(--bg-card)] hover:shadow-2xl transition-shadow block"
+                  {cards.map((ad, i) => {
+                    const offset = i - coverIdx;
+                    // Wrap around: pick shortest path
+                    const wrappedOffset = ((offset + total + Math.floor(total / 2)) % total) - Math.floor(total / 2);
+                    const abs = Math.abs(wrappedOffset);
+                    if (abs > 2) return null;
+                    const rotY = wrappedOffset === 0 ? 0 : (wrappedOffset < 0 ? 52 : -52);
+                    const tx = wrappedOffset * 230;
+                    const tz = abs === 0 ? 80 : -140;
+                    const sc = abs === 0 ? 1 : 0.78;
+                    const op = abs >= 2 ? 0.5 : 1;
+                    const zIdx = 10 - abs;
+                    return (
+                      <motion.div
+                        key={ad.id}
+                        animate={{ rotateY: rotY, x: tx, z: tz, scale: sc, opacity: op }}
+                        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                        style={{ position: "absolute", zIndex: zIdx, transformStyle: "preserve-3d", cursor: abs === 0 ? "default" : "pointer", transformOrigin: wrappedOffset < 0 ? "right center" : wrappedOffset > 0 ? "left center" : "center center" }}
+                        onClick={() => abs > 0 && setCoverIdx(i)}
+                      >
+                        {/* Card */}
+                        <Link
+                          href={`/immobilier/${ad.id}`}
+                          onClick={(e) => abs > 0 && e.preventDefault()}
+                          className="block w-[220px] sm:w-[260px] rounded-2xl overflow-hidden shadow-2xl"
+                          style={{ boxShadow: abs === 0 ? "0 30px 60px rgba(0,0,0,0.45)" : "0 15px 30px rgba(0,0,0,0.3)" }}
+                        >
+                          {/* Photo */}
+                          <div className="h-[240px] sm:h-[280px] bg-teal-900 overflow-hidden">
+                            {ad.photos?.[0] ? (
+                              <img src={ad.photos[0]} alt={ad.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-teal-700 to-slate-800 flex items-center justify-center">
+                                <HomeIcon className="w-16 h-16 text-teal-300/60" />
+                              </div>
+                            )}
+                          </div>
+                          {/* Info */}
+                          <div className="p-4 bg-[var(--bg-card)]">
+                            <div className="flex items-start justify-between gap-2 mb-1">
+                              <h3 className="font-bold text-[var(--text-primary)] text-sm line-clamp-1 flex-1">{ad.title}</h3>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold text-white flex-shrink-0 ${ad.ad_type === "sale" ? "bg-blue-600" : "bg-emerald-600"}`}>
+                                {ad.ad_type === "sale" ? "Vente" : "Location"}
+                              </span>
+                            </div>
+                            <div className="text-base font-black text-teal-600 mb-1">
+                              {Number(ad.price ?? ad.rent_price ?? 0).toLocaleString("fr-FR")} FC{ad.ad_type === "rent" ? "/mois" : ""}
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                              <MapPinIcon className="w-3.5 h-3.5 flex-shrink-0" />
+                              <span className="line-clamp-1">{[ad.address, ad.city].filter(Boolean).join(", ")}</span>
+                            </div>
+                          </div>
+                        </Link>
+                        {/* Reflection */}
+                        {abs === 0 && (
+                          <div
+                            aria-hidden
+                            className="w-full mt-1 rounded-b-2xl overflow-hidden"
+                            style={{ height: "60px", transform: "scaleY(-1)", opacity: 0.18, maskImage: "linear-gradient(to bottom, black 0%, transparent 100%)" }}
+                          >
+                            {ad.photos?.[0] && <img src={ad.photos[0]} alt="" className="w-full h-[280px] object-cover object-top" />}
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* Controls */}
+                <div className="flex items-center justify-center gap-6 mt-4">
+                  <motion.button
+                    onClick={prev}
+                    whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
+                    className="w-10 h-10 rounded-full bg-teal-500/20 hover:bg-teal-500/40 border border-teal-500/30 flex items-center justify-center text-teal-500 transition-colors cursor-pointer"
                   >
-                    <div className="h-56 bg-[var(--bg-tertiary)] overflow-hidden">
-                      {ad.photos?.[0] ? (
-                        <img src={ad.photos[0]} alt={ad.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-slate-700/40 flex items-center justify-center">
-                          <HomeIcon className="w-16 h-16 text-white/70" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <div className="flex items-center justify-between gap-3 mb-2">
-                        <h3 className="font-semibold text-[var(--text-primary)] line-clamp-1">{ad.title}</h3>
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold text-white ${ad.ad_type === "sale" ? "bg-blue-600" : "bg-emerald-600"}`}>
-                          {ad.ad_type === "sale" ? "Vente" : "Location"}
-                        </span>
-                      </div>
-                      <div className="text-lg font-bold text-primary mb-2">
-                        {Number(ad.price ?? ad.rent_price ?? 0).toLocaleString("fr-FR")} FC{ad.ad_type === "rent" ? " /mois" : ""}
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-[var(--text-muted)] mb-3">
-                        <MapPinIcon className="w-4 h-4 flex-shrink-0" />
-                        <span className="line-clamp-1">{[ad.address, ad.city].filter(Boolean).join(", ")}</span>
-                      </div>
-                      <div className="text-sm text-[var(--text-secondary)]">
-                        {ad.surface ?? 0} m² • {ad.rooms ?? 0} pièces
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-              className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-10 text-center text-[var(--text-secondary)]"
-            >
-              Aucune annonce immobilière active pour le moment.
-            </motion.div>
-          )}
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                  </motion.button>
+                  <div className="flex items-center gap-2">
+                    {cards.map((_, i) => (
+                      <motion.button
+                        key={i}
+                        onClick={() => { setCoverIdx(i); setCoverPaused(true); }}
+                        animate={{ scale: i === coverIdx ? 1.4 : 1, backgroundColor: i === coverIdx ? "#14b8a6" : "#94a3b8" }}
+                        className="w-2 h-2 rounded-full cursor-pointer"
+                      />
+                    ))}
+                  </div>
+                  <motion.button
+                    onClick={next}
+                    whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}
+                    className="w-10 h-10 rounded-full bg-teal-500/20 hover:bg-teal-500/40 border border-teal-500/30 flex items-center justify-center text-teal-500 transition-colors cursor-pointer"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                  </motion.button>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </section>
 
