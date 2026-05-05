@@ -388,7 +388,7 @@ export default function HomePage() {
                               style={{
                                 position: "absolute",
                                 inset: "-50px",
-                                borderRadius: "38px",
+                                borderRadius: "20px",
                                 background: abs === 0
                                   ? "rgba(255,255,255,0.10)"
                                   : "rgba(255,255,255,0.055)",
@@ -409,7 +409,7 @@ export default function HomePage() {
                                 display: "block",
                                 position: "relative",
                                 zIndex: 1,
-                                borderRadius: "20px",
+                                borderRadius: "10px",
                                 overflow: "hidden",
                                 boxShadow: abs === 0
                                   ? "0 32px 64px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.15)"
