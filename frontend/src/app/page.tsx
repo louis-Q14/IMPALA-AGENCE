@@ -241,7 +241,7 @@ export default function HomePage() {
               </motion.h1>
 
               {/* Search bar */}
-              <motion.div variants={fadeUp} className="mt-8 max-w-lg">
+              <motion.div variants={fadeUp} className="mt-28 max-w-lg">
                 <div className="flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-teal-400/30 p-2">
                   <MagnifyingGlassIcon className="w-5 h-5 text-teal-300 ml-3 flex-shrink-0" />
                   <input
