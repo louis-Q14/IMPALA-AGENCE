@@ -156,7 +156,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (coverPaused) return;
-    const t = setInterval(() => setCoverIdx((i) => (i + 1) % Math.max(1, latestAds.length || 4)), 3200);
+    const t = setInterval(() => setCoverIdx((i) => (i + 1) % Math.max(1, latestAds.length || 4)), 6000);
     return () => clearInterval(t);
   }, [coverPaused, latestAds.length]);
 
@@ -380,7 +380,7 @@ export default function HomePage() {
                               opacity: op,
                               cursor: abs === 0 ? "default" : "pointer",
                               transform: `translateX(${tx}px) translateZ(${tz}px) rotateY(${rotY}deg) scale(${sc})`,
-                              transition: "transform 0.45s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.45s ease",
+                              transition: "transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease",
                             }}
                           >
                             <Link
