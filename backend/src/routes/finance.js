@@ -59,7 +59,40 @@ router.get("/revenue", async (_req, res) => {
        ORDER BY i.created_at DESC`
     );
 
-    const allTx = [...trashTx.rows, ...invoiceTx.rows]
+    // Transactions from approved manual subscription requests (immobilier / automobile)
+    const subTx = await db.query(
+      `SELECT
+         'SUB-' || SUBSTR(sr.id::text, 1, 8) AS id,
+         COALESCE(u.full_name, u.email) AS "user",
+         u.email,
+         CASE sr.service_type
+           WHEN 'immobilier' THEN 'real_estate'
+           WHEN 'automobile' THEN 'auto'
+           ELSE 'real_estate'
+         END AS service,
+         CONCAT(
+           'Abonnement ',
+           CASE sr.service_type
+             WHEN 'immobilier' THEN 'Immobilier'
+             WHEN 'automobile' THEN 'Automobile'
+             WHEN 'immo-auto' THEN 'Immo+Auto'
+             ELSE INITCAP(sr.service_type)
+           END,
+           ' - Formule ', sr.formula::text,
+           ' (', CASE WHEN sr.annual THEN 'Annuel' ELSE 'Mensuel' END, ')'
+         ) AS desc,
+         sr.amount::numeric AS amount,
+         TO_CHAR(COALESCE(sr.reviewed_at, sr.created_at), 'DD/MM/YYYY') AS date,
+         'paid' AS status,
+         COALESCE(sr.payment_method, 'Mobile Money') AS method,
+         COALESCE(sr.reviewed_at, sr.created_at) AS created_at
+       FROM subscription_requests sr
+       JOIN users u ON sr.user_id = u.id
+       WHERE sr.status = 'approved'
+       ORDER BY COALESCE(sr.reviewed_at, sr.created_at) DESC`
+    );
+
+    const allTx = [...trashTx.rows, ...invoiceTx.rows, ...subTx.rows]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .map(({ created_at, ...rest }) => rest);
 
@@ -81,22 +114,30 @@ router.get("/revenue", async (_req, res) => {
          GROUP BY 1
        ),
        immo_monthly AS (
-         SELECT
-           date_trunc('month', i.created_at) AS month,
-           SUM(i.amount) AS immobilier
-         FROM invoices i
-         JOIN user_services us ON us.user_id = i.user_id AND us.service_type = 'real_estate'
-         WHERE i.status = 'paid' AND i.created_at >= NOW() - INTERVAL '12 months'
-         GROUP BY 1
+         SELECT month, SUM(v) AS immobilier FROM (
+           SELECT date_trunc('month', i.created_at) AS month, i.amount AS v
+           FROM invoices i
+           JOIN user_services us ON us.user_id = i.user_id AND us.service_type = 'real_estate'
+           WHERE i.status = 'paid' AND i.created_at >= NOW() - INTERVAL '12 months'
+           UNION ALL
+           SELECT date_trunc('month', COALESCE(sr.reviewed_at, sr.created_at)), sr.amount
+           FROM subscription_requests sr
+           WHERE sr.status = 'approved' AND sr.service_type IN ('immobilier', 'immo-auto')
+             AND COALESCE(sr.reviewed_at, sr.created_at) >= NOW() - INTERVAL '12 months'
+         ) _i GROUP BY month
        ),
        auto_monthly AS (
-         SELECT
-           date_trunc('month', i.created_at) AS month,
-           SUM(i.amount) AS auto_rev
-         FROM invoices i
-         JOIN user_services us ON us.user_id = i.user_id AND us.service_type = 'auto'
-         WHERE i.status = 'paid' AND i.created_at >= NOW() - INTERVAL '12 months'
-         GROUP BY 1
+         SELECT month, SUM(v) AS auto_rev FROM (
+           SELECT date_trunc('month', i.created_at) AS month, i.amount AS v
+           FROM invoices i
+           JOIN user_services us ON us.user_id = i.user_id AND us.service_type = 'auto'
+           WHERE i.status = 'paid' AND i.created_at >= NOW() - INTERVAL '12 months'
+           UNION ALL
+           SELECT date_trunc('month', COALESCE(sr.reviewed_at, sr.created_at)), sr.amount
+           FROM subscription_requests sr
+           WHERE sr.status = 'approved' AND sr.service_type = 'automobile'
+             AND COALESCE(sr.reviewed_at, sr.created_at) >= NOW() - INTERVAL '12 months'
+         ) _a GROUP BY month
        )
        SELECT
          TO_CHAR(m.month, 'Mon') AS month,
@@ -114,8 +155,12 @@ router.get("/revenue", async (_req, res) => {
     );
 
     const trashTotal = trashTx.rows.filter(t => t.status === 'paid').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-    const immoTotal = invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'real_estate').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-    const autoTotal = invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'auto').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const immoTotal =
+      invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'real_estate').reduce((s, t) => s + parseFloat(t.amount || 0), 0) +
+      subTx.rows.filter(t => t.service === 'real_estate').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const autoTotal =
+      invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'auto').reduce((s, t) => s + parseFloat(t.amount || 0), 0) +
+      subTx.rows.filter(t => t.service === 'auto').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
     const pendingTotal = allTx.filter(t => t.status === 'pending').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
     const refundedTotal = allTx.filter(t => t.status === 'refunded').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
 
@@ -153,6 +198,10 @@ router.patch("/revenue/transactions/:id/status", async (req, res) => {
       const prefix = id.replace("INV-", "");
       const dbStatus = status === "paid" ? "paid" : status === "pending" ? "open" : "void";
       await db.query("UPDATE invoices SET status = $1 WHERE SUBSTR(id::text, 1, 8) = $2", [dbStatus, prefix]);
+    } else if (id.startsWith("SUB-")) {
+      const prefix = id.replace("SUB-", "");
+      const dbStatus = status === "paid" ? "approved" : status === "pending" ? "pending" : "rejected";
+      await db.query("UPDATE subscription_requests SET status = $1 WHERE SUBSTR(id::text, 1, 8) = $2", [dbStatus, prefix]);
     }
     res.json({ message: "Statut mis à jour" });
   } catch (err) {
