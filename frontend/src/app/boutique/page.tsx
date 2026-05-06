@@ -188,6 +188,11 @@ const MM_CARDS = [
 function MobileMoneyCarousel() {
   const [active, setActive] = useState(1); // airtel au centre par défaut
 
+  useEffect(() => {
+    const t = setInterval(() => setActive((a) => (a + 1) % MM_CARDS.length), 3000);
+    return () => clearInterval(t);
+  }, []);
+
   const W = 140; // card width
   const H = 200; // card height
   const GAP = 170; // horizontal spacing
