@@ -248,38 +248,40 @@ export default function HomePage() {
             >
 
               {/* Search + CTAs — même ligne */}
-              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center gap-3 w-full max-w-5xl">
-                <div className="flex-1 min-w-0 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-teal-400/30 p-2">
-                  <MagnifyingGlassIcon className="w-5 h-5 text-teal-300 ml-3 flex-shrink-0" />
+              <motion.div variants={fadeUp} className="flex flex-col gap-2 w-full max-w-xl sm:max-w-5xl sm:flex-row sm:items-center sm:gap-3">
+                {/* Barre de recherche */}
+                <div className="flex items-center bg-white/10 backdrop-blur-md rounded-xl border border-teal-400/30 px-3 py-1.5 sm:flex-1">
+                  <MagnifyingGlassIcon className="w-4 h-4 text-teal-300 flex-shrink-0" />
                   <input
                     type="text"
-                    placeholder="Rechercher un bien, un véhicule..."
-                    className="flex-1 bg-transparent px-4 py-2.5 text-white placeholder:text-teal-300/50 focus:outline-none text-sm min-w-0"
+                    placeholder="Bien, véhicule..."
+                    className="flex-1 bg-transparent px-3 py-1.5 text-white placeholder:text-teal-300/50 focus:outline-none text-sm min-w-0"
                   />
                   <motion.button
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.97 }}
-                    className="px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-white font-medium rounded-xl transition-colors text-sm whitespace-nowrap"
+                    className="px-4 py-1.5 bg-teal-500 hover:bg-teal-400 text-white font-medium rounded-lg transition-colors text-xs whitespace-nowrap"
                   >
                     Rechercher
                   </motion.button>
                 </div>
-                <div className="flex gap-3 sm:contents">
+                {/* Boutons CTA */}
+                <div className="flex gap-2 sm:contents">
                   <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} className="flex-1 sm:flex-shrink-0">
                     <Link
                       href="/inscription"
-                      className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-400/40 transition-all text-sm w-full"
+                      className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-semibold shadow-lg shadow-teal-500/30 transition-all text-xs sm:text-sm w-full whitespace-nowrap"
                     >
                       Commencer gratuitement
                       <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                        <ArrowRightIcon className="w-4 h-4" />
+                        <ArrowRightIcon className="w-3.5 h-3.5" />
                       </motion.span>
                     </Link>
                   </motion.div>
                   <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 sm:flex-shrink-0">
                     <Link
                       href="/tarifs"
-                      className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-white font-medium border border-teal-400/40 hover:bg-white/10 transition-colors text-sm w-full"
+                      className="flex items-center justify-center px-4 py-2.5 rounded-xl text-white font-medium border border-teal-400/40 hover:bg-white/10 transition-colors text-xs sm:text-sm w-full whitespace-nowrap"
                     >
                       Voir les tarifs
                     </Link>
@@ -288,7 +290,7 @@ export default function HomePage() {
               </motion.div>
 
               {/* Mini stats row */}
-              <motion.div variants={fadeUp} className="flex items-center gap-0">
+              <motion.div variants={fadeUp} className="flex items-center justify-center gap-0 w-full max-w-xs sm:max-w-none">
                 {[
                   { value: "10K+", label: "Annonces" },
                   { value: "5K+",  label: "Utilisateurs" },
@@ -296,15 +298,15 @@ export default function HomePage() {
                 ].map((s, i) => (
                   <div
                     key={s.label}
-                    className={`pr-8 ${i > 0 ? "pl-8 border-l border-teal-400/25" : ""}`}
+                    className={`flex-1 text-center py-2 ${i > 0 ? "border-l border-teal-400/25" : ""}`}
                   >
                     <p
-                      className="text-xl sm:text-2xl font-black text-white leading-none"
+                      className="text-lg sm:text-2xl font-black text-white leading-none"
                       style={{ fontFamily: "var(--font-century-gothic)" }}
                     >
                       {s.value}
                     </p>
-                    <p className="text-[11px] text-teal-300/70 uppercase tracking-widest mt-1">{s.label}</p>
+                    <p className="text-[10px] sm:text-[11px] text-teal-300/70 uppercase tracking-widest mt-1">{s.label}</p>
                   </div>
                 ))}
               </motion.div>
