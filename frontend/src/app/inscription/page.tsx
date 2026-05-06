@@ -299,7 +299,7 @@ function InscriptionContent() {
   const labelClass = "block text-sm font-medium text-[var(--text-secondary)] mb-1.5";
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-[var(--bg-secondary)]">
+    <div className="min-h-screen flex items-center justify-center py-6 sm:py-12 px-4 bg-[var(--bg-secondary)]">
       <div className="w-full max-w-2xl">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -350,7 +350,7 @@ function InscriptionContent() {
           </div>
         )}
 
-        <div className="p-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-lg)]">
+        <div className="p-4 sm:p-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-lg)]">
           {/* ==================== Step 1: Services ==================== */}
           {step === 1 && (
             <div>
@@ -366,7 +366,7 @@ function InscriptionContent() {
                   <button
                     key={svc.id}
                     onClick={() => toggleService(svc.id)}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all ${
+                    className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${`
                       selectedServices.includes(svc.id)
                         ? "border-primary bg-primary/5"
                         : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
@@ -438,33 +438,33 @@ function InscriptionContent() {
                 <div className="grid grid-cols-3 gap-3">
                   <button
                     onClick={() => setRole("user")}
-                    className={`p-3 rounded-xl border-2 text-center transition-all ${
+                    className={`p-2.5 sm:p-3 rounded-xl border-2 text-center transition-all ${
                       role === "user"
                         ? "border-primary bg-primary/5"
                         : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
                     }`}
                   >
-                    <p className="font-medium text-[var(--text-primary)]">Particulier</p>
+                    <p className="font-medium text-sm text-[var(--text-primary)]">Particulier</p>
                   </button>
                   <button
                     onClick={() => setRole("pro")}
-                    className={`p-3 rounded-xl border-2 text-center transition-all ${
+                    className={`p-2.5 sm:p-3 rounded-xl border-2 text-center transition-all ${
                       role === "pro"
                         ? "border-primary bg-primary/5"
                         : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
                     }`}
                   >
-                    <p className="font-medium text-[var(--text-primary)]">Professionnel</p>
+                    <p className="font-medium text-sm text-[var(--text-primary)]">Professionnel</p>
                   </button>
                   <button
                     onClick={() => { setRole("visiteur"); setSelectedServices([]); }}
-                    className={`p-3 rounded-xl border-2 text-center transition-all ${
+                    className={`p-2.5 sm:p-3 rounded-xl border-2 text-center transition-all ${
                       role === "visiteur"
                         ? "border-primary bg-primary/5"
                         : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
                     }`}
                   >
-                    <p className="font-medium text-[var(--text-primary)]">Visiteur</p>
+                    <p className="font-medium text-sm text-[var(--text-primary)]">Visiteur</p>
                   </button>
                 </div>
                 {role === "visiteur" && (
@@ -479,7 +479,7 @@ function InscriptionContent() {
                   if (role === "visiteur" || selectedServices.length > 0) setStep(2);
                 }}
                 disabled={role !== "visiteur" && selectedServices.length === 0}
-                className="w-full py-3.5 rounded-xl bg-primary text-white font-semibold
+                className="w-full py-3 sm:py-3.5 rounded-xl bg-primary text-white font-semibold
                   hover:bg-primary-hover shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Continuer
@@ -637,7 +637,7 @@ function InscriptionContent() {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex-1 py-3.5 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)]
+                    className="flex-1 py-3 sm:py-3.5 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)]
                       font-medium hover:bg-[var(--bg-hover)] transition-all"
                   >
                     Retour
@@ -646,7 +646,7 @@ function InscriptionContent() {
                     type="button"
                     onClick={() => isStep2Valid && setStep(3)}
                     disabled={!isStep2Valid}
-                    className="flex-1 py-3.5 rounded-xl bg-primary text-white font-semibold
+                    className="flex-1 py-3 sm:py-3.5 rounded-xl bg-primary text-white font-semibold
                       hover:bg-primary-hover shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Continuer
@@ -862,7 +862,7 @@ function InscriptionContent() {
                   <button
                     type="button"
                     onClick={() => setStep(2)}
-                    className="flex-1 py-3.5 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)]
+                    className="flex-1 py-3 sm:py-3.5 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)]
                       font-medium hover:bg-[var(--bg-hover)] transition-all"
                   >
                     Retour
@@ -877,7 +877,7 @@ function InscriptionContent() {
                         setStep3Attempted(true);
                       }
                     }}
-                    className="flex-1 py-3.5 rounded-xl bg-primary text-white font-semibold
+                    className="flex-1 py-3 sm:py-3.5 rounded-xl bg-primary text-white font-semibold
                       hover:bg-primary-hover shadow-md transition-all"
                   >
                     Continuer
@@ -977,7 +977,7 @@ function InscriptionContent() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep(3)}
-                  className="flex-1 py-3.5 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)]
+                  className="flex-1 py-3 sm:py-3.5 rounded-xl border border-[var(--border-color)] text-[var(--text-primary)]
                     font-medium hover:bg-[var(--bg-hover)] transition-all"
                 >
                   Retour
@@ -985,7 +985,7 @@ function InscriptionContent() {
                 <button
                   onClick={handleSubmit}
                   disabled={!acceptCGU || isLoading}
-                  className="flex-1 py-3.5 rounded-xl bg-primary text-white font-semibold
+                  className="flex-1 py-3 sm:py-3.5 rounded-xl bg-primary text-white font-semibold
                     hover:bg-primary-hover shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? "Création..." : "Créer mon compte"}
@@ -1038,7 +1038,7 @@ function InscriptionContent() {
               <button
                 onClick={handleVerifyOtp}
                 disabled={otpCode.length !== 6 || otpLoading}
-                className="w-full py-3.5 rounded-xl bg-primary text-white font-semibold
+                className="w-full py-3 sm:py-3.5 rounded-xl bg-primary text-white font-semibold
                   hover:bg-primary-hover shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed mb-5"
               >
                 {otpLoading ? (
