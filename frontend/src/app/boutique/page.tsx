@@ -223,7 +223,7 @@ function MobileMoneyCarousel() {
                   pointerEvents: "none",
                 }} />
               )}
-              {/* Cercle principal */}
+              {/* Cercle principal — effet épaisseur de vitre */}
               <div style={{
                 position: "relative",
                 zIndex: 1,
@@ -232,23 +232,30 @@ function MobileMoneyCarousel() {
                 borderRadius: "50%",
                 overflow: "hidden",
                 background: card.bg,
-                border: `2px solid ${card.border}`,
+                border: `3px solid ${card.border}`,
                 boxShadow: isCenter
-                  ? `0 24px 60px ${card.glow}, 0 0 0 1px ${card.border}`
-                  : "0 8px 24px rgba(0,0,0,0.4)",
+                  ? `inset 0 3px 6px rgba(255,255,255,0.6), inset 0 -3px 8px rgba(0,0,0,0.35), 0 0 0 4px rgba(255,255,255,0.22), 0 0 0 8px rgba(255,255,255,0.07), 0 0 0 11px rgba(0,0,0,0.25), 0 24px 60px ${card.glow}`
+                  : `inset 0 2px 5px rgba(255,255,255,0.4), inset 0 -2px 6px rgba(0,0,0,0.22), 0 0 0 3px rgba(255,255,255,0.14), 0 0 0 6px rgba(255,255,255,0.05), 0 0 0 8px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.4)`,
               }}>
                 {card.img ? (
                   <img src={card.img} alt={card.id} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 ) : (
                   card.content
                 )}
-                {/* Shine overlay */}
-                {isCenter && (
-                  <div style={{
-                    position: "absolute", inset: 0, borderRadius: "50%", pointerEvents: "none",
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 55%, rgba(255,255,255,0.04) 100%)",
-                  }} />
-                )}
+                {/* Réfraction vitre — toutes les cartes */}
+                <div style={{
+                  position: "absolute", inset: 0, borderRadius: "50%", pointerEvents: "none",
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.06) 28%, transparent 52%, rgba(255,255,255,0.04) 76%, rgba(255,255,255,0.16) 100%)",
+                  opacity: isCenter ? 1 : 0.7,
+                }} />
+                {/* Liseré lumineux haut (bord de verre) */}
+                <div style={{
+                  position: "absolute", top: 0, left: "10%", right: "10%", height: "28%",
+                  borderRadius: "50% 50% 0 0 / 100% 100% 0 0",
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%)",
+                  pointerEvents: "none",
+                  opacity: isCenter ? 1 : 0.6,
+                }} />
               </div>
             </div>
           );
