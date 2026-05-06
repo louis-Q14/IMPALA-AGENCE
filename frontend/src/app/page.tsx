@@ -75,6 +75,7 @@ const services = [
     title: "Automobile",
     description: "Vendez ou louez votre véhicule. Réservation avec calendrier intégré.",
     icon: "/car 1.png",
+    iconSize: 84,
     href: "/automobile",
     color: "from-amber-500 to-orange-600",
     bgLight: "bg-amber-50 dark:bg-amber-950/30",
@@ -512,7 +513,7 @@ export default function HomePage() {
                     whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <Image src={service.icon} alt={service.title} width={56} height={56} className="w-14 h-14 object-contain" />
+                    <Image src={service.icon} alt={service.title} width={service.iconSize ?? 56} height={service.iconSize ?? 56} className="object-contain" style={{ width: service.iconSize ?? 56, height: service.iconSize ?? 56 }} />
                   </motion.div>
                   <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{service.title}</h3>
                   <p className="text-[var(--text-secondary)] mb-6 leading-relaxed">{service.description}</p>
