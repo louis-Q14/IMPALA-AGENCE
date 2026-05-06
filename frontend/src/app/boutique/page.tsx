@@ -240,15 +240,12 @@ function MobileMoneyCarousel() {
                   }} />
                 )}
 
-                {/* Spinner wrapper — tourne sur lui-même */}
+                {/* Spinner wrapper */}
                 <div style={{
                   position: "relative",
                   zIndex: 1,
                   width: D,
                   height: D,
-                  animation: isCenter
-                    ? "mmSpinCenter 9s linear infinite"
-                    : "mmSpinSide 16s linear infinite",
                 }}>
                   {/* Cercle épaisseur de vitre */}
                   <div style={{
