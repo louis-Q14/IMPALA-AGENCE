@@ -64,6 +64,7 @@ const services = [
     title: "Immobilier",
     description: "Trouvez la maison de vos rêves. Vente et location avec carte interactive.",
     icon: "/immobilier1-icon.png",
+    iconFill: true,
     href: "/immobilier",
     color: "from-blue-500 to-blue-700",
     bgLight: "bg-blue-50 dark:bg-blue-950/30",
@@ -509,11 +510,11 @@ export default function HomePage() {
                 >
                   <motion.div
                     className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${service.color}
-                      flex items-center justify-center mb-6 shadow-lg`}
+                      flex items-center justify-center mb-6 shadow-lg overflow-hidden`}
                     whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <Image src={service.icon} alt={service.title} width={service.iconSize ?? 56} height={service.iconSize ?? 56} className="object-contain" style={{ width: service.iconSize ?? 56, height: service.iconSize ?? 56 }} />
+                    <Image src={service.icon} alt={service.title} width={service.iconSize ?? 80} height={service.iconSize ?? 80} className={service.iconFill ? "w-full h-full object-cover" : "object-contain"} style={service.iconFill ? undefined : { width: service.iconSize ?? 56, height: service.iconSize ?? 56 }} />
                   </motion.div>
                   <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{service.title}</h3>
                   <p className="text-[var(--text-secondary)] mb-6 leading-relaxed">{service.description}</p>
