@@ -507,12 +507,12 @@ export default function HomePage() {
                     hover:shadow-2xl transition-shadow duration-300 block h-full`}
                 >
                   <motion.div
-                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${service.color}
+                    className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${service.color}
                       flex items-center justify-center mb-6 shadow-lg`}
                     whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <Image src={service.icon} alt={service.title} width={28} height={28} className="w-7 h-7 object-contain" />
+                    <Image src={service.icon} alt={service.title} width={56} height={56} className="w-14 h-14 object-contain" />
                   </motion.div>
                   <h3 className="text-xl font-bold text-[var(--text-primary)] mb-3">{service.title}</h3>
                   <p className="text-[var(--text-secondary)] mb-6 leading-relaxed">{service.description}</p>
