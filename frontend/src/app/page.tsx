@@ -195,17 +195,22 @@ export default function HomePage() {
         style={{ scaleX: scrollYProgress }}
       />
 
-      {/* ===== HERO — UI/UX Pro Max: Exaggerated Minimalism · Teal Real-Estate palette ===== */}
+      {/* ===== HERO — Dark Space ===== */}
       <section className="relative overflow-hidden hero-teal min-h-screen flex items-center">
+        {/* Starfield */}
+        <div className="absolute inset-0 hero-stars opacity-40 pointer-events-none" />
         {/* Dot grid */}
-        <div className="absolute inset-0 hero-grid opacity-10 pointer-events-none" />
+        <div className="absolute inset-0 hero-grid opacity-5 pointer-events-none" />
 
         {/* Parallax background blobs */}
         <motion.div style={{ y: blob1Y }} className="absolute -top-32 -left-32 pointer-events-none">
-          <div className="w-[560px] h-[560px] bg-teal-300/8 rounded-full blur-3xl" />
+          <div className="w-[560px] h-[560px] rounded-full blur-3xl" style={{ background: "rgba(120,60,200,0.18)" }} />
         </motion.div>
         <motion.div style={{ y: blob2Y }} className="absolute -bottom-16 right-0 pointer-events-none">
-          <div className="w-96 h-96 bg-teal-400/8 rounded-full blur-3xl" />
+          <div className="w-96 h-96 rounded-full blur-3xl" style={{ background: "rgba(60,80,200,0.15)" }} />
+        </motion.div>
+        <motion.div className="absolute top-1/4 right-1/4 pointer-events-none" style={{ y: blob1Y }}>
+          <div className="w-72 h-72 rounded-full blur-3xl" style={{ background: "rgba(160,40,220,0.10)" }} />
         </motion.div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 w-full">

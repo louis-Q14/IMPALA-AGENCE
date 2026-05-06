@@ -98,9 +98,25 @@ body {
   background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%);
 }
 
-/* UI/UX Pro Max – Teal hero (Exaggerated Minimalism, Real-Estate palette) */
+/* UI/UX Pro Max – Dark space hero */
 .hero-teal {
-  background: linear-gradient(135deg, #052e2a 0%, #0f766e 45%, #134e4a 100%);
+  background: radial-gradient(ellipse at 20% 50%, #0d1b2e 0%, #050b14 60%, #080010 100%);
+}
+
+/* Starfield particles */
+.hero-stars {
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,255,0.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px);
+  background-size: 200px 200px, 130px 130px, 80px 80px;
+  background-position: 0 0, 60px 40px, 20px 80px;
+  animation: stars-drift 60s linear infinite;
+}
+
+@keyframes stars-drift {
+  from { background-position: 0 0, 60px 40px, 20px 80px; }
+  to   { background-position: 200px 200px, 260px 240px, 220px 280px; }
 }
 
 .animate-float {
