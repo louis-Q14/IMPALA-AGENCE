@@ -185,6 +185,17 @@ export default function HomePage() {
   /* Cover Flow state */
   const [coverIdx, setCoverIdx] = useState(0);
   const [coverPaused, setCoverPaused] = useState(false);
+  const [coverScale, setCoverScale] = useState(1);
+
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      setCoverScale(w < 640 ? Math.max(0.36, w / 720) : 1);
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   useEffect(() => {
     if (coverPaused) return;
@@ -237,7 +248,7 @@ export default function HomePage() {
             >
 
               {/* Search + CTAs — même ligne */}
-              <motion.div variants={fadeUp} className="flex items-center gap-3 flex-wrap w-full max-w-5xl">
+              <motion.div variants={fadeUp} className="flex flex-col sm:flex-row sm:items-center gap-3 w-full max-w-5xl">
                 <div className="flex-1 min-w-0 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-teal-400/30 p-2">
                   <MagnifyingGlassIcon className="w-5 h-5 text-teal-300 ml-3 flex-shrink-0" />
                   <input
@@ -253,25 +264,27 @@ export default function HomePage() {
                     Rechercher
                   </motion.button>
                 </div>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} className="flex-shrink-0">
-                  <Link
-                    href="/inscription"
-                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-400/40 transition-all text-sm whitespace-nowrap"
-                  >
-                    Commencer gratuitement
-                    <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                      <ArrowRightIcon className="w-4 h-4" />
-                    </motion.span>
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-shrink-0">
-                  <Link
-                    href="/tarifs"
-                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-medium border border-teal-400/40 hover:bg-white/10 transition-colors text-sm whitespace-nowrap"
-                  >
-                    Voir les tarifs
-                  </Link>
-                </motion.div>
+                <div className="flex gap-3 sm:contents">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} className="flex-1 sm:flex-shrink-0">
+                    <Link
+                      href="/inscription"
+                      className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-400/40 transition-all text-sm w-full"
+                    >
+                      Commencer gratuitement
+                      <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                        <ArrowRightIcon className="w-4 h-4" />
+                      </motion.span>
+                    </Link>
+                  </motion.div>
+                  <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-1 sm:flex-shrink-0">
+                    <Link
+                      href="/tarifs"
+                      className="flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-white font-medium border border-teal-400/40 hover:bg-white/10 transition-colors text-sm w-full"
+                    >
+                      Voir les tarifs
+                    </Link>
+                  </motion.div>
+                </div>
               </motion.div>
 
               {/* Mini stats row */}
@@ -286,7 +299,7 @@ export default function HomePage() {
                     className={`pr-8 ${i > 0 ? "pl-8 border-l border-teal-400/25" : ""}`}
                   >
                     <p
-                      className="text-2xl font-black text-white leading-none"
+                      className="text-xl sm:text-2xl font-black text-white leading-none"
                       style={{ fontFamily: "var(--font-century-gothic)" }}
                     >
                       {s.value}
@@ -323,7 +336,9 @@ export default function HomePage() {
                     onMouseEnter={() => setCoverPaused(true)}
                     onMouseLeave={() => setCoverPaused(false)}
                     className="w-full"
+                    style={{ height: `${920 * coverScale}px`, overflow: "visible" }}
                   >
+                    <div style={{ transform: `scale(${coverScale})`, transformOrigin: "top center", width: "100%" }}>
                     {/* 3D stage */}
                     <div
                       style={{
@@ -468,6 +483,7 @@ export default function HomePage() {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                       </motion.button>
                     </div>
+                  </div>
                   </div>
                 );
               })()}
