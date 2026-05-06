@@ -92,8 +92,8 @@ export default function AutomobilePage() {
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                  <Image src="/car 1.png" alt="Automobile" width={40} height={40} className="object-contain" />
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                  <Image src="/car 1.png" alt="Automobile" width={72} height={72} className="object-contain" />
                 </div>
                 Automobile
               </h1>
