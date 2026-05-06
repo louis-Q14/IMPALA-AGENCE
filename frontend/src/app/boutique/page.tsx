@@ -130,6 +130,107 @@ function ProductCard({ product }: { product: Product }) {
   );
 }
 
+/* ── Mobile Money 3D Carousel ── */
+function MobileMoneyCarousel() {
+  return (
+    <>
+      <style>{`
+        @keyframes mm-orbit {
+          from { transform: rotateY(0deg); }
+          to   { transform: rotateY(360deg); }
+        }
+        @keyframes mm-self-spin {
+          0%   { transform: rotateY(0deg) rotateZ(0deg); }
+          50%  { transform: rotateY(180deg) rotateZ(180deg); }
+          100% { transform: rotateY(360deg) rotateZ(360deg); }
+        }
+        @keyframes mm-glow-pulse {
+          0%, 100% { opacity: 0.15; transform: translate(-50%, -50%) scale(1); }
+          50%       { opacity: 0.35; transform: translate(-50%, -50%) scale(1.05); }
+        }
+        .mm-scene {
+          perspective: 580px;
+          perspective-origin: 50% 50%;
+        }
+        .mm-orbit {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          transform-style: preserve-3d;
+          animation: mm-orbit 9s linear infinite;
+        }
+        .mm-coin-wrap {
+          position: absolute;
+          top: 50%; left: 50%;
+          width: 100px; height: 100px;
+          margin-left: -50px; margin-top: -50px;
+          transform-style: preserve-3d;
+        }
+        .mm-coin-wrap-1 { transform: rotateY(0deg)   translateZ(118px); }
+        .mm-coin-wrap-2 { transform: rotateY(120deg) translateZ(118px); }
+        .mm-coin-wrap-3 { transform: rotateY(240deg) translateZ(118px); }
+        .mm-coin-inner {
+          width: 100px; height: 100px;
+          border-radius: 50%;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          animation: mm-self-spin 5s linear infinite;
+          transform-style: preserve-3d;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.55), inset 0 2px 10px rgba(255,255,255,0.25);
+        }
+        .mm-coin-mpesa  { background: radial-gradient(circle at 38% 32%, #4ade80, #166534); border: 3px solid #86efac; }
+        .mm-coin-orange { background: radial-gradient(circle at 38% 32%, #fb923c, #9a3412); border: 3px solid #fed7aa; }
+        .mm-coin-airtel { background: radial-gradient(circle at 38% 32%, #f87171, #991b1b); border: 3px solid #fca5a5; }
+        .mm-glow {
+          position: absolute; top: 50%; left: 50%;
+          width: 264px; height: 264px;
+          border-radius: 50%;
+          border: 1.5px solid rgba(255,255,255,0.12);
+          animation: mm-glow-pulse 3s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .mm-center-dot {
+          position: absolute; top: 50%; left: 50%;
+          width: 12px; height: 12px;
+          margin-left: -6px; margin-top: -6px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.25);
+          box-shadow: 0 0 12px 4px rgba(255,255,255,0.15);
+          pointer-events: none;
+        }
+      `}</style>
+
+      <div className="mm-scene relative" style={{ width: 290, height: 290 }}>
+        <div className="mm-glow" />
+        <div className="mm-center-dot" />
+        <div className="mm-orbit">
+          {/* M-Pesa */}
+          <div className="mm-coin-wrap mm-coin-wrap-1">
+            <div className="mm-coin-inner mm-coin-mpesa">
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: 28, lineHeight: 1 }}>M</span>
+              <span style={{ color: '#bbf7d0', fontWeight: 700, fontSize: 10, letterSpacing: 3, marginTop: 2 }}>PESA</span>
+            </div>
+          </div>
+          {/* Orange Money */}
+          <div className="mm-coin-wrap mm-coin-wrap-2">
+            <div className="mm-coin-inner mm-coin-orange">
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: 13, lineHeight: 1, textAlign: 'center' }}>Orange</span>
+              <span style={{ color: '#ffedd5', fontWeight: 700, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>Money</span>
+            </div>
+          </div>
+          {/* Airtel Money */}
+          <div className="mm-coin-wrap mm-coin-wrap-3">
+            <div className="mm-coin-inner mm-coin-airtel">
+              <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>airtel</span>
+              <span style={{ color: '#fef08a', fontWeight: 700, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>money</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ── Main page ── */
 export default function BoutiqueHomePage() {
   const [slide, setSlide] = useState(0);
@@ -179,16 +280,20 @@ export default function BoutiqueHomePage() {
               </Link>
             </div>
             <div className="flex-1 flex justify-center">
-              <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
-                <Image
-                  src={current.image}
-                  alt="hero"
-                  fill
-                  className="object-cover"
-                  sizes="400px"
-                  priority
-                />
-              </div>
+              {slide === 2 ? (
+                <MobileMoneyCarousel />
+              ) : (
+                <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
+                  <Image
+                    src={current.image}
+                    alt="hero"
+                    fill
+                    className="object-cover"
+                    sizes="400px"
+                    priority
+                  />
+                </div>
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
