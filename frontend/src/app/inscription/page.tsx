@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useRef, useEffect, Suspense } from "react";
 import { LogoFull } from "@/components/Logo";
@@ -11,19 +12,12 @@ import {
   EyeSlashIcon,
   UserIcon,
   PhoneIcon,
-  HomeIcon,
-  TruckIcon,
-  TrashIcon,
-  SparklesIcon,
-  ArchiveBoxIcon,
-  BuildingStorefrontIcon,
   CheckCircleIcon,
   IdentificationIcon,
   MapPinIcon,
   DocumentArrowUpIcon,
   XMarkIcon,
   ExclamationTriangleIcon,
-  ScissorsIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 
@@ -32,15 +26,13 @@ const serviceOptions = [
     id: "real_estate",
     label: "Immobilier",
     description: "Vente et location de biens",
-    icon: HomeIcon,
-    color: "from-blue-500 to-blue-700",
+    iconImg: "/immobilier1-icon.png",
   },
   {
     id: "auto",
     label: "Automobile",
     description: "Vente et location de véhicules",
-    icon: TruckIcon,
-    color: "from-amber-500 to-orange-600",
+    iconImg: "/car 1.png",
   },
 ];
 
@@ -49,29 +41,25 @@ const multiImpalaServices = [
     id: "trash",
     label: "Ramassage de poubelles",
     description: "Collecte à domicile",
-    icon: TrashIcon,
-    color: "from-emerald-500 to-green-700",
+    iconImg: "/ramassage-poubelles-icon.png",
   },
   {
     id: "nettoyage",
     label: "Nettoyage de bureau",
     description: "Service professionnel de nettoyage",
-    icon: SparklesIcon,
-    color: "from-blue-400 to-cyan-500",
+    iconImg: "/Nettoyage-icon.png",
   },
   {
     id: "repassage",
     label: "Repassage",
     description: "Service professionnel de repassage",
-    icon: ScissorsIcon,
-    color: "from-pink-400 to-rose-500",
+    iconImg: "/iron-icon.png",
   },
   {
     id: "demenagement",
     label: "Déménagement",
     description: "Transport et installation de vos biens",
-    icon: ArchiveBoxIcon,
-    color: "from-orange-400 to-amber-500",
+    iconImg: "/moving-icon.png",
   },
 ];
 
@@ -303,13 +291,8 @@ function InscriptionContent() {
       <div className="w-full max-w-2xl">
         {/* Logo */}
         <div className="text-center mb-4 sm:mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
-              <span className="text-white font-bold text-xl">I</span>
-            </div>
-            <span className="text-2xl font-bold text-[var(--text-primary)]">
-              <LogoFull className="h-8 w-auto" />
-            </span>
+          <Link href="/" className="inline-flex items-center">
+            <LogoFull className="h-8 w-auto" />
           </Link>
           <h1 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
             Créer un compte
@@ -372,8 +355,8 @@ function InscriptionContent() {
                         : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
                     }`}
                   >
-                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${svc.color} flex items-center justify-center flex-shrink-0`}>
-                      <svc.icon className="w-5 h-5 text-white" />
+                    <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-[var(--bg-tertiary)]">
+                      <Image src={svc.iconImg} alt={svc.label} width={44} height={44} className="w-full h-full object-contain p-1" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-[var(--text-primary)]">{svc.label}</p>
@@ -393,8 +376,8 @@ function InscriptionContent() {
                 }`}>
                   {/* Header */}
                   <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)]">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center flex-shrink-0">
-                      <BuildingStorefrontIcon className="w-5 h-5 text-white" />
+                    <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-[var(--bg-tertiary)]">
+                      <Image src="/multi-impala-icon.png" alt="Multi-Impala" width={44} height={44} className="w-full h-full object-contain p-1" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-[var(--text-primary)]">Multi-Impala</p>
@@ -416,8 +399,8 @@ function InscriptionContent() {
                             : "hover:bg-[var(--bg-secondary)]"
                         }`}
                       >
-                        <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${svc.color} flex items-center justify-center flex-shrink-0`}>
-                          <svc.icon className="w-4 h-4 text-white" />
+                        <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-[var(--bg-tertiary)]">
+                          <Image src={svc.iconImg} alt={svc.label} width={36} height={36} className="w-full h-full object-contain p-0.5" />
                         </div>
                         <div className="flex-1">
                           <p className="font-medium text-[var(--text-primary)] text-sm">{svc.label}</p>
