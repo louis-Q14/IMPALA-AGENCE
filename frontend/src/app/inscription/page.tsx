@@ -28,6 +28,7 @@ const serviceOptions = [
     description: "Vente et location de biens",
     iconImg: "/immobilier1-icon.png",
     color: "from-blue-500 to-blue-700",
+    iconPad: "p-0",
   },
   {
     id: "auto",
@@ -35,6 +36,7 @@ const serviceOptions = [
     description: "Vente et location de véhicules",
     iconImg: "/car 1.png",
     color: "from-amber-500 to-orange-600",
+    iconPad: "p-0.5",
   },
 ];
 
@@ -362,7 +364,7 @@ function InscriptionContent() {
                     }`}
                   >
                     <div className={`w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br ${svc.color}`}>
-                      <Image src={svc.iconImg} alt={svc.label} width={44} height={44} className="w-full h-full object-contain p-1.5" />
+                      <Image src={svc.iconImg} alt={svc.label} width={44} height={44} className={`w-full h-full object-contain ${svc.iconPad ?? "p-1.5"}`} />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-[var(--text-primary)]">{svc.label}</p>
