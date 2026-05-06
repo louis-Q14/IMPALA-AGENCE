@@ -298,8 +298,8 @@ export default function HomePage() {
                 const total = heroCards.length;
                 const heroPrev = () => { setCoverIdx((i) => (i - 1 + total) % total); setCoverPaused(true); };
                 const heroNext = () => { setCoverIdx((i) => (i + 1) % total); setCoverPaused(true); };
-                const CARD_W = 390;
-                const PHOTO_H = 420;
+                const CARD_W = 520;
+                const PHOTO_H = 540;
 
                 return (
                   <div
@@ -311,8 +311,8 @@ export default function HomePage() {
                     <div
                       style={{
                         position: "relative",
-                        height: "720px",
-                        perspective: "1400px",
+                        height: "860px",
+                        perspective: "1800px",
                         perspectiveOrigin: "50% 50%",
                       }}
                     >
@@ -323,8 +323,8 @@ export default function HomePage() {
                         const abs = Math.abs(wo);
                         if (abs > 2) return null;
                         const rotY = wo === 0 ? 0 : wo < 0 ? 55 : -55;
-                        const tx   = wo * 270;
-                        const tz   = abs === 0 ? 0 : -160;
+                        const tx   = wo * 360;
+                        const tz   = abs === 0 ? 0 : -220;
                         const sc   = abs === 0 ? 1 : abs === 1 ? 0.82 : 0.63;
                         const op   = abs === 0 ? 1 : abs === 1 ? 0.88 : 0.48;
                         const zIdx = 30 - abs * 8;
@@ -339,7 +339,7 @@ export default function HomePage() {
                               top: "50%",
                               width: `${CARD_W}px`,
                               marginLeft: `${-CARD_W / 2}px`,
-                              marginTop: "-290px",
+                              marginTop: "-390px",
                               zIndex: zIdx,
                               opacity: op,
                               cursor: abs === 0 ? "default" : "pointer",
