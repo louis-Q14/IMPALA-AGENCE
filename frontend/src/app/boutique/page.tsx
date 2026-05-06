@@ -174,12 +174,12 @@ function MobileMoneyCarousel() {
     <>
       <style>{`
         @keyframes mmSpinCenter {
-          from { transform: rotateX(0deg); }
-          to   { transform: rotateX(360deg); }
+          from { transform: rotateY(0deg); }
+          to   { transform: rotateY(360deg); }
         }
         @keyframes mmSpinSide {
-          from { transform: rotateX(0deg); }
-          to   { transform: rotateX(360deg); }
+          from { transform: rotateY(0deg); }
+          to   { transform: rotateY(360deg); }
         }
         @keyframes mmHaloBreath {
           0%, 100% { opacity: 0.85; transform: scale(1); }
