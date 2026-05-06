@@ -180,18 +180,18 @@ export default function Navbar() {
                       <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${mesAchatsOpen ? "rotate-180" : ""}`} />
                     </button>
                     {mesAchatsOpen && (
-                      <div className="bg-[var(--bg-tertiary)]">
+                      <div>
                         <Link href="/boutique/mes-achats?statut=livre" onClick={() => setBoutiqueOpen(false)}
-                          className="flex items-center gap-2 pl-10 pr-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          ✅ Livrés
+                          className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
+                          Livrés
                         </Link>
                         <Link href="/boutique/mes-achats?statut=en_cours" onClick={() => setBoutiqueOpen(false)}
-                          className="flex items-center gap-2 pl-10 pr-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          🚚 En cours de livraison
+                          className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
+                          En cours de livraison
                         </Link>
                         <Link href="/boutique/mes-achats?statut=annule" onClick={() => setBoutiqueOpen(false)}
-                          className="flex items-center gap-2 pl-10 pr-4 py-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          ❌ Annulés
+                          className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
+                          Annulés
                         </Link>
                       </div>
                     )}
@@ -390,16 +390,16 @@ export default function Navbar() {
                     {mobileMesAchatsOpen && (
                       <div className="ml-4 border-l-2 border-[var(--border-color)] pl-3 space-y-0.5">
                         <Link href="/boutique/mes-achats?statut=livre" onClick={() => setMobileOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          ✅ Livrés
+                          className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
+                          Livrés
                         </Link>
                         <Link href="/boutique/mes-achats?statut=en_cours" onClick={() => setMobileOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          🚚 En cours de livraison
+                          className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
+                          En cours de livraison
                         </Link>
                         <Link href="/boutique/mes-achats?statut=annule" onClick={() => setMobileOpen(false)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          ❌ Annulés
+                          className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
+                          Annulés
                         </Link>
                       </div>
                     )}
