@@ -27,12 +27,14 @@ const serviceOptions = [
     label: "Immobilier",
     description: "Vente et location de biens",
     iconImg: "/immobilier1-icon.png",
+    color: "from-blue-500 to-blue-700",
   },
   {
     id: "auto",
     label: "Automobile",
     description: "Vente et location de véhicules",
     iconImg: "/car 1.png",
+    color: "from-amber-500 to-orange-600",
   },
 ];
 
@@ -42,24 +44,28 @@ const multiImpalaServices = [
     label: "Ramassage de poubelles",
     description: "Collecte à domicile",
     iconImg: "/ramassage-poubelles-icon.png",
+    color: "from-emerald-500 to-green-700",
   },
   {
     id: "nettoyage",
     label: "Nettoyage de bureau",
     description: "Service professionnel de nettoyage",
     iconImg: "/Nettoyage-icon.png",
+    color: "from-blue-400 to-cyan-500",
   },
   {
     id: "repassage",
     label: "Repassage",
     description: "Service professionnel de repassage",
     iconImg: "/iron-icon.png",
+    color: "from-pink-400 to-rose-500",
   },
   {
     id: "demenagement",
     label: "Déménagement",
     description: "Transport et installation de vos biens",
     iconImg: "/moving-icon.png",
+    color: "from-orange-400 to-amber-500",
   },
 ];
 
@@ -355,8 +361,8 @@ function InscriptionContent() {
                         : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
                     }`}
                   >
-                    <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-[var(--bg-tertiary)]">
-                      <Image src={svc.iconImg} alt={svc.label} width={44} height={44} className="w-full h-full object-contain p-1" />
+                    <div className={`w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br ${svc.color}`}>
+                      <Image src={svc.iconImg} alt={svc.label} width={44} height={44} className="w-full h-full object-contain p-1.5" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-[var(--text-primary)]">{svc.label}</p>
@@ -376,8 +382,8 @@ function InscriptionContent() {
                 }`}>
                   {/* Header */}
                   <div className="flex items-center gap-4 p-4 bg-[var(--bg-secondary)]">
-                    <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-[var(--bg-tertiary)]">
-                      <Image src="/multi-impala-icon.png" alt="Multi-Impala" width={44} height={44} className="w-full h-full object-contain p-1" />
+                    <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-violet-500 to-purple-700">
+                      <Image src="/multi-impala-icon.png" alt="Multi-Impala" width={44} height={44} className="w-full h-full object-contain p-1.5" />
                     </div>
                     <div className="flex-1">
                       <p className="font-medium text-[var(--text-primary)]">Multi-Impala</p>
@@ -399,8 +405,8 @@ function InscriptionContent() {
                             : "hover:bg-[var(--bg-secondary)]"
                         }`}
                       >
-                        <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-[var(--bg-tertiary)]">
-                          <Image src={svc.iconImg} alt={svc.label} width={36} height={36} className="w-full h-full object-contain p-0.5" />
+                        <div className={`w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br ${svc.color}`}>
+                          <Image src={svc.iconImg} alt={svc.label} width={36} height={36} className="w-full h-full object-contain p-1" />
                         </div>
                         <div className="flex-1">
                           <p className="font-medium text-[var(--text-primary)] text-sm">{svc.label}</p>
