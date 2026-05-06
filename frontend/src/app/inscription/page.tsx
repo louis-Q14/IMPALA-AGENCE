@@ -295,14 +295,14 @@ function InscriptionContent() {
   };
 
   const inputClass =
-    "w-full px-4 py-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm";
-  const labelClass = "block text-sm font-medium text-[var(--text-secondary)] mb-1.5";
+    "w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm";
+  const labelClass = "block text-xs sm:text-sm font-medium text-[var(--text-secondary)] mb-1";
 
   return (
     <div className="min-h-screen flex items-center justify-center py-6 sm:py-12 px-4 bg-[var(--bg-secondary)]">
       <div className="w-full max-w-2xl">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-4 sm:mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
             <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center shadow-md">
               <span className="text-white font-bold text-xl">I</span>
@@ -311,17 +311,17 @@ function InscriptionContent() {
               <LogoFull className="h-8 w-auto" />
             </span>
           </Link>
-          <h1 className="mt-6 text-2xl font-bold text-[var(--text-primary)]">
+          <h1 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
             Créer un compte
           </h1>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+          <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-[var(--text-secondary)]">
             Rejoignez IMPALA-AGENCE en quelques étapes
           </p>
         </div>
 
         {/* Steps Indicator */}
         {step <= 5 && (
-          <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="flex items-center justify-center gap-2 mb-4 sm:mb-8">
             {[
               { n: 1, label: "Services" },
               { n: 2, label: "Identité" },
@@ -504,9 +504,9 @@ function InscriptionContent() {
                 </div>
               </div>
 
-              <form className="space-y-4 mt-6" onSubmit={(e) => e.preventDefault()}>
+              <form className="space-y-3 sm:space-y-4 mt-4 sm:mt-6" onSubmit={(e) => e.preventDefault()}>
                 {/* Nom / Post-nom / Prénom */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>Nom *</label>
                     <input
@@ -540,7 +540,7 @@ function InscriptionContent() {
                 </div>
 
                 {/* Date & Lieu de naissance */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>Date de naissance *</label>
                     <input
@@ -563,7 +563,7 @@ function InscriptionContent() {
                 </div>
 
                 {/* Sexe / Nationalité */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>Sexe *</label>
                     <select
@@ -593,7 +593,7 @@ function InscriptionContent() {
                 </div>
 
                 {/* État civil / Profession */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>État civil *</label>
                     <select
@@ -745,7 +745,7 @@ function InscriptionContent() {
                 </div>
 
                 {/* Téléphones */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>Téléphone portable *</label>
                     <div className="relative">
