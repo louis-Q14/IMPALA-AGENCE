@@ -208,66 +208,25 @@ export default function HomePage() {
           <div className="w-96 h-96 bg-teal-400/8 rounded-full blur-3xl" />
         </motion.div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 sm:py-28 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-[5fr_7fr] gap-8 lg:gap-12 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 w-full">
+          <div className="flex flex-col items-center gap-6">
 
-            {/* ── Left: Text content ── */}
+            {/* ── Bottom: Search + Stats ── */}
             <motion.div
               initial="hidden"
               animate="visible"
               variants={stagger}
-              className="order-2 lg:order-1"
+              className="order-2 flex flex-col items-center w-full gap-4"
             >
-              {/* Eyebrow badge */}
-              <motion.div
-                variants={fadeUp}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-400/20 border border-teal-400/30 mb-8"
-              >
-                <motion.span
-                  className="w-2 h-2 rounded-full bg-teal-400 block"
-                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                />
-                <span
-                  className="text-sm font-medium text-teal-200 tracking-widest uppercase"
-                  style={{ fontFamily: "var(--font-century-gothic)" }}
-                >
-                  Plateforme multiservices
-                </span>
-              </motion.div>
 
-              {/* Giant heading — Exaggerated Minimalism */}
-              <motion.h1 variants={fadeUp} className="leading-none">
-                <span
-                  className="block font-black text-white"
-                  style={{
-                    fontFamily: "var(--font-century-gothic)",
-                    fontSize: "clamp(3.8rem, 9vw, 8.5rem)",
-                    letterSpacing: "-0.04em",
-                    lineHeight: 0.92,
-                  }}
-                >
-                  IMPALA
-                </span>
-                <span
-                  className="block text-teal-300 font-semibold mt-3"
-                  style={{
-                    fontFamily: "var(--font-century-gothic)",
-                    fontSize: "clamp(1rem, 2.4vw, 1.75rem)",
-                    letterSpacing: "0.18em",
-                  }}
-                >
-                </span>
-              </motion.h1>
-
-              {/* Search bar */}
-              <motion.div variants={fadeUp} className="mt-28 max-w-lg">
-                <div className="flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-teal-400/30 p-2">
+              {/* Search + CTAs — même ligne */}
+              <motion.div variants={fadeUp} className="flex items-center gap-3 flex-wrap w-full max-w-5xl">
+                <div className="flex-1 min-w-0 flex items-center bg-white/10 backdrop-blur-md rounded-2xl border border-teal-400/30 p-2">
                   <MagnifyingGlassIcon className="w-5 h-5 text-teal-300 ml-3 flex-shrink-0" />
                   <input
                     type="text"
                     placeholder="Rechercher un bien, un véhicule..."
-                    className="flex-1 bg-transparent px-4 py-2.5 text-white placeholder:text-teal-300/50 focus:outline-none text-sm"
+                    className="flex-1 bg-transparent px-4 py-2.5 text-white placeholder:text-teal-300/50 focus:outline-none text-sm min-w-0"
                   />
                   <motion.button
                     whileHover={{ scale: 1.04 }}
@@ -277,27 +236,21 @@ export default function HomePage() {
                     Rechercher
                   </motion.button>
                 </div>
-              </motion.div>
-
-              {/* CTAs */}
-              <motion.div variants={fadeUp} className="mt-8 flex flex-col sm:flex-row items-start gap-4">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }} className="flex-shrink-0">
                   <Link
                     href="/inscription"
-                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400
-                      text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-400/40 transition-all text-base"
+                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-white font-semibold shadow-lg shadow-teal-500/30 hover:shadow-teal-400/40 transition-all text-sm whitespace-nowrap"
                   >
                     Commencer gratuitement
                     <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                      <ArrowRightIcon className="w-5 h-5" />
+                      <ArrowRightIcon className="w-4 h-4" />
                     </motion.span>
                   </Link>
                 </motion.div>
-                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex-shrink-0">
                   <Link
                     href="/tarifs"
-                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl
-                      text-white font-medium border border-teal-400/40 hover:bg-white/10 transition-colors text-base"
+                    className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-medium border border-teal-400/40 hover:bg-white/10 transition-colors text-sm whitespace-nowrap"
                   >
                     Voir les tarifs
                   </Link>
@@ -305,7 +258,7 @@ export default function HomePage() {
               </motion.div>
 
               {/* Mini stats row */}
-              <motion.div variants={fadeUp} className="mt-10 flex items-center gap-0">
+              <motion.div variants={fadeUp} className="flex items-center gap-0">
                 {[
                   { value: "10K+", label: "Annonces" },
                   { value: "5K+",  label: "Utilisateurs" },
@@ -327,12 +280,12 @@ export default function HomePage() {
               </motion.div>
             </motion.div>
 
-            {/* ── Right: CoverFlow 3D Hero ── */}
+            {/* ── Top: CoverFlow 3D Hero — centré ── */}
             <motion.div
-              className="order-1 lg:order-2 flex flex-col items-center justify-center lg:-mr-6"
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="order-1 flex flex-col items-center justify-center w-full"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             >
               {(() => {
                 const heroDemoCards = [
