@@ -323,11 +323,6 @@ function MobileMoneyCarousel() {
 export default function BoutiqueHomePage() {
   const [slide, setSlide] = useState(0);
 
-  useEffect(() => {
-    const t = setInterval(() => setSlide((s) => (s + 1) % slides.length), 5000);
-    return () => clearInterval(t);
-  }, []);
-
   const featured = PRODUITS.filter((p) => p.disponible).slice(0, 8);
   const menager = PRODUITS.filter((p) => p.categorie === "menager" && p.disponible).slice(0, 4);
   const auto = PRODUITS.filter((p) => p.categorie === "automobile" && p.disponible).slice(0, 4);
