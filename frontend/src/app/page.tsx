@@ -782,7 +782,7 @@ export default function HomePage() {
           <motion.div
             className="flex gap-6 w-max"
             animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: avis.length * 4, ease: "linear", repeat: Infinity }}
+            transition={{ duration: avis.length * 12, ease: "linear", repeat: Infinity }}
             style={{ willChange: "transform" }}
           >
             {[...avis, ...avis].map((t, idx) => (
