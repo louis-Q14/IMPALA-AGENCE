@@ -17,6 +17,7 @@ import {
   ArrowRightOnRectangleIcon,
   Bars3Icon,
   XMarkIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -32,6 +33,7 @@ const sidebarItems = [
   { name: "Dépenses", href: "/superadmin/depenses", icon: BanknotesIcon },
   { name: "Tarification & Frais", href: "/superadmin/tarifs-frais", icon: TagIcon },
   { name: "Suivis des actions executer", href: "/superadmin/suivis-des-actions-executer", icon: ClipboardDocumentListIcon },
+  { name: "Avis utilisateurs", href: "/superadmin/avis", icon: StarIcon },
   { name: "Paramètres", href: "/superadmin/parametres", icon: Cog6ToothIcon },
 ];
 
