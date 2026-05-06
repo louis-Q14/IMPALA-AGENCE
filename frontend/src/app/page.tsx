@@ -138,6 +138,11 @@ export default function HomePage() {
     mileage?: number | null; photos?: string[];
   }>>([]); 
 
+  const [avis, setAvis] = useState<Array<{
+    id: number; auteur_nom: string; note: number; titre?: string | null;
+    contenu: string; created_at: string; auteur_avatar?: string | null;
+  }>>([]); 
+
   const [annoncesTab, setAnnoncesTab] = useState<"immobilier" | "automobile">("immobilier");
 
   useEffect(() => {
@@ -165,6 +170,11 @@ export default function HomePage() {
     };
     load();
     loadAutos();
+    // Charger les vrais avis
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/blog/avis?limit=20`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.avis?.length) setAvis(d.avis); })
+      .catch(() => {});
   }, []);
 
   const statsRef = useRef<HTMLElement>(null);
@@ -739,54 +749,77 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ===== TESTIMONIALS ===== */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            className="text-center max-w-2xl mx-auto mb-16"
+      {/* ===== TESTIMONIALS — infinite scroll marquee ===== */}
+      {avis.length > 0 && (
+      <section className="py-20 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+          <motion.h2
+            className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] text-center"
             initial="hidden" whileInView="visible"
             viewport={{ once: true, amount: 0.3 }} variants={fadeUp}
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
-              Ce que disent nos utilisateurs
-            </h2>
+            Ce que disent nos utilisateurs
+          </motion.h2>
+          {/* note moyenne */}
+          <motion.div className="flex items-center justify-center gap-2 mt-3" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => {
+                const avg = avis.reduce((s, a) => s + (a.note || 0), 0) / avis.length;
+                return <StarIcon key={i} className={`w-5 h-5 ${i < Math.round(avg) ? "text-yellow-400 fill-yellow-400" : "text-[var(--text-muted)]"}`} />;
+              })}
+            </div>
+            <span className="text-sm text-[var(--text-secondary)]">
+              {(avis.reduce((s, a) => s + (a.note || 0), 0) / avis.length).toFixed(1)} / 5 · {avis.length} avis
+            </span>
           </motion.div>
+        </div>
+
+        {/* Marquee — double list for seamless loop */}
+        <div
+          className="relative"
+          style={{ maskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)", WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)" }}
+        >
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-            variants={stagger} initial="hidden" whileInView="visible"
-            viewport={{ once: true, amount: 0.15 }}
+            className="flex gap-6 w-max"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ duration: avis.length * 4, ease: "linear", repeat: Infinity }}
+            style={{ willChange: "transform" }}
           >
-            {testimonials.map((t) => (
-              <motion.div
-                key={t.name} variants={fadeUp}
-                whileHover={{ y: -6, transition: { type: "spring", stiffness: 400, damping: 20 } }}
-                className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:shadow-xl transition-shadow"
+            {[...avis, ...avis].map((t, idx) => (
+              <div
+                key={`${t.id}-${idx}`}
+                className="w-80 flex-shrink-0 p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:shadow-xl transition-shadow"
               >
-                <div className="flex items-center gap-1 mb-4">
+                <div className="flex items-center gap-1 mb-3">
                   {[...Array(5)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.05 * i, type: "spring", stiffness: 500 }}
-                      viewport={{ once: true }}
-                    >
-                      <StarIcon className={`w-5 h-5 ${i < t.rating ? "text-yellow-400 fill-yellow-400" : "text-[var(--text-muted)]"}`} />
-                    </motion.div>
+                    <StarIcon key={i} className={`w-4 h-4 ${i < (t.note || 0) ? "text-yellow-400 fill-yellow-400" : "text-[var(--text-muted)]"}`} />
                   ))}
                 </div>
-                <p className="text-[var(--text-secondary)] leading-relaxed mb-4">
-                  &ldquo;{t.content}&rdquo;
+                {t.titre && (
+                  <p className="font-semibold text-[var(--text-primary)] text-sm mb-1">{t.titre}</p>
+                )}
+                <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-4 line-clamp-3">
+                  &ldquo;{t.contenu}&rdquo;
                 </p>
-                <div>
-                  <p className="font-semibold text-[var(--text-primary)]">{t.name}</p>
-                  <p className="text-sm text-[var(--text-muted)]">{t.role}</p>
+                <div className="flex items-center gap-3">
+                  {t.auteur_avatar ? (
+                    <Image src={t.auteur_avatar} alt={t.auteur_nom} width={32} height={32} className="rounded-full object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 font-bold text-sm">
+                      {t.auteur_nom.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-[var(--text-primary)] text-sm">{t.auteur_nom}</p>
+                    <p className="text-xs text-[var(--text-muted)]">{new Date(t.created_at).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</p>
+                  </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         </div>
       </section>
+      )}
 
       {/* ===== CTA ===== */}
       <section className="py-20">
