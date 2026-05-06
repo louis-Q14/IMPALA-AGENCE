@@ -74,7 +74,7 @@ const services = [
   {
     title: "Automobile",
     description: "Vendez ou louez votre véhicule. Réservation avec calendrier intégré.",
-    icon: "/automobile-icon.png",
+    icon: "/car 1.png",
     href: "/automobile",
     color: "from-amber-500 to-orange-600",
     bgLight: "bg-amber-50 dark:bg-amber-950/30",
