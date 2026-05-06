@@ -366,7 +366,7 @@ function InscriptionContent() {
                   <button
                     key={svc.id}
                     onClick={() => toggleService(svc.id)}
-                    className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${`
+                    className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border-2 text-left transition-all ${
                       selectedServices.includes(svc.id)
                         ? "border-primary bg-primary/5"
                         : "border-[var(--border-color)] hover:border-[var(--border-hover)]"
