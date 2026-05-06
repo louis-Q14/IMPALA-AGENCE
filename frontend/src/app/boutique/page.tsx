@@ -273,21 +273,6 @@ function MobileMoneyCarousel() {
         })}
       </div>
 
-      {/* Dots */}
-      <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 7 }}>
-        {MM_CARDS.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setActive(i)}
-            style={{
-              width: i === active ? 24 : 8, height: 8,
-              borderRadius: 9999, border: "none", cursor: "pointer",
-              background: i === active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)",
-              transition: "all 0.35s", padding: 0,
-            }}
-          />
-        ))}
-      </div>
     </div>
   );
 }
