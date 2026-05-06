@@ -160,109 +160,133 @@ const MM_CARDS = [
 ];
 
 function MobileMoneyCarousel() {
-  const [active, setActive] = useState(1); // airtel au centre par défaut
+  const [active, setActive] = useState(1);
 
   useEffect(() => {
-    const t = setInterval(() => setActive((a) => (a + 1) % MM_CARDS.length), 3000);
+    const t = setInterval(() => setActive((a) => (a + 1) % MM_CARDS.length), 3200);
     return () => clearInterval(t);
   }, []);
 
-  const D = 200; // circle diameter
-  const GAP = 230; // horizontal spacing between centers
+  const D = 200;
+  const GAP = 230;
 
   return (
-    <div style={{ position: "relative", width: 560, height: 280 }}>
-      {/* 3D stage */}
-      <div style={{ position: "relative", width: "100%", height: "100%", perspective: "1400px", perspectiveOrigin: "50% 50%" }}>
-        {MM_CARDS.map((card, i) => {
-          const total = MM_CARDS.length;
-          const half = Math.floor(total / 2);
-          const offset = ((i - active + total + half) % total) - half;
-          const abs = Math.abs(offset);
-          if (abs > 1) return null;
+    <>
+      <style>{`
+        @keyframes mmSpinCenter {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        @keyframes mmSpinSide {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        @keyframes mmHaloBreath {
+          0%, 100% { opacity: 0.85; transform: scale(1); }
+          50%       { opacity: 1;    transform: scale(1.06); }
+        }
+      `}</style>
+      <div style={{ position: "relative", width: 560, height: 280 }}>
+        {/* 3D stage */}
+        <div style={{ position: "relative", width: "100%", height: "100%", perspective: "1400px", perspectiveOrigin: "50% 50%" }}>
+          {MM_CARDS.map((card, i) => {
+            const total = MM_CARDS.length;
+            const half  = Math.floor(total / 2);
+            const offset = ((i - active + total + half) % total) - half;
+            if (Math.abs(offset) > 1) return null;
 
-          const isCenter = offset === 0;
-          const rotY  = isCenter ? 0 : offset < 0 ? 52 : -52;
-          const tx    = offset * GAP;
-          const tz    = isCenter ? 0 : -160;
-          const sc    = isCenter ? 1 : 0.78;
-          const op    = isCenter ? 1 : 0.72;
-          const zIdx  = isCenter ? 10 : 5;
+            const isCenter = offset === 0;
+            const rotY = isCenter ? 0 : offset < 0 ? 52 : -52;
+            const tx   = offset * GAP;
+            const tz   = isCenter ? 0 : -160;
+            const sc   = isCenter ? 1 : 0.78;
+            const op   = isCenter ? 1 : 0.72;
+            const zIdx = isCenter ? 10 : 5;
 
-          return (
-            <div
-              key={card.id}
-              onClick={() => !isCenter && setActive(i)}
-              style={{
-                position: "absolute",
-                left: "50%",
-                top: "50%",
-                width: D,
-                height: D,
-                marginLeft: -D / 2,
-                marginTop: -D / 2,
-                zIndex: zIdx,
-                cursor: isCenter ? "default" : "pointer",
-                transition: "transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.7s ease",
-                transform: `translateX(${tx}px) translateZ(${tz}px) rotateY(${rotY}deg) scale(${sc})`,
-                opacity: op,
-              }}
-            >
-              {/* Glassmorphism halo (centre uniquement) */}
-              {isCenter && (
-                <div style={{
+            return (
+              <div
+                key={card.id}
+                onClick={() => !isCenter && setActive(i)}
+                style={{
                   position: "absolute",
-                  inset: -30,
-                  borderRadius: "50%",
-                  background: "rgba(255,255,255,0.08)",
-                  backdropFilter: "blur(18px)",
-                  WebkitBackdropFilter: "blur(18px)",
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  boxShadow: `0 0 60px ${card.glow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
-                  zIndex: 0,
-                  pointerEvents: "none",
-                }} />
-              )}
-              {/* Cercle principal — effet épaisseur de vitre */}
-              <div style={{
-                position: "relative",
-                zIndex: 1,
-                width: D,
-                height: D,
-                borderRadius: "50%",
-                overflow: "hidden",
-                background: card.bg,
-                border: `3px solid ${card.border}`,
-                boxShadow: isCenter
-                  ? `inset 0 3px 6px rgba(255,255,255,0.6), inset 0 -3px 8px rgba(0,0,0,0.35), 0 0 0 4px rgba(255,255,255,0.22), 0 0 0 8px rgba(255,255,255,0.07), 0 0 0 11px rgba(0,0,0,0.25), 0 24px 60px ${card.glow}`
-                  : `inset 0 2px 5px rgba(255,255,255,0.4), inset 0 -2px 6px rgba(0,0,0,0.22), 0 0 0 3px rgba(255,255,255,0.14), 0 0 0 6px rgba(255,255,255,0.05), 0 0 0 8px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.4)`,
-              }}>
-                {card.img ? (
-                  <img src={card.img} alt={card.id} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                ) : (
-                  card.content
+                  left: "50%",
+                  top: "50%",
+                  width: D,
+                  height: D,
+                  marginLeft: -D / 2,
+                  marginTop: -D / 2,
+                  zIndex: zIdx,
+                  cursor: isCenter ? "default" : "pointer",
+                  /* Transition très fluide — easing spring-like */
+                  transition: "transform 1.1s cubic-bezier(0.22,1,0.36,1), opacity 1.1s cubic-bezier(0.22,1,0.36,1)",
+                  transform: `translateX(${tx}px) translateZ(${tz}px) rotateY(${rotY}deg) scale(${sc})`,
+                  opacity: op,
+                }}
+              >
+                {/* Halo glassmorphism centre — respiration douce */}
+                {isCenter && (
+                  <div style={{
+                    position: "absolute",
+                    inset: -30,
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.08)",
+                    backdropFilter: "blur(18px)",
+                    WebkitBackdropFilter: "blur(18px)",
+                    border: "1px solid rgba(255,255,255,0.18)",
+                    boxShadow: `0 0 60px ${card.glow}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+                    zIndex: 0,
+                    pointerEvents: "none",
+                    animation: "mmHaloBreath 3s ease-in-out infinite",
+                  }} />
                 )}
-                {/* Réfraction vitre — toutes les cartes */}
-                <div style={{
-                  position: "absolute", inset: 0, borderRadius: "50%", pointerEvents: "none",
-                  background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.06) 28%, transparent 52%, rgba(255,255,255,0.04) 76%, rgba(255,255,255,0.16) 100%)",
-                  opacity: isCenter ? 1 : 0.7,
-                }} />
-                {/* Liseré lumineux haut (bord de verre) */}
-                <div style={{
-                  position: "absolute", top: 0, left: "10%", right: "10%", height: "28%",
-                  borderRadius: "50% 50% 0 0 / 100% 100% 0 0",
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%)",
-                  pointerEvents: "none",
-                  opacity: isCenter ? 1 : 0.6,
-                }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
 
-    </div>
+                {/* Spinner wrapper — tourne sur lui-même */}
+                <div style={{
+                  position: "relative",
+                  zIndex: 1,
+                  width: D,
+                  height: D,
+                  animation: isCenter
+                    ? "mmSpinCenter 9s linear infinite"
+                    : "mmSpinSide 16s linear infinite",
+                }}>
+                  {/* Cercle épaisseur de vitre */}
+                  <div style={{
+                    width: D,
+                    height: D,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: card.bg,
+                    border: `3px solid ${card.border}`,
+                    boxShadow: isCenter
+                      ? `inset 0 3px 6px rgba(255,255,255,0.6), inset 0 -3px 8px rgba(0,0,0,0.35), 0 0 0 4px rgba(255,255,255,0.22), 0 0 0 8px rgba(255,255,255,0.07), 0 0 0 11px rgba(0,0,0,0.25), 0 24px 60px ${card.glow}`
+                      : `inset 0 2px 5px rgba(255,255,255,0.4), inset 0 -2px 6px rgba(0,0,0,0.22), 0 0 0 3px rgba(255,255,255,0.14), 0 0 0 6px rgba(255,255,255,0.05), 0 0 0 8px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.4)`,
+                    position: "relative",
+                  }}>
+                    {card.img && (
+                      <img src={card.img} alt={card.id} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    )}
+                    {!card.img && card.content}
+                    {/* Réfraction vitre */}
+                    <div style={{
+                      position: "absolute", inset: 0, borderRadius: "50%", pointerEvents: "none",
+                      background: "linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.06) 28%, transparent 52%, rgba(255,255,255,0.04) 76%, rgba(255,255,255,0.16) 100%)",
+                    }} />
+                    {/* Liseré lumineux haut */}
+                    <div style={{
+                      position: "absolute", top: 0, left: "10%", right: "10%", height: "28%",
+                      borderRadius: "50% 50% 0 0 / 100% 100% 0 0",
+                      background: "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%)",
+                      pointerEvents: "none",
+                    }} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </>
   );
 }
 
