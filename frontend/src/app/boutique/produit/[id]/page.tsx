@@ -172,7 +172,7 @@ export default function ProduitPage() {
           {product.disponible && (
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
-                <div className="text-sm font-medium text-gray-600">Quantité :</div>
+                <div className="text-sm font-semibold text-[var(--text-primary)]">Quantité :</div>
                 <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
                   <button
                     onClick={() => setQty((q) => Math.max(1, q - 1))}

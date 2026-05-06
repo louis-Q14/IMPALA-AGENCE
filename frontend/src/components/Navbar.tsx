@@ -49,8 +49,21 @@ export default function Navbar() {
   const [mesAchatsOpen, setMesAchatsOpen] = useState(false);
   const [mobileBoutiqueOpen, setMobileBoutiqueOpen] = useState(false);
   const [mobileMesAchatsOpen, setMobileMesAchatsOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const boutiqueRef = useRef<HTMLDivElement>(null);
+
+  const refreshCartCount = () => {
+    try {
+      const raw = localStorage.getItem("impala_boutique_cart");
+      if (raw) {
+        const items: { quantite: number }[] = JSON.parse(raw);
+        setCartCount(items.reduce((sum, i) => sum + i.quantite, 0));
+      } else {
+        setCartCount(0);
+      }
+    } catch { setCartCount(0); }
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -67,6 +80,16 @@ export default function Navbar() {
     return () => {
       window.removeEventListener("storage", handleAuthChange);
       window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    refreshCartCount();
+    window.addEventListener("storage", refreshCartCount);
+    window.addEventListener("cart-change", refreshCartCount);
+    return () => {
+      window.removeEventListener("storage", refreshCartCount);
+      window.removeEventListener("cart-change", refreshCartCount);
     };
   }, []);
 
@@ -140,7 +163,13 @@ export default function Navbar() {
                   </Link>
                   <Link href="/boutique/panier" onClick={() => setBoutiqueOpen(false)}
                     className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                    <ShoppingCartIcon className="w-4 h-4" /> Panier
+                    <ShoppingCartIcon className="w-4 h-4" />
+                    <span>Panier</span>
+                    {cartCount > 0 && (
+                      <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full bg-orange-500 text-white text-xs font-bold px-1.5">
+                        {cartCount > 99 ? "99+" : cartCount}
+                      </span>
+                    )}
                   </Link>
                   <div className="border-t border-[var(--border-color)] mt-1">
                     <button
@@ -342,7 +371,13 @@ export default function Navbar() {
                   </Link>
                   <Link href="/boutique/panier" onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                    <ShoppingCartIcon className="w-4 h-4" /> Panier
+                    <ShoppingCartIcon className="w-4 h-4" />
+                    <span>Panier</span>
+                    {cartCount > 0 && (
+                      <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full bg-orange-500 text-white text-xs font-bold px-1.5">
+                        {cartCount > 99 ? "99+" : cartCount}
+                      </span>
+                    )}
                   </Link>
                   <div>
                     <button

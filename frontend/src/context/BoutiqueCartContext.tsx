@@ -96,9 +96,10 @@ export function BoutiqueCartProvider({ children }: { children: ReactNode }) {
     } catch { /* ignore */ }
   }, []);
 
-  // Persist to localStorage
+  // Persist to localStorage + notify Navbar badge
   useEffect(() => {
     localStorage.setItem("impala_boutique_cart", JSON.stringify(state.items));
+    window.dispatchEvent(new Event("cart-change"));
   }, [state.items]);
 
   const totalItems = state.items.reduce((sum, i) => sum + i.quantite, 0);
