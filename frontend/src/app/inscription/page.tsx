@@ -531,7 +531,7 @@ function InscriptionContent() {
                 </div>
 
                 {/* Date & Lieu de naissance */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>Date de naissance *</label>
                     <input
@@ -554,7 +554,7 @@ function InscriptionContent() {
                 </div>
 
                 {/* Sexe / Nationalité */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>Sexe *</label>
                     <select
@@ -584,7 +584,7 @@ function InscriptionContent() {
                 </div>
 
                 {/* État civil / Profession */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>État civil *</label>
                     <select
@@ -736,7 +736,7 @@ function InscriptionContent() {
                 </div>
 
                 {/* Téléphones */}
-                <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
                   <div>
                     <label className={labelClass}>Téléphone portable *</label>
                     <div className="relative">
