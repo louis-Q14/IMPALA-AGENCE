@@ -395,9 +395,9 @@ export default function HomePage() {
                                 )}
                               </div>
                               {/* Info */}
-                              <div style={{ padding: "18px 22px", background: "rgba(15,25,40,0.92)", backdropFilter: "blur(12px)" }}>
+                              <div style={{ padding: "18px 22px", background: "var(--bg-card)", backdropFilter: "blur(12px)", borderTop: "1px solid var(--border-color)" }}>
                                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                                  <span style={{ fontWeight: 700, fontSize: 15, color: "#fff", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
+                                  <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
                                   <span style={{ padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0, background: ad.ad_type === "sale" ? "#2563eb" : "#059669" }}>
                                     {ad.ad_type === "sale" ? "Vente" : "Location"}
                                   </span>
@@ -405,7 +405,7 @@ export default function HomePage() {
                                 <div style={{ fontSize: 20, fontWeight: 900, color: "#2dd4bf", marginBottom: 6 }}>
                                   {Number(ad.price ?? ad.rent_price ?? 0).toLocaleString("fr-FR")} FC{ad.ad_type === "rent" ? "/mois" : ""}
                                 </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "rgba(148,220,210,0.8)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 13, color: "var(--text-secondary)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
                                   <MapPinIcon style={{ width: 13, height: 13, flexShrink: 0 }} />
                                   {[ad.address, ad.city].filter(Boolean).join(", ")}
                                 </div>
