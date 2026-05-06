@@ -131,100 +131,183 @@ function ProductCard({ product }: { product: Product }) {
 }
 
 /* ── Mobile Money 3D Carousel ── */
+/* Coverflow 3D cards data */
+const MM_CARDS = [
+  {
+    id: "mpesa",
+    img: null,
+    bg: "radial-gradient(circle at 38% 28%, #4ade80 0%, #16a34a 45%, #14532d 100%)",
+    border: "rgba(134,239,172,0.6)",
+    shadow: "0 0 28px rgba(74,222,128,0.45)",
+    label: (
+      <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="58" fill="url(#mpesa-g)" />
+        <defs>
+          <radialGradient id="mpesa-g" cx="38%" cy="28%">
+            <stop offset="0%" stopColor="#4ade80"/>
+            <stop offset="50%" stopColor="#16a34a"/>
+            <stop offset="100%" stopColor="#14532d"/>
+          </radialGradient>
+        </defs>
+        <text x="60" y="55" textAnchor="middle" fill="white" fontWeight="900" fontSize="36" fontFamily="Arial Black,sans-serif">M</text>
+        <text x="60" y="78" textAnchor="middle" fill="#bbf7d0" fontWeight="700" fontSize="14" fontFamily="Arial,sans-serif" letterSpacing="4">PESA</text>
+      </svg>
+    ),
+  },
+  {
+    id: "orange",
+    img: null,
+    bg: "radial-gradient(circle at 38% 28%, #fb923c 0%, #ea580c 45%, #7c2d12 100%)",
+    border: "rgba(251,146,60,0.6)",
+    shadow: "0 0 28px rgba(251,146,60,0.45)",
+    label: (
+      <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="58" fill="url(#orange-g)" />
+        <defs>
+          <radialGradient id="orange-g" cx="38%" cy="28%">
+            <stop offset="0%" stopColor="#fb923c"/>
+            <stop offset="50%" stopColor="#ea580c"/>
+            <stop offset="100%" stopColor="#7c2d12"/>
+          </radialGradient>
+        </defs>
+        <text x="60" y="52" textAnchor="middle" fill="white" fontWeight="900" fontSize="18" fontFamily="Arial Black,sans-serif">Orange</text>
+        <text x="60" y="76" textAnchor="middle" fill="#ffedd5" fontWeight="700" fontSize="14" fontFamily="Arial,sans-serif">Money</text>
+      </svg>
+    ),
+  },
+  {
+    id: "airtel",
+    img: "/Airtel-money.png",
+    bg: "transparent",
+    border: "rgba(248,113,113,0.5)",
+    shadow: "0 0 28px rgba(220,38,38,0.5)",
+    label: null,
+  },
+];
+
 function MobileMoneyCarousel() {
+  const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setActive((a) => (a + 1) % MM_CARDS.length), 2800);
+    return () => clearInterval(t);
+  }, []);
+
   return (
     <>
       <style>{`
-        @keyframes mm-orbit {
-          from { transform: rotateY(0deg); }
-          to   { transform: rotateY(360deg); }
+        @keyframes cf-self-spin {
+          from { transform: rotateZ(0deg); }
+          to   { transform: rotateZ(360deg); }
         }
-        @keyframes mm-self-spin {
-          0%   { transform: rotateY(0deg) rotateZ(0deg); }
-          50%  { transform: rotateY(180deg) rotateZ(180deg); }
-          100% { transform: rotateY(360deg) rotateZ(360deg); }
+        @keyframes cf-halo {
+          0%, 100% { opacity: 0.18; transform: scale(1); }
+          50%       { opacity: 0.38; transform: scale(1.06); }
         }
-        @keyframes mm-glow-pulse {
-          0%, 100% { opacity: 0.15; transform: translate(-50%, -50%) scale(1); }
-          50%       { opacity: 0.35; transform: translate(-50%, -50%) scale(1.05); }
-        }
-        .mm-scene {
-          perspective: 580px;
+        .cf-scene {
+          perspective: 700px;
           perspective-origin: 50% 50%;
         }
-        .mm-orbit {
+        .cf-stage {
           position: relative;
-          width: 100%;
-          height: 100%;
+          width: 320px; height: 320px;
           transform-style: preserve-3d;
-          animation: mm-orbit 9s linear infinite;
         }
-        .mm-coin-wrap {
+        .cf-card {
           position: absolute;
           top: 50%; left: 50%;
-          width: 100px; height: 100px;
-          margin-left: -50px; margin-top: -50px;
-          transform-style: preserve-3d;
-        }
-        .mm-coin-wrap-1 { transform: rotateY(0deg)   translateZ(118px); }
-        .mm-coin-wrap-2 { transform: rotateY(120deg) translateZ(118px); }
-        .mm-coin-wrap-3 { transform: rotateY(240deg) translateZ(118px); }
-        .mm-coin-inner {
-          width: 100px; height: 100px;
+          width: 124px; height: 124px;
+          margin-left: -62px; margin-top: -62px;
           border-radius: 50%;
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
-          animation: mm-self-spin 5s linear infinite;
-          transform-style: preserve-3d;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.55), inset 0 2px 10px rgba(255,255,255,0.25);
+          overflow: hidden;
+          transition: transform 0.65s cubic-bezier(0.4,0,0.2,1),
+                      box-shadow 0.65s ease,
+                      opacity 0.65s ease;
+          cursor: pointer;
         }
-        .mm-coin-mpesa  { background: radial-gradient(circle at 38% 32%, #4ade80, #166534); border: 3px solid #86efac; }
-        .mm-coin-orange { background: radial-gradient(circle at 38% 32%, #fb923c, #9a3412); border: 3px solid #fed7aa; }
-        .mm-coin-airtel { background: radial-gradient(circle at 38% 32%, #f87171, #991b1b); border: 3px solid #fca5a5; }
-        .mm-glow {
+        .cf-card img {
+          width: 100%; height: 100%;
+          object-fit: cover;
+          border-radius: 50%;
+          animation: cf-self-spin 6s linear infinite;
+          display: block;
+        }
+        .cf-card-svg {
+          width: 100%; height: 100%;
+          border-radius: 50%;
+          animation: cf-self-spin 6s linear infinite;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+        }
+        .cf-halo {
           position: absolute; top: 50%; left: 50%;
-          width: 264px; height: 264px;
+          width: 300px; height: 300px;
+          margin-left: -150px; margin-top: -150px;
           border-radius: 50%;
-          border: 1.5px solid rgba(255,255,255,0.12);
-          animation: mm-glow-pulse 3s ease-in-out infinite;
+          border: 1.5px solid rgba(255,255,255,0.15);
           pointer-events: none;
-        }
-        .mm-center-dot {
-          position: absolute; top: 50%; left: 50%;
-          width: 12px; height: 12px;
-          margin-left: -6px; margin-top: -6px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.25);
-          box-shadow: 0 0 12px 4px rgba(255,255,255,0.15);
-          pointer-events: none;
+          animation: cf-halo 3s ease-in-out infinite;
         }
       `}</style>
 
-      <div className="mm-scene relative" style={{ width: 290, height: 290 }}>
-        <div className="mm-glow" />
-        <div className="mm-center-dot" />
-        <div className="mm-orbit">
-          {/* M-Pesa */}
-          <div className="mm-coin-wrap mm-coin-wrap-1">
-            <div className="mm-coin-inner mm-coin-mpesa">
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 28, lineHeight: 1 }}>M</span>
-              <span style={{ color: '#bbf7d0', fontWeight: 700, fontSize: 10, letterSpacing: 3, marginTop: 2 }}>PESA</span>
-            </div>
-          </div>
-          {/* Orange Money */}
-          <div className="mm-coin-wrap mm-coin-wrap-2">
-            <div className="mm-coin-inner mm-coin-orange">
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 13, lineHeight: 1, textAlign: 'center' }}>Orange</span>
-              <span style={{ color: '#ffedd5', fontWeight: 700, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>Money</span>
-            </div>
-          </div>
-          {/* Airtel Money */}
-          <div className="mm-coin-wrap mm-coin-wrap-3">
-            <div className="mm-coin-inner mm-coin-airtel">
-              <span style={{ color: '#fff', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>airtel</span>
-              <span style={{ color: '#fef08a', fontWeight: 700, fontSize: 10, letterSpacing: 1, marginTop: 2 }}>money</span>
-            </div>
-          </div>
+      <div className="cf-scene" style={{ width: 320, height: 320, position: "relative" }}>
+        <div className="cf-halo" />
+        <div className="cf-stage">
+          {MM_CARDS.map((card, i) => {
+            const total = MM_CARDS.length;
+            // position relative to active
+            let diff = i - active;
+            if (diff > total / 2) diff -= total;
+            if (diff < -total / 2) diff += total;
+
+            const isCenter = diff === 0;
+            const tx = diff * 145;
+            const tz = isCenter ? 0 : -90;
+            const ry = isCenter ? 0 : diff * -58;
+            const scale = isCenter ? 1.12 : 0.72;
+            const zIndex = isCenter ? 10 : 1;
+            const opacity = Math.abs(diff) > 1 ? 0 : 1;
+            const boxShadow = isCenter ? card.shadow : "none";
+
+            return (
+              <div
+                key={card.id}
+                className="cf-card"
+                onClick={() => setActive(i)}
+                style={{
+                  transform: `translateX(${tx}px) translateZ(${tz}px) rotateY(${ry}deg) scale(${scale})`,
+                  zIndex,
+                  opacity,
+                  boxShadow,
+                  border: `3px solid ${card.border}`,
+                  background: card.img ? "transparent" : "none",
+                }}
+              >
+                {card.img ? (
+                  <img src={card.img} alt={card.id} />
+                ) : (
+                  <div className="cf-card-svg">{card.label}</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* dots */}
+        <div style={{ position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 7 }}>
+          {MM_CARDS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              style={{
+                width: i === active ? 22 : 8, height: 8,
+                borderRadius: 9999, border: "none", cursor: "pointer",
+                background: i === active ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.3)",
+                transition: "all 0.3s",
+                padding: 0,
+              }}
+            />
+          ))}
         </div>
       </div>
     </>
