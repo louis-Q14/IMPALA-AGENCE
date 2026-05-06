@@ -98,6 +98,10 @@ body {
   background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%);
 }
 
+/* Scrollbar utilities */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 /* UI/UX Pro Max – Dark space hero */
 .hero-teal {
   background: radial-gradient(ellipse at 20% 50%, #0d1b2e 0%, #050b14 60%, #080010 100%);

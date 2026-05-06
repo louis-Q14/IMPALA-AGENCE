@@ -27,6 +27,7 @@ const navigation = [
   { name: "Automobile", href: "/automobile", icon: TruckIcon },
   { name: "Multi-Impala", href: "/multi-impala", icon: BuildingStorefrontIcon },
   { name: "Tarifs", href: "/tarifs", icon: null },
+  { name: "Boutique", href: "/boutique", icon: BuildingStorefrontIcon },
 ];
 
 interface User {
@@ -105,8 +106,7 @@ export default function Navbar() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="px-3 py-2 rounded-lg text-sm font-medium text-[var(--text-secondary)]
-                  hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all duration-200"
+                className="px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               >
                 {item.name}
               </Link>
@@ -259,8 +259,7 @@ export default function Navbar() {
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-3 py-3 rounded-xl text-[var(--text-secondary)]
-                  hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all"
+                className="flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
               >
                 {item.icon && <item.icon className="w-5 h-5" />}
                 <span className="font-medium">{item.name}</span>
