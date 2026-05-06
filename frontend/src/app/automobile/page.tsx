@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -92,7 +93,7 @@ export default function AutomobilePage() {
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                  <TruckIcon className="w-6 h-6 text-white" />
+                  <Image src="/car 1.png" alt="Automobile" width={40} height={40} className="object-contain" />
                 </div>
                 Automobile
               </h1>
