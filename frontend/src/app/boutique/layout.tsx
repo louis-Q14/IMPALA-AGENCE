@@ -31,11 +31,6 @@ function BoutiqueNavbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-[#0f0f0f] shadow-lg">
-      {/* Top banner */}
-      <div className="bg-[#e63900] text-white text-xs text-center py-1.5 px-4">
-        🚚 Livraison partout en RDC · Paiement 100% Mobile Money sécurisé · M-Pesa · Orange Money · Airtel Money
-      </div>
-
       {/* Main navbar */}
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 gap-4">
         {/* Logo */}
