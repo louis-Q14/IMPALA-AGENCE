@@ -63,7 +63,7 @@ const services = [
   {
     title: "Immobilier",
     description: "Trouvez la maison de vos rêves. Vente et location avec carte interactive.",
-    icon: "/immobilier-icon.png",
+    icon: "/immobilier 1-icon.png",
     href: "/immobilier",
     color: "from-blue-500 to-blue-700",
     bgLight: "bg-blue-50 dark:bg-blue-950/30",
