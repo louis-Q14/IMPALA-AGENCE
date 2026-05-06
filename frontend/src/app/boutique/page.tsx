@@ -135,20 +135,11 @@ function ProductCard({ product }: { product: Product }) {
 const MM_CARDS = [
   {
     id: "mpesa",
-    img: null,
+    img: "/M-pesa.png",
     bg: "radial-gradient(circle at 38% 30%, #4ade80 0%, #16a34a 45%, #052e16 100%)",
     glow: "rgba(34,197,94,0.55)",
     border: "rgba(134,239,172,0.5)",
-    content: (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 8 }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(134,239,172,0.5)" }}>
-          <span style={{ color: "#fff", fontWeight: 900, fontSize: 32, lineHeight: 1, fontFamily: "Arial Black,sans-serif" }}>M</span>
-        </div>
-        <div style={{ color: "#fff", fontWeight: 900, fontSize: 20, letterSpacing: 4, fontFamily: "Arial Black,sans-serif" }}>PESA</div>
-        <div style={{ color: "rgba(187,247,208,0.8)", fontSize: 10, letterSpacing: 1 }}>Mobile Money</div>
-        <div style={{ padding: "3px 12px", borderRadius: 20, background: "rgba(34,197,94,0.25)", border: "1px solid rgba(134,239,172,0.4)", color: "#86efac", fontSize: 10, fontWeight: 700 }}>Safaricom</div>
-      </div>
-    ),
+    content: null,
   },
   {
     id: "airtel",
