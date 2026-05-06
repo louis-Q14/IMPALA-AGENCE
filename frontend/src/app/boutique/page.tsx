@@ -160,20 +160,11 @@ const MM_CARDS = [
   },
   {
     id: "orange",
-    img: null,
+    img: "/Orange-money.png",
     bg: "radial-gradient(circle at 38% 30%, #fb923c 0%, #ea580c 45%, #431407 100%)",
     glow: "rgba(249,115,22,0.55)",
     border: "rgba(253,186,116,0.5)",
-    content: (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: 8 }}>
-        <div style={{ width: 64, height: 64, borderRadius: "50%", background: "rgba(255,165,0,0.2)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid rgba(253,186,116,0.5)" }}>
-          <svg viewBox="0 0 40 40" width="36" height="36"><circle cx="20" cy="20" r="18" fill="none" stroke="#fb923c" strokeWidth="3"/><circle cx="20" cy="20" r="8" fill="#fb923c"/></svg>
-        </div>
-        <div style={{ color: "#fff", fontWeight: 900, fontSize: 18, fontFamily: "Arial Black,sans-serif" }}>Orange</div>
-        <div style={{ color: "#fed7aa", fontWeight: 700, fontSize: 15 }}>Money</div>
-        <div style={{ padding: "3px 12px", borderRadius: 20, background: "rgba(249,115,22,0.25)", border: "1px solid rgba(253,186,116,0.4)", color: "#fdba74", fontSize: 10, fontWeight: 700 }}>Orange RDC</div>
-      </div>
-    ),
+    content: null,
   },
 ];
 
