@@ -187,8 +187,8 @@ function MobileMoneyCarousel() {
         }
       `}</style>
       <div style={{ position: "relative", width: 560, height: 280 }}>
-        {/* 3D stage */}
-        <div style={{ position: "relative", width: "100%", height: "100%", perspective: "1400px", perspectiveOrigin: "50% 50%" }}>
+        {/* Flat stage */}
+        <div style={{ position: "relative", width: "100%", height: "100%" }}>
           {MM_CARDS.map((card, i) => {
             const total = MM_CARDS.length;
             const half  = Math.floor(total / 2);
@@ -196,9 +196,9 @@ function MobileMoneyCarousel() {
             if (Math.abs(offset) > 1) return null;
 
             const isCenter = offset === 0;
-            const rotY = isCenter ? 0 : offset < 0 ? 52 : -52;
+            const rotY = 0;
             const tx   = offset * GAP;
-            const tz   = isCenter ? 0 : -160;
+            const tz   = 0;
             const sc   = isCenter ? 1 : 0.78;
             const op   = isCenter ? 1 : 0.72;
             const zIdx = isCenter ? 10 : 5;
@@ -261,7 +261,7 @@ function MobileMoneyCarousel() {
                     position: "relative",
                   }}>
                     {card.img && (
-                      <img src={card.img} alt={card.id} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      <img src={card.img} alt={card.id} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", transform: "scale(1.08)", transformOrigin: "center" }} />
                     )}
                     {!card.img && card.content}
                     {/* Réfraction vitre */}
