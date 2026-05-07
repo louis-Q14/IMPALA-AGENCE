@@ -249,7 +249,7 @@ export default function BoutiqueHomePage() {
 
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = setInterval(() => setSlide((s) => (s + 1) % slides.length), 5000);
+    timerRef.current = setInterval(() => setSlide((s) => (s + 1) % slides.length), 8000);
   }, []);
 
   useEffect(() => {
@@ -323,18 +323,6 @@ export default function BoutiqueHomePage() {
             <div className="flex-1 flex justify-center">
               {slide === 2 ? (
                 <div style={{ position: "relative", zIndex: 2 }}>
-                  {/* Sol réfléchissant sous les cercles */}
-                  <div style={{
-                    position: "absolute",
-                    bottom: -10,
-                    left: "10%",
-                    right: "10%",
-                    height: 2,
-                    background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 30%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0.18) 70%, transparent 100%)",
-                    borderRadius: 2,
-                    pointerEvents: "none",
-                    zIndex: 1,
-                  }} />
                   <MobileMoneyCarousel />
                 </div>
               ) : (
