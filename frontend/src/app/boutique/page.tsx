@@ -253,7 +253,7 @@ function MobileMoneyCarousel() {
                     height: D,
                     borderRadius: "50%",
                     overflow: "hidden",
-                    background: card.bg,
+                    background: "transparent",
                     border: `3px solid ${card.border}`,
                     boxShadow: isCenter
                       ? `inset 0 3px 6px rgba(255,255,255,0.6), inset 0 -3px 8px rgba(0,0,0,0.35), 0 0 0 4px rgba(255,255,255,0.22), 0 0 0 8px rgba(255,255,255,0.07), 0 0 0 11px rgba(0,0,0,0.25), 0 24px 60px ${card.glow}`
@@ -261,7 +261,7 @@ function MobileMoneyCarousel() {
                     position: "relative",
                   }}>
                     {card.img && (
-                      <img src={card.img} alt={card.id} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", transform: "scale(1.08)", transformOrigin: "center" }} />
+                      <img src={card.img} alt={card.id} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                     )}
                     {!card.img && card.content}
                     {/* Réfraction vitre */}
