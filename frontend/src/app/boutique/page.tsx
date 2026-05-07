@@ -257,6 +257,11 @@ export default function BoutiqueHomePage() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [startTimer]);
 
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+  }, []);
+
   const goTo = useCallback((i: number) => {
     setSlide(i);
     startTimer();
@@ -271,7 +276,11 @@ export default function BoutiqueHomePage() {
   return (
     <div>
       {/* ── Hero Slider ── */}
-      <section className={`group/hero relative bg-gradient-to-br ${current.bg} min-h-[480px] md:min-h-[540px] overflow-hidden`}>
+      <section
+        className={`group/hero relative bg-gradient-to-br ${current.bg} min-h-[480px] md:min-h-[540px] overflow-hidden`}
+        onMouseEnter={stopTimer}
+        onMouseLeave={startTimer}
+      >
         {/* Profondeur de champ sur tout le fond — uniquement slide Mobile Money */}
         {slide === 2 && (
           <>
