@@ -316,8 +316,27 @@ export default function BoutiqueHomePage() {
               >
                 {current.badge}
               </span>
-              <h1 className="text-3xl md:text-5xl font-black leading-tight whitespace-pre-line mb-4">
-                {current.title}
+              <h1 className="text-3xl md:text-5xl font-black leading-tight mb-4">
+                {slide === 2 ? (
+                  <>
+                    <span className="block text-white">Payez avec</span>
+                    <span className="block mt-1">
+                      <span style={{ color: "#E31837", fontFamily: "'Arial Rounded MT Bold', 'Nunito', sans-serif" }}>m</span>
+                      <span style={{ color: "#E31837", fontFamily: "'Arial Rounded MT Bold', 'Nunito', sans-serif" }}>‑</span>
+                      <span style={{ color: "#E31837", fontFamily: "'Arial Rounded MT Bold', 'Nunito', sans-serif" }}>pesa</span>
+                    </span>
+                    <span className="block mt-1">
+                      <span style={{ color: "#E40000", fontFamily: "'Helvetica Neue', Arial, sans-serif", letterSpacing: "-0.02em" }}>airtel </span>
+                      <span style={{ color: "#FFC200", fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>money</span>
+                    </span>
+                    <span className="block mt-1">
+                      <span style={{ color: "#FF6600", fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>Orange </span>
+                      <span style={{ color: "#FF6600", fontFamily: "'Helvetica Neue', Arial, sans-serif", fontWeight: 400 }}>Money</span>
+                    </span>
+                  </>
+                ) : (
+                  <span className="whitespace-pre-line">{current.title}</span>
+                )}
               </h1>
               <p className="text-white/70 text-sm md:text-base max-w-md mb-8">{current.sub}</p>
               <Link
