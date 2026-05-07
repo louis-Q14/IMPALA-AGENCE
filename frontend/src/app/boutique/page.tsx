@@ -254,6 +254,24 @@ export default function BoutiqueHomePage() {
     <div>
       {/* ── Hero Slider ── */}
       <section className={`relative bg-gradient-to-br ${current.bg} min-h-[480px] md:min-h-[540px] overflow-hidden`}>
+        {/* Profondeur de champ sur tout le fond — uniquement slide Mobile Money */}
+        {slide === 2 && (
+          <>
+            {/* Vignette blur coins + bords */}
+            <div style={{
+              position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              WebkitMaskImage: "radial-gradient(ellipse 60% 55% at 62% 52%, transparent 30%, black 72%)",
+              maskImage: "radial-gradient(ellipse 60% 55% at 62% 52%, transparent 30%, black 72%)",
+            }} />
+            {/* Assombrissement bords */}
+            <div style={{
+              position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
+              background: "radial-gradient(ellipse 65% 58% at 62% 52%, transparent 28%, rgba(0,0,0,0.38) 75%, rgba(0,0,0,0.55) 100%)",
+            }} />
+          </>
+        )}
         <AnimatePresence mode="wait">
           <motion.div
             key={slide}
@@ -261,7 +279,8 @@ export default function BoutiqueHomePage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
             transition={{ duration: 0.5 }}
-            className="max-w-7xl mx-auto px-4 py-16 md:py-20 flex flex-col md:flex-row items-center gap-10"
+            className="max-w-7xl mx-auto px-4 py-16 md:py-20 flex flex-col md:flex-row items-center gap-10 relative"
+          style={{ zIndex: 2 }}
           >
             <div className="flex-1 text-white">
               <span
@@ -285,30 +304,7 @@ export default function BoutiqueHomePage() {
             </div>
             <div className="flex-1 flex justify-center">
               {slide === 2 ? (
-                <div style={{ position: "relative" }}>
-                  {/* Fond profondeur de champ */}
-                  {/* Halo central lumineux */}
-                  <div style={{
-                    position: "absolute",
-                    inset: 0,
-                    borderRadius: 32,
-                    background: "radial-gradient(ellipse 70% 60% at 50% 55%, rgba(255,255,255,0.06) 0%, transparent 70%)",
-                    pointerEvents: "none",
-                    zIndex: 0,
-                  }} />
-                  {/* Vignette blur bords */}
-                  <div style={{
-                    position: "absolute",
-                    inset: -40,
-                    borderRadius: 48,
-                    background: "radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)",
-                    backdropFilter: "blur(8px)",
-                    WebkitBackdropFilter: "blur(8px)",
-                    WebkitMaskImage: "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, black 80%)",
-                    maskImage: "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, black 80%)",
-                    pointerEvents: "none",
-                    zIndex: 2,
-                  }} />
+                <div style={{ position: "relative", zIndex: 2 }}>
                   {/* Sol réfléchissant sous les cercles */}
                   <div style={{
                     position: "absolute",
@@ -321,9 +317,7 @@ export default function BoutiqueHomePage() {
                     pointerEvents: "none",
                     zIndex: 1,
                   }} />
-                  <div style={{ position: "relative", zIndex: 1 }}>
-                    <MobileMoneyCarousel />
-                  </div>
+                  <MobileMoneyCarousel />
                 </div>
               ) : (
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
