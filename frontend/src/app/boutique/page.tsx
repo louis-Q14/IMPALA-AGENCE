@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRightIcon,
@@ -12,6 +12,8 @@ import {
   ChatBubbleLeftRightIcon,
   StarIcon,
   FireIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { PRODUITS, formatCDF, formatUSD } from "./data";
@@ -243,11 +245,22 @@ function MobileMoneyCarousel() {
 /* ── Main page ── */
 export default function BoutiqueHomePage() {
   const [slide, setSlide] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setSlide((s) => (s + 1) % slides.length), 5000);
+  }, []);
 
   useEffect(() => {
-    const t = setInterval(() => setSlide((s) => (s + 1) % slides.length), 5000);
-    return () => clearInterval(t);
-  }, []);
+    startTimer();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [startTimer]);
+
+  const goTo = useCallback((i: number) => {
+    setSlide(i);
+    startTimer();
+  }, [startTimer]);
 
   const featured = PRODUITS.filter((p) => p.disponible).slice(0, 8);
   const menager = PRODUITS.filter((p) => p.categorie === "menager" && p.disponible).slice(0, 4);
@@ -258,7 +271,7 @@ export default function BoutiqueHomePage() {
   return (
     <div>
       {/* ── Hero Slider ── */}
-      <section className={`relative bg-gradient-to-br ${current.bg} min-h-[480px] md:min-h-[540px] overflow-hidden`}>
+      <section className={`group/hero relative bg-gradient-to-br ${current.bg} min-h-[480px] md:min-h-[540px] overflow-hidden`}>
         {/* Profondeur de champ sur tout le fond — uniquement slide Mobile Money */}
         {slide === 2 && (
           <>
@@ -340,12 +353,30 @@ export default function BoutiqueHomePage() {
           </motion.div>
         </AnimatePresence>
 
+        {/* Flèche gauche */}
+        <button
+          onClick={() => goTo((slide - 1 + slides.length) % slides.length)}
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/30 text-white opacity-0 group-hover/hero:opacity-100 hover:bg-black/50 transition-all duration-200 backdrop-blur-sm"
+          aria-label="Slide précédent"
+        >
+          <ChevronLeftIcon className="w-5 h-5" />
+        </button>
+
+        {/* Flèche droite */}
+        <button
+          onClick={() => goTo((slide + 1) % slides.length)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/30 text-white opacity-0 group-hover/hero:opacity-100 hover:bg-black/50 transition-all duration-200 backdrop-blur-sm"
+          aria-label="Slide suivant"
+        >
+          <ChevronRightIcon className="w-5 h-5" />
+        </button>
+
         {/* Dots */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10">
           {slides.map((_, i) => (
             <button
               key={i}
-              onClick={() => setSlide(i)}
+              onClick={() => goTo(i)}
               className={`w-2 h-2 rounded-full transition-all ${i === slide ? "bg-white w-6" : "bg-white/40"}`}
             />
           ))}
