@@ -285,7 +285,46 @@ export default function BoutiqueHomePage() {
             </div>
             <div className="flex-1 flex justify-center">
               {slide === 2 ? (
-                <MobileMoneyCarousel />
+                <div style={{ position: "relative" }}>
+                  {/* Fond profondeur de champ */}
+                  {/* Halo central lumineux */}
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: 32,
+                    background: "radial-gradient(ellipse 70% 60% at 50% 55%, rgba(255,255,255,0.06) 0%, transparent 70%)",
+                    pointerEvents: "none",
+                    zIndex: 0,
+                  }} />
+                  {/* Vignette blur bords */}
+                  <div style={{
+                    position: "absolute",
+                    inset: -40,
+                    borderRadius: 48,
+                    background: "radial-gradient(ellipse 90% 80% at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%)",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
+                    WebkitMaskImage: "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, black 80%)",
+                    maskImage: "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 40%, black 80%)",
+                    pointerEvents: "none",
+                    zIndex: 2,
+                  }} />
+                  {/* Sol réfléchissant sous les cercles */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: -10,
+                    left: "10%",
+                    right: "10%",
+                    height: 2,
+                    background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 30%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0.18) 70%, transparent 100%)",
+                    borderRadius: 2,
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }} />
+                  <div style={{ position: "relative", zIndex: 1 }}>
+                    <MobileMoneyCarousel />
+                  </div>
+                </div>
               ) : (
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
                   <Image
