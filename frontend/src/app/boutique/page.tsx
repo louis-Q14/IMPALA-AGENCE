@@ -204,7 +204,24 @@ function MobileMoneyCarousel() {
                 opacity: op,
               }}
             >
+              {/* Ombre sol — ellipse qui suit la carte */}
               <div style={{
+                position: "absolute",
+                bottom: -18,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: isCenter ? "75%" : "60%",
+                height: isCenter ? 22 : 14,
+                borderRadius: "50%",
+                background: "rgba(0,0,0,0.45)",
+                filter: `blur(${isCenter ? 10 : 7}px)`,
+                transition: "all 1.1s cubic-bezier(0.22,1,0.36,1)",
+                zIndex: 0,
+                pointerEvents: "none",
+              }} />
+              <div style={{
+                position: "relative",
+                zIndex: 1,
                 width: D,
                 height: D,
                 borderRadius: "50%",
