@@ -40,7 +40,7 @@ const slides = [
     cta: "/boutique/automobile",
     ctaLabel: "Voir les pièces auto",
     accent: "#0ea5e9",
-    image: "/panier automobile.png",
+    image: "/panier-automobile.png",
   },
   {
     bg: "from-[#0a1a00] to-[#1a3300]",
