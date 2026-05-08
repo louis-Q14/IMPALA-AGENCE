@@ -354,16 +354,39 @@ export default function BoutiqueHomePage() {
                   <MobileMoneyCarousel />
                 </div>
               ) : slide === 1 ? (
-                <div className="relative w-80 h-80 md:w-[440px] md:h-[440px]" style={{ zIndex: 2 }}>
+                <motion.div
+                  className="relative w-[360px] h-[360px] md:w-[540px] md:h-[540px]"
+                  style={{ zIndex: 2 }}
+                  initial={{ opacity: 0, x: 80, scale: 0.88 }}
+                  animate={{
+                    opacity: 1,
+                    x: 0,
+                    scale: 1,
+                    y: [0, -14, 0],
+                  }}
+                  transition={{
+                    opacity: { duration: 0.55, ease: "easeOut" },
+                    x: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
+                    scale: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
+                    y: {
+                      delay: 0.65,
+                      duration: 3.6,
+                      repeat: Infinity,
+                      repeatType: "loop",
+                      ease: "easeInOut",
+                    },
+                  }}
+                  whileHover={{ scale: 1.06, transition: { duration: 0.3 } }}
+                >
                   <Image
                     src={current.image}
                     alt="hero"
                     fill
                     className="object-contain drop-shadow-2xl"
-                    sizes="440px"
+                    sizes="540px"
                     priority
                   />
-                </div>
+                </motion.div>
               ) : (
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
                   <Image
