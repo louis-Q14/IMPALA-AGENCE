@@ -354,7 +354,7 @@ export default function BoutiqueHomePage() {
                   <MobileMoneyCarousel />
                 </div>
               ) : slide === 1 ? (
-                <div className="relative w-[420px] h-[420px] md:w-[560px] md:h-[560px]" style={{ zIndex: 2 }}>
+                <div className="relative w-72 h-72 md:w-96 md:h-96" style={{ zIndex: 2, transform: "scale(1.5)", transformOrigin: "center center", overflow: "visible" }}>
                   <Image
                     src={current.image}
                     alt="hero"
