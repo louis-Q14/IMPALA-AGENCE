@@ -277,7 +277,7 @@ export default function BoutiqueHomePage() {
     <div>
       {/* ── Hero Slider ── */}
       <section
-        className={`group/hero relative bg-gradient-to-br ${current.bg} min-h-[480px] md:min-h-[540px] overflow-hidden`}
+        className={`group/hero relative bg-gradient-to-br ${current.bg} h-[480px] md:h-[540px] overflow-hidden`}
         onMouseEnter={stopTimer}
         onMouseLeave={startTimer}
       >
