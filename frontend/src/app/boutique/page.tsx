@@ -364,7 +364,6 @@ export default function BoutiqueHomePage() {
                     priority
                   />
                 </div>
-                </div>
               ) : (
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
                   <Image
