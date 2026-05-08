@@ -83,17 +83,17 @@ export default function PanierPage() {
 
                 <div className="mt-2 flex items-center justify-between flex-wrap gap-2">
                   {/* Qty controls */}
-                  <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
+                  <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
                     <button
                       onClick={() => updateQuantity(product.id, quantite - 1)}
-                      className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50"
+                      className="w-7 h-7 rounded-lg bg-white dark:bg-gray-600 shadow-sm flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100"
                     >
                       <MinusIcon className="w-3.5 h-3.5" />
                     </button>
-                    <span className="w-6 text-center text-sm font-bold">{quantite}</span>
+                    <span className="w-6 text-center text-sm font-bold text-gray-900 dark:text-white">{quantite}</span>
                     <button
                       onClick={() => updateQuantity(product.id, quantite + 1)}
-                      className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50"
+                      className="w-7 h-7 rounded-lg bg-white dark:bg-gray-600 shadow-sm flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-100"
                     >
                       <PlusIcon className="w-3.5 h-3.5" />
                     </button>
