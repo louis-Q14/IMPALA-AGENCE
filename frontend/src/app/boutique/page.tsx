@@ -242,58 +242,6 @@ function MobileMoneyCarousel() {
   );
 }
 
-/* ── Auto Parts Animated Hero ── */
-function AutoPartsHero() {
-  const src = "/panier-automobile.png";
-
-  // Style commun : même image, même taille, superposées
-  const base: React.CSSProperties = {
-    position: "absolute",
-    top: 0, left: 0,
-    width: "100%", height: "100%",
-    objectFit: "contain",
-    userSelect: "none",
-    pointerEvents: "none",
-  };
-
-  // clip-path: inset(top right bottom left) — % sur l'image 4096x4096 carrée
-  const parts = [
-    { id: "speaker", clip: "inset(25% 80% 44% 0%)",    delay: 0,    dur: 3.4, amp: 16 }, // subwoofer gauche
-    { id: "seat1",   clip: "inset(2%  58% 56% 18%)",   delay: 0.45, dur: 2.9, amp: 11 }, // siège gauche
-    { id: "seat2",   clip: "inset(2%  20% 64% 52%)",   delay: 0.15, dur: 3.7, amp: 14 }, // siège orange
-    { id: "tire",    clip: "inset(46% 66% 26% 7%)",    delay: 0.75, dur: 4.1, amp: 9  }, // pneu
-    { id: "wheel",   clip: "inset(28% 9%  38% 60%)",   delay: 0.3,  dur: 3.2, amp: 13 }, // volant
-    { id: "cloth",   clip: "inset(20% 44% 56% 37%)",   delay: 0.9,  dur: 2.7, amp: 8  }, // chamoisine bleue
-    { id: "parts",   clip: "inset(50% 34% 26% 27%)",   delay: 0.6,  dur: 3.0, amp: 6  }, // petites pièces centre
-    { id: "racc",    clip: "inset(46% 3%  26% 70%)",   delay: 0.8,  dur: 3.5, amp: 10 }, // accessoires droite
-  ];
-
-  return (
-    <div style={{ position: "relative", width: 440, height: 440, overflow: "visible" }}>
-      {/* Panier — fixe, base */}
-      <img src={src} alt="" style={{ ...base, clipPath: "inset(64% 34% 0% 29%)" }} />
-
-      {/* Pièces animées */}
-      {parts.map((p) => (
-        <motion.img
-          key={p.id}
-          src={src}
-          alt=""
-          style={{ ...base, clipPath: p.clip }}
-          animate={{ y: [0, -p.amp, 0] }}
-          transition={{
-            duration: p.dur,
-            delay: p.delay,
-            repeat: Infinity,
-            repeatType: "loop",
-            ease: "easeInOut",
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 /* ── Main page ── */
 export default function BoutiqueHomePage() {
   const [slide, setSlide] = useState(0);
@@ -406,8 +354,16 @@ export default function BoutiqueHomePage() {
                   <MobileMoneyCarousel />
                 </div>
               ) : slide === 1 ? (
-                <div style={{ zIndex: 2 }}>
-                  <AutoPartsHero />
+                <div className="relative w-72 h-72 md:w-96 md:h-96" style={{ zIndex: 2 }}>
+                  <Image
+                    src={current.image}
+                    alt="hero"
+                    fill
+                    className="object-contain"
+                    sizes="400px"
+                    priority
+                  />
+                </div>
                 </div>
               ) : (
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
