@@ -244,33 +244,41 @@ function MobileMoneyCarousel() {
 
 /* ── Auto Parts Animated Hero ── */
 function AutoPartsHero() {
-  // Chaque entrée = une zone clippée de l'image animée indépendamment
-  const parts = [
-    { id: "speaker",  clip: "inset(4% 66% 50% 2%)",   delay: 0,    dur: 3.4, amp: 15 },
-    { id: "seat1",    clip: "inset(2% 48% 52% 22%)",  delay: 0.5,  dur: 2.8, amp: 11 },
-    { id: "seat2",    clip: "inset(2% 26% 58% 46%)",  delay: 0.2,  dur: 3.6, amp: 13 },
-    { id: "tire",     clip: "inset(40% 54% 30% 6%)",  delay: 0.8,  dur: 4.0, amp: 9  },
-    { id: "wheel",    clip: "inset(26% 2% 30% 60%)",  delay: 0.35, dur: 3.2, amp: 12 },
-    { id: "parts",    clip: "inset(50% 32% 24% 32%)", delay: 1.0,  dur: 2.6, amp: 7  },
-  ];
+  const src = "/panier-automobile.png";
 
+  // Style commun : même image, même taille, superposées
   const base: React.CSSProperties = {
     position: "absolute",
-    inset: 0,
-    backgroundImage: "url('/panier-automobile.png')",
-    backgroundSize: "contain",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "center",
+    top: 0, left: 0,
+    width: "100%", height: "100%",
+    objectFit: "contain",
+    userSelect: "none",
+    pointerEvents: "none",
   };
 
+  // clip-path: inset(top right bottom left) — % sur l'image 4096x4096 carrée
+  const parts = [
+    { id: "speaker", clip: "inset(25% 80% 44% 0%)",    delay: 0,    dur: 3.4, amp: 16 }, // subwoofer gauche
+    { id: "seat1",   clip: "inset(2%  58% 56% 18%)",   delay: 0.45, dur: 2.9, amp: 11 }, // siège gauche
+    { id: "seat2",   clip: "inset(2%  20% 64% 52%)",   delay: 0.15, dur: 3.7, amp: 14 }, // siège orange
+    { id: "tire",    clip: "inset(46% 66% 26% 7%)",    delay: 0.75, dur: 4.1, amp: 9  }, // pneu
+    { id: "wheel",   clip: "inset(28% 9%  38% 60%)",   delay: 0.3,  dur: 3.2, amp: 13 }, // volant
+    { id: "cloth",   clip: "inset(20% 44% 56% 37%)",   delay: 0.9,  dur: 2.7, amp: 8  }, // chamoisine bleue
+    { id: "parts",   clip: "inset(50% 34% 26% 27%)",   delay: 0.6,  dur: 3.0, amp: 6  }, // petites pièces centre
+    { id: "racc",    clip: "inset(46% 3%  26% 70%)",   delay: 0.8,  dur: 3.5, amp: 10 }, // accessoires droite
+  ];
+
   return (
-    <div style={{ position: "relative", width: 440, height: 440 }}>
-      {/* Panier — fixe */}
-      <div style={{ ...base, clipPath: "inset(64% 20% 0% 20%)" }} />
+    <div style={{ position: "relative", width: 440, height: 440, overflow: "visible" }}>
+      {/* Panier — fixe, base */}
+      <img src={src} alt="" style={{ ...base, clipPath: "inset(64% 34% 0% 29%)" }} />
+
       {/* Pièces animées */}
       {parts.map((p) => (
-        <motion.div
+        <motion.img
           key={p.id}
+          src={src}
+          alt=""
           style={{ ...base, clipPath: p.clip }}
           animate={{ y: [0, -p.amp, 0] }}
           transition={{
