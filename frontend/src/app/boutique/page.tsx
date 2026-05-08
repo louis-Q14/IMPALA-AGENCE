@@ -40,7 +40,7 @@ const slides = [
     cta: "/boutique/automobile",
     ctaLabel: "Voir les pièces auto",
     accent: "#0ea5e9",
-    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&q=80",
+    image: "/panier automobile.png",
   },
   {
     bg: "from-[#0a1a00] to-[#1a3300]",
@@ -281,21 +281,27 @@ export default function BoutiqueHomePage() {
         onMouseEnter={stopTimer}
         onMouseLeave={startTimer}
       >
-        {/* Profondeur de champ sur tout le fond — uniquement slide Mobile Money */}
-        {slide === 2 && (
+        {/* Profondeur de champ sur tout le fond — slides auto + Mobile Money */}
+        {(slide === 1 || slide === 2) && (
           <>
             {/* Vignette blur coins + bords */}
             <div style={{
               position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-              backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
-              WebkitMaskImage: "radial-gradient(ellipse 60% 55% at 62% 52%, transparent 30%, black 72%)",
-              maskImage: "radial-gradient(ellipse 60% 55% at 62% 52%, transparent 30%, black 72%)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+              WebkitMaskImage: slide === 1
+                ? "radial-gradient(ellipse 58% 52% at 66% 50%, transparent 28%, black 68%)"
+                : "radial-gradient(ellipse 60% 55% at 62% 52%, transparent 30%, black 72%)",
+              maskImage: slide === 1
+                ? "radial-gradient(ellipse 58% 52% at 66% 50%, transparent 28%, black 68%)"
+                : "radial-gradient(ellipse 60% 55% at 62% 52%, transparent 30%, black 72%)",
             }} />
             {/* Assombrissement bords */}
             <div style={{
               position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-              background: "radial-gradient(ellipse 65% 58% at 62% 52%, transparent 28%, rgba(0,0,0,0.38) 75%, rgba(0,0,0,0.55) 100%)",
+              background: slide === 1
+                ? "radial-gradient(ellipse 62% 56% at 66% 50%, transparent 26%, rgba(0,0,0,0.42) 72%, rgba(0,0,0,0.60) 100%)"
+                : "radial-gradient(ellipse 65% 58% at 62% 52%, transparent 28%, rgba(0,0,0,0.38) 75%, rgba(0,0,0,0.55) 100%)",
             }} />
           </>
         )}
@@ -346,6 +352,17 @@ export default function BoutiqueHomePage() {
               {slide === 2 ? (
                 <div style={{ position: "relative", zIndex: 2 }}>
                   <MobileMoneyCarousel />
+                </div>
+              ) : slide === 1 ? (
+                <div className="relative w-80 h-80 md:w-[440px] md:h-[440px]" style={{ zIndex: 2 }}>
+                  <Image
+                    src={current.image}
+                    alt="hero"
+                    fill
+                    className="object-contain drop-shadow-2xl"
+                    sizes="440px"
+                    priority
+                  />
                 </div>
               ) : (
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
