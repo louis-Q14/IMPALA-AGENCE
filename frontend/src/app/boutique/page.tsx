@@ -310,12 +310,6 @@ export default function BoutiqueHomePage() {
           style={{ zIndex: 2 }}
           >
             <div className="flex-1 text-white">
-              <span
-                className="inline-block text-xs font-bold px-3 py-1 rounded-full mb-4"
-                style={{ backgroundColor: current.accent + "33", color: current.accent }}
-              >
-                {current.badge}
-              </span>
               <h1 className="text-3xl md:text-5xl font-black leading-tight mb-4">
                 {slide === 2 ? (
                   <>
