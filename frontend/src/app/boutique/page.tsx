@@ -242,6 +242,50 @@ function MobileMoneyCarousel() {
   );
 }
 
+/* ── Auto Parts Animated Hero ── */
+function AutoPartsHero() {
+  // Chaque entrée = une zone clippée de l'image animée indépendamment
+  const parts = [
+    { id: "speaker",  clip: "inset(4% 66% 50% 2%)",   delay: 0,    dur: 3.4, amp: 15 },
+    { id: "seat1",    clip: "inset(2% 48% 52% 22%)",  delay: 0.5,  dur: 2.8, amp: 11 },
+    { id: "seat2",    clip: "inset(2% 26% 58% 46%)",  delay: 0.2,  dur: 3.6, amp: 13 },
+    { id: "tire",     clip: "inset(40% 54% 30% 6%)",  delay: 0.8,  dur: 4.0, amp: 9  },
+    { id: "wheel",    clip: "inset(26% 2% 30% 60%)",  delay: 0.35, dur: 3.2, amp: 12 },
+    { id: "parts",    clip: "inset(50% 32% 24% 32%)", delay: 1.0,  dur: 2.6, amp: 7  },
+  ];
+
+  const base: React.CSSProperties = {
+    position: "absolute",
+    inset: 0,
+    backgroundImage: "url('/panier-automobile.png')",
+    backgroundSize: "contain",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "center",
+  };
+
+  return (
+    <div style={{ position: "relative", width: 440, height: 440 }}>
+      {/* Panier — fixe */}
+      <div style={{ ...base, clipPath: "inset(64% 20% 0% 20%)" }} />
+      {/* Pièces animées */}
+      {parts.map((p) => (
+        <motion.div
+          key={p.id}
+          style={{ ...base, clipPath: p.clip }}
+          animate={{ y: [0, -p.amp, 0] }}
+          transition={{
+            duration: p.dur,
+            delay: p.delay,
+            repeat: Infinity,
+            repeatType: "loop",
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 /* ── Main page ── */
 export default function BoutiqueHomePage() {
   const [slide, setSlide] = useState(0);
@@ -354,39 +398,9 @@ export default function BoutiqueHomePage() {
                   <MobileMoneyCarousel />
                 </div>
               ) : slide === 1 ? (
-                <motion.div
-                  className="relative w-[360px] h-[360px] md:w-[540px] md:h-[540px]"
-                  style={{ zIndex: 2 }}
-                  initial={{ opacity: 0, x: 80, scale: 0.88 }}
-                  animate={{
-                    opacity: 1,
-                    x: 0,
-                    scale: 1,
-                    y: [0, -14, 0],
-                  }}
-                  transition={{
-                    opacity: { duration: 0.55, ease: "easeOut" },
-                    x: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
-                    scale: { duration: 0.65, ease: [0.22, 1, 0.36, 1] },
-                    y: {
-                      delay: 0.65,
-                      duration: 3.6,
-                      repeat: Infinity,
-                      repeatType: "loop",
-                      ease: "easeInOut",
-                    },
-                  }}
-                  whileHover={{ scale: 1.06, transition: { duration: 0.3 } }}
-                >
-                  <Image
-                    src={current.image}
-                    alt="hero"
-                    fill
-                    className="object-contain drop-shadow-2xl"
-                    sizes="540px"
-                    priority
-                  />
-                </motion.div>
+                <div style={{ zIndex: 2 }}>
+                  <AutoPartsHero />
+                </div>
               ) : (
                 <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
                   <Image
