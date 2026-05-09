@@ -186,8 +186,6 @@ export default function PanierPage() {
   );
 }
 
-
-  if (items.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
         <ShoppingBagIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
