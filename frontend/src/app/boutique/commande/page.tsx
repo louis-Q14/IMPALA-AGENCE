@@ -173,7 +173,7 @@ export default function CommandePage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-black text-gray-900 mb-8">Finaliser la commande</h1>
+      <h1 className="text-2xl font-black text-gray-900 dark:text-white mb-8">Finaliser la commande</h1>
 
       {/* Steps indicator */}
       <div className="flex items-center gap-2 mb-10">
@@ -194,7 +194,7 @@ export default function CommandePage() {
             >
               {step > n ? <CheckCircleIcon className="w-5 h-5" /> : n}
             </div>
-            <span className={`text-xs font-medium hidden sm:block ${step >= n ? "text-gray-900" : "text-gray-400"}`}>
+            <span className={`text-xs font-medium hidden sm:block ${step >= n ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
               {label}
             </span>
             {i < 2 && <div className={`flex-1 h-px ${step > n ? "bg-green-500" : "bg-gray-200"}`} />}
@@ -211,8 +211,8 @@ export default function CommandePage() {
 
       {/* ── Step 1 : Delivery ── */}
       {step === 1 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-black text-gray-900 mb-5">Informations de livraison</h2>
+        <div className="bg-white dark:bg-gray-800 dark:border-gray-700 rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-lg font-black text-gray-900 dark:text-white mb-5">Informations de livraison</h2>
 
           <div className="flex flex-col gap-4">
             <div>
@@ -226,7 +226,7 @@ export default function CommandePage() {
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
                   placeholder="Ex: Jean-Pierre Mbombo"
-                  className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors"
+                  className="w-full pl-9 pr-4 py-3 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors"
                 />
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function CommandePage() {
                   value={telephone}
                   onChange={(e) => setTelephone(e.target.value)}
                   placeholder="Ex: 0812345678"
-                  className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors"
+                  className="w-full pl-9 pr-4 py-3 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors"
                 />
               </div>
             </div>
@@ -254,7 +254,7 @@ export default function CommandePage() {
               <select
                 value={ville}
                 onChange={(e) => setVille(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors bg-white"
+                className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors bg-white"
               >
                 <option value="">— Choisir une ville —</option>
                 {VILLES.map((v) => (
@@ -279,11 +279,11 @@ export default function CommandePage() {
                     onClick={() => setLivraison(id as "domicile" | "retrait")}
                     className={`text-left p-3 rounded-xl border-2 transition-colors ${
                       livraison === id
-                        ? "border-[#e63900] bg-orange-50"
-                        : "border-gray-200 hover:border-gray-300"
+                        ? "border-[#e63900] bg-orange-50 dark:bg-orange-900/20"
+                        : "border-gray-200 dark:border-gray-600 hover:border-gray-300"
                     }`}
                   >
-                    <div className="text-sm font-semibold text-gray-800">{label}</div>
+                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-100">{label}</div>
                     <div className="text-xs text-gray-400 mt-0.5">{sub}</div>
                     {id === "domicile" && ville && (
                       <div className="text-xs font-bold text-[#e63900] mt-1">
@@ -307,7 +307,7 @@ export default function CommandePage() {
                     onChange={(e) => setAdresse(e.target.value)}
                     placeholder="Quartier, avenue, numéro de parcelle…"
                     rows={2}
-                    className="w-full pl-9 pr-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors resize-none"
+                    className="w-full pl-9 pr-4 py-3 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors resize-none"
                   />
                 </div>
               </div>
@@ -315,19 +315,19 @@ export default function CommandePage() {
           </div>
 
           {/* Summary */}
-          <div className="mt-6 bg-gray-50 rounded-xl p-4 text-sm">
+          <div className="mt-6 bg-gray-50 dark:bg-gray-700 rounded-xl p-4 text-sm">
             <div className="flex justify-between mb-1">
-              <span className="text-gray-500">Produits ({items.length})</span>
-              <span className="font-semibold">{formatCDF(totalCDF)}</span>
+              <span className="text-gray-500 dark:text-gray-300">Produits ({items.length})</span>
+              <span className="font-semibold dark:text-white">{formatCDF(totalCDF)}</span>
             </div>
             <div className="flex justify-between mb-1">
-              <span className="text-gray-500">Frais de livraison</span>
+              <span className="text-gray-500 dark:text-gray-300">Frais de livraison</span>
               <span className="font-semibold text-green-600">
                 {fraisLivraison === 0 ? "Gratuit" : formatCDF(fraisLivraison)}
               </span>
             </div>
             <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
-              <span className="font-black text-gray-900">TOTAL</span>
+              <span className="font-black text-gray-900 dark:text-white">TOTAL</span>
               <div className="text-right">
                 <div className="font-black text-[#e63900]">{formatCDF(totalFinal)}</div>
                 <div className="text-xs text-gray-400">≈ {formatUSD(totalFinal / 2800)}</div>
@@ -347,8 +347,8 @@ export default function CommandePage() {
 
       {/* ── Step 2 : Mobile Money ── */}
       {step === 2 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-lg font-black text-gray-900 mb-2">Paiement Mobile Money</h2>
+        <div className="bg-white dark:bg-gray-800 dark:border-gray-700 rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h2 className="text-lg font-black text-gray-900 dark:text-white mb-2">Paiement Mobile Money</h2>
           <p className="text-sm text-gray-500 mb-6">
             Choisissez votre réseau et saisissez votre numéro pour finaliser le paiement de{" "}
             <strong className="text-[#e63900]">{formatCDF(totalFinal)}</strong>.
@@ -363,8 +363,8 @@ export default function CommandePage() {
                 onClick={() => setMobileMoneyProvider(mm.id)}
                 className={`p-4 rounded-2xl border-2 text-left transition-all ${
                   mobileMoneyProvider === mm.id
-                    ? `${mm.borderColor} ${mm.bgLight}`
-                    : "border-gray-200 hover:border-gray-300"
+                    ? `${mm.borderColor} ${mm.bgLight} dark:bg-opacity-10`
+                    : "border-gray-200 dark:border-gray-600 hover:border-gray-300"
                 }`}
               >
                 <div className={`inline-block ${mm.color} text-white text-xs font-black px-2 py-0.5 rounded-full mb-2`}>
@@ -391,7 +391,7 @@ export default function CommandePage() {
                   onChange={(e) => setMobileMoneyNum(e.target.value)}
                   placeholder="Ex: 0812345678"
                   maxLength={12}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors"
                 />
               </div>
 
@@ -416,7 +416,7 @@ export default function CommandePage() {
                   value={codeTransaction}
                   onChange={(e) => setCodeTransaction(e.target.value.toUpperCase())}
                   placeholder="Ex: TXN-ABC123456"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors font-mono"
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 rounded-xl text-sm outline-none focus:border-[#e63900] transition-colors font-mono"
                 />
                 <p className="text-xs text-gray-400 mt-1">Optionnel — vous pouvez l&apos;entrer après avoir payé</p>
               </div>
@@ -426,7 +426,7 @@ export default function CommandePage() {
           <div className="flex gap-3 mt-6">
             <button
               onClick={() => setStep(1)}
-              className="flex-1 py-4 rounded-2xl font-bold text-sm border-2 border-gray-200 text-gray-600 hover:border-gray-300 transition-colors"
+              className="flex-1 py-4 rounded-2xl font-bold text-sm border-2 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-gray-300 transition-colors"
             >
               ← Retour
             </button>
