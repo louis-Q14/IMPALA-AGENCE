@@ -431,50 +431,38 @@ export default function BoutiqueHomePage() {
 
       {/* ── Categories ── */}
       <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-black text-gray-900 mb-6">Nos rayons</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <h2 className="text-2xl font-black text-gray-900 dark:text-white mb-6">Nos rayons</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Ménager */}
           <Link
             href="/boutique/menager"
-            className="group relative rounded-3xl overflow-hidden aspect-[16/9] bg-gradient-to-br from-orange-400 to-red-600 p-6 flex flex-col justify-end shadow-lg hover:shadow-2xl transition-shadow"
+            className="group flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-5 hover:border-[#e63900] hover:shadow-md transition-all duration-200"
           >
-            <Image
-              src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80"
-              alt="Ménager"
-              fill
-              className="object-cover opacity-30 group-hover:opacity-40 transition-opacity"
-              sizes="50vw"
-            />
-            <div className="relative z-10">
-              <div className="text-4xl mb-2">🏠</div>
-              <div className="text-white font-black text-xl">Ménager</div>
-              <div className="text-white/80 text-sm">Électroménager, Cuisine, Entretien</div>
-              <div className="mt-3 inline-flex items-center gap-1 text-white text-xs font-bold">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-[#e63900] mb-1">Électroménager</div>
+              <div className="text-xl font-black text-gray-900 dark:text-white">Ménager</div>
+              <div className="text-sm text-gray-400 mt-1">Réfrigérateurs, cuisinières, machines à laver</div>
+              <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#e63900] group-hover:gap-2.5 transition-all">
                 Découvrir <ArrowRightIcon className="w-3.5 h-3.5" />
               </div>
             </div>
+            <div className="text-5xl opacity-80">🏠</div>
           </Link>
 
           {/* Auto */}
           <Link
             href="/boutique/automobile"
-            className="group relative rounded-3xl overflow-hidden aspect-[16/9] bg-gradient-to-br from-blue-800 to-gray-900 p-6 flex flex-col justify-end shadow-lg hover:shadow-2xl transition-shadow"
+            className="group flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-5 hover:border-sky-500 hover:shadow-md transition-all duration-200"
           >
-            <Image
-              src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800&q=80"
-              alt="Automobile"
-              fill
-              className="object-cover opacity-30 group-hover:opacity-40 transition-opacity"
-              sizes="50vw"
-            />
-            <div className="relative z-10">
-              <div className="text-4xl mb-2">🚗</div>
-              <div className="text-white font-black text-xl">Auto & Pièces</div>
-              <div className="text-white/80 text-sm">Pneus, Batteries, Électronique</div>
-              <div className="mt-3 inline-flex items-center gap-1 text-white text-xs font-bold">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-widest text-sky-500 mb-1">Automobile</div>
+              <div className="text-xl font-black text-gray-900 dark:text-white">Auto & Pièces</div>
+              <div className="text-sm text-gray-400 mt-1">Pneus, batteries, huiles, accessoires</div>
+              <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-sky-500 group-hover:gap-2.5 transition-all">
                 Découvrir <ArrowRightIcon className="w-3.5 h-3.5" />
               </div>
             </div>
+            <div className="text-5xl opacity-80">🚗</div>
           </Link>
         </div>
       </section>
