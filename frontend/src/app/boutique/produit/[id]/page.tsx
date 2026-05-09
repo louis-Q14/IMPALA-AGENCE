@@ -173,19 +173,19 @@ export default function ProduitPage() {
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
                 <div className="text-sm font-semibold text-[var(--text-primary)]">Quantité :</div>
-                <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
+                <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
                   <button
                     onClick={() => setQty((q) => Math.max(1, q - 1))}
-                    className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50"
+                    className="w-8 h-8 rounded-lg bg-white dark:bg-gray-300 shadow-sm flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-200"
                   >
-                    <MinusIcon className="w-4 h-4" />
+                    <MinusIcon className="w-4 h-4 text-gray-900" />
                   </button>
-                  <span className="w-8 text-center font-bold text-sm">{qty}</span>
+                  <span className="w-8 text-center font-bold text-sm text-gray-900 dark:text-white">{qty}</span>
                   <button
                     onClick={() => setQty((q) => Math.min(product.stock, q + 1))}
-                    className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center hover:bg-gray-50"
+                    className="w-8 h-8 rounded-lg bg-white dark:bg-gray-300 shadow-sm flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-200"
                   >
-                    <PlusIcon className="w-4 h-4" />
+                    <PlusIcon className="w-4 h-4 text-gray-900" />
                   </button>
                 </div>
               </div>
