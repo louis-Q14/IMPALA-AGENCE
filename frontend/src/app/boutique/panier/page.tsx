@@ -185,12 +185,6 @@ export default function PanierPage() {
     </div>
   );
 }
-
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <ShoppingBagIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h2 className="text-2xl font-black text-gray-800 mb-2">Votre panier est vide</h2>
-        <p className="text-gray-500 mb-8">Tala biloko na biso — découvrez nos produits !</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/boutique/menager"
