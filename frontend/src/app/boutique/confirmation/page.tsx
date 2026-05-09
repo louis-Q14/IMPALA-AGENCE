@@ -99,10 +99,10 @@ export default function ConfirmationPage() {
           ← Retour à la boutique
         </Link>
         <Link
-          href="/boutique/menager"
-          className="border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold px-6 py-3 rounded-2xl transition-colors text-sm"
+          href="/boutique/mes-achats"
+          className="border-2 border-gray-200 hover:border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 font-semibold px-6 py-3 rounded-2xl transition-colors text-sm"
         >
-          Continuer mes achats
+          Suivre ma commande
         </Link>
       </div>
     </div>

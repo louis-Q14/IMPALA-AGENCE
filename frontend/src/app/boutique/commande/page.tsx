@@ -131,13 +131,11 @@ export default function CommandePage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        // Even if backend fails (not yet deployed), proceed to confirmation for demo
         if (res.status >= 500 || !res.ok) {
-          // Store locally and continue
-          localStorage.setItem(
-            "impala_last_commande",
-            JSON.stringify({ ...payload, ref: `IB-${Date.now()}` })
-          );
+          const newCommande = { ...payload, ref: `IB-${Date.now()}`, date: new Date().toISOString(), statut: "confirme" };
+          localStorage.setItem("impala_last_commande", JSON.stringify(newCommande));
+          const existing = JSON.parse(localStorage.getItem("impala_commandes") || "[]");
+          localStorage.setItem("impala_commandes", JSON.stringify([newCommande, ...existing]));
           clearCart();
           router.push("/boutique/confirmation");
           return;
@@ -145,22 +143,27 @@ export default function CommandePage() {
         throw new Error(data.message || "Erreur lors de la commande");
       }
 
-      localStorage.setItem(
-        "impala_last_commande",
-        JSON.stringify({ ...payload, ref: data.ref || `IB-${Date.now()}` })
-      );
+      const newCommande = { ...payload, ref: data.ref || `IB-${Date.now()}`, date: new Date().toISOString(), statut: "confirme" };
+      localStorage.setItem("impala_last_commande", JSON.stringify(newCommande));
+      const existing = JSON.parse(localStorage.getItem("impala_commandes") || "[]");
+      localStorage.setItem("impala_commandes", JSON.stringify([newCommande, ...existing]));
       clearCart();
       router.push("/boutique/confirmation");
     } catch {
       // Fallback — allow demo flow even without backend
-      localStorage.setItem(
-        "impala_last_commande",
-        JSON.stringify({
-          client: { nom, telephone, ville, adresse },
-          total_cdf: totalFinal,
-          ref: `IB-${Date.now()}`,
-        })
-      );
+      const newCommande = {
+        client: { nom, telephone, ville, adresse },
+        paiement: { methode: mobileMoneyProvider, numero: mobileMoneyNum, code_transaction: codeTransaction },
+        livraison: { type: livraison, frais: fraisLivraison },
+        articles: items.map((i) => ({ nom: i.product.nom, quantite: i.quantite, prix_unitaire: i.product.prix_cdf })),
+        total_cdf: totalFinal,
+        ref: `IB-${Date.now()}`,
+        date: new Date().toISOString(),
+        statut: "confirme",
+      };
+      localStorage.setItem("impala_last_commande", JSON.stringify(newCommande));
+      const existing = JSON.parse(localStorage.getItem("impala_commandes") || "[]");
+      localStorage.setItem("impala_commandes", JSON.stringify([newCommande, ...existing]));
       clearCart();
       router.push("/boutique/confirmation");
     } finally {

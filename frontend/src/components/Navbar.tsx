@@ -181,17 +181,17 @@ export default function Navbar() {
                     </button>
                     {mesAchatsOpen && (
                       <div>
-                        <Link href="/boutique/mes-achats?statut=livre" onClick={() => setBoutiqueOpen(false)}
+                        <Link href="/boutique/mes-achats" onClick={() => setBoutiqueOpen(false)}
                           className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          Livrés
+                          Tous mes achats
                         </Link>
-                        <Link href="/boutique/mes-achats?statut=en_cours" onClick={() => setBoutiqueOpen(false)}
+                        <Link href="/boutique/mes-achats" onClick={() => setBoutiqueOpen(false)}
                           className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
                           En cours de livraison
                         </Link>
-                        <Link href="/boutique/mes-achats?statut=annule" onClick={() => setBoutiqueOpen(false)}
+                        <Link href="/boutique/mes-achats" onClick={() => setBoutiqueOpen(false)}
                           className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          Annulés
+                          Livrés &amp; Annulés
                         </Link>
                       </div>
                     )}
@@ -389,17 +389,17 @@ export default function Navbar() {
                     </button>
                     {mobileMesAchatsOpen && (
                       <div className="ml-4 border-l-2 border-[var(--border-color)] pl-3 space-y-0.5">
-                        <Link href="/boutique/mes-achats?statut=livre" onClick={() => setMobileOpen(false)}
+                        <Link href="/boutique/mes-achats" onClick={() => setMobileOpen(false)}
                           className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          Livrés
+                          Tous mes achats
                         </Link>
-                        <Link href="/boutique/mes-achats?statut=en_cours" onClick={() => setMobileOpen(false)}
+                        <Link href="/boutique/mes-achats" onClick={() => setMobileOpen(false)}
                           className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
                           En cours de livraison
                         </Link>
-                        <Link href="/boutique/mes-achats?statut=annule" onClick={() => setMobileOpen(false)}
+                        <Link href="/boutique/mes-achats" onClick={() => setMobileOpen(false)}
                           className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          Annulés
+                          Livrés &amp; Annulés
                         </Link>
                       </div>
                     )}
