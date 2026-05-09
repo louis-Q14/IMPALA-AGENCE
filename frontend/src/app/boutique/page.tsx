@@ -277,7 +277,7 @@ export default function BoutiqueHomePage() {
     <div>
       {/* ── Hero Slider ── */}
       <section
-        className={`group/hero relative bg-gradient-to-br ${current.bg} h-[480px] md:h-[540px] overflow-hidden`}
+        className={`group/hero relative bg-gradient-to-br ${current.bg} h-auto md:h-[540px] overflow-hidden`}
         onMouseEnter={stopTimer}
         onMouseLeave={startTimer}
       >
@@ -312,11 +312,11 @@ export default function BoutiqueHomePage() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
             transition={{ duration: 0.5 }}
-            className="max-w-7xl mx-auto px-4 py-16 md:py-20 flex flex-col md:flex-row items-center gap-10 relative"
+            className="max-w-7xl mx-auto px-4 py-6 md:py-20 flex flex-col md:flex-row items-center gap-3 md:gap-10 relative"
           style={{ zIndex: 2 }}
           >
             <div className="flex-1 text-white">
-              <h1 className="text-3xl md:text-5xl font-black leading-tight mb-4">
+              <h1 className="text-xl md:text-5xl font-black leading-tight mb-2 md:mb-4">
                 {slide === 2 ? (
                   <>
                     <span className="block text-white">Payez avec</span>
@@ -338,10 +338,10 @@ export default function BoutiqueHomePage() {
                   <span className="whitespace-pre-line">{current.title}</span>
                 )}
               </h1>
-              <p className="text-white/70 text-sm md:text-base max-w-md mb-8">{current.sub}</p>
+              <p className="text-white/70 text-xs md:text-base max-w-md mb-4 md:mb-8">{current.sub}</p>
               <Link
                 href={current.cta}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm text-white transition-transform hover:scale-105"
+                className="inline-flex items-center gap-2 px-4 py-2 md:px-6 md:py-3 rounded-full font-bold text-xs md:text-sm text-white transition-transform hover:scale-105"
                 style={{ backgroundColor: current.accent }}
               >
                 {current.ctaLabel}
@@ -351,10 +351,12 @@ export default function BoutiqueHomePage() {
             <div className="flex-1 flex justify-center">
               {slide === 2 ? (
                 <div style={{ position: "relative", zIndex: 2 }}>
-                  <MobileMoneyCarousel />
+                  <div className="scale-[0.58] sm:scale-100 origin-center -mx-[118px] sm:mx-0 -my-[58px] sm:my-0">
+                    <MobileMoneyCarousel />
+                  </div>
                 </div>
               ) : slide === 1 ? (
-                <div className="relative w-72 h-72 md:w-96 md:h-96" style={{ zIndex: 2, transform: "scale(1.5)", transformOrigin: "center center", overflow: "visible" }}>
+                <div className="relative w-44 h-44 md:w-96 md:h-96 md:scale-150 overflow-hidden md:overflow-visible" style={{ zIndex: 2, transformOrigin: "center center" }}>
                   <Image
                     src={current.image}
                     alt="hero"
@@ -365,7 +367,7 @@ export default function BoutiqueHomePage() {
                   />
                 </div>
               ) : (
-                <div className="relative w-72 h-72 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
+                <div className="relative w-48 h-48 md:w-96 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
                   <Image
                     src={current.image}
                     alt="hero"
