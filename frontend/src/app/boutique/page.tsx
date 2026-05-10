@@ -439,7 +439,6 @@ export default function BoutiqueHomePage() {
             className="group flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-5 hover:border-[#e63900] hover:shadow-md transition-all duration-200"
           >
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-[#e63900] mb-1">Électroménager</div>
               <div className="text-xl font-black text-gray-900 dark:text-white">Ménager</div>
               <div className="text-sm text-gray-400 mt-1">Réfrigérateurs, cuisinières, machines à laver</div>
               <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#e63900] group-hover:gap-2.5 transition-all">
@@ -455,7 +454,6 @@ export default function BoutiqueHomePage() {
             className="group flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-5 hover:border-sky-500 hover:shadow-md transition-all duration-200"
           >
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-widest text-sky-500 mb-1">Automobile</div>
               <div className="text-xl font-black text-gray-900 dark:text-white">Auto & Pièces</div>
               <div className="text-sm text-gray-400 mt-1">Pneus, batteries, huiles, accessoires</div>
               <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-sky-500 group-hover:gap-2.5 transition-all">
