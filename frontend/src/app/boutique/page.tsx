@@ -447,7 +447,7 @@ export default function BoutiqueHomePage() {
             </div>
           </Link>
 
-          {/* Auto */}}
+          {/* Auto */}
           <Link
             href="/boutique/automobile"
             className="group flex items-center justify-between rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-5 hover:border-sky-500 hover:shadow-md transition-all duration-200"
