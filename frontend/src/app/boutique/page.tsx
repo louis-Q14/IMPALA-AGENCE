@@ -440,7 +440,7 @@ export default function BoutiqueHomePage() {
           >
             <div>
               <div className="text-xl font-black text-gray-900 dark:text-white">Ménager</div>
-              <div className="text-sm text-gray-400 mt-1">Réfrigérateurs, cuisinières, machines à laver</div>
+              <div className="text-sm text-gray-400 mt-1">Équipement de cuisine, gadgets pour votre maison…</div>
               <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-[#e63900] group-hover:gap-2.5 transition-all">
                 Découvrir <ArrowRightIcon className="w-3.5 h-3.5" />
               </div>
