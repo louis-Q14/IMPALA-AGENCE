@@ -172,29 +172,11 @@ export default function Navbar() {
                     )}
                   </Link>
                   <div className="border-t border-[var(--border-color)] mt-1">
-                    <button
-                      onClick={() => setMesAchatsOpen(!mesAchatsOpen)}
-                      className="w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all"
-                    >
-                      <span className="flex items-center gap-2.5"><ShoppingBagIcon className="w-4 h-4" /> Mes achats</span>
-                      <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${mesAchatsOpen ? "rotate-180" : ""}`} />
-                    </button>
-                    {mesAchatsOpen && (
-                      <div>
-                        <Link href="/boutique/mes-achats" onClick={() => setBoutiqueOpen(false)}
-                          className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          Tous mes achats
-                        </Link>
-                        <Link href="/boutique/mes-achats" onClick={() => setBoutiqueOpen(false)}
-                          className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          En cours de livraison
-                        </Link>
-                        <Link href="/boutique/mes-achats" onClick={() => setBoutiqueOpen(false)}
-                          className="flex items-center gap-2.5 pl-10 pr-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          Livrés &amp; Annulés
-                        </Link>
-                      </div>
-                    )}
+                    <Link href="/boutique/mes-achats" onClick={() => setBoutiqueOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
+                      <ShoppingBagIcon className="w-4 h-4" />
+                      <span>Mes achats</span>
+                    </Link>
                   </div>
                 </div>
               )}
@@ -380,29 +362,11 @@ export default function Navbar() {
                     )}
                   </Link>
                   <div>
-                    <button
-                      onClick={() => setMobileMesAchatsOpen(!mobileMesAchatsOpen)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all"
-                    >
-                      <span className="flex items-center gap-3"><ShoppingBagIcon className="w-4 h-4" /> Mes achats</span>
-                      <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${mobileMesAchatsOpen ? "rotate-180" : ""}`} />
-                    </button>
-                    {mobileMesAchatsOpen && (
-                      <div className="ml-4 border-l-2 border-[var(--border-color)] pl-3 space-y-0.5">
-                        <Link href="/boutique/mes-achats" onClick={() => setMobileOpen(false)}
-                          className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          Tous mes achats
-                        </Link>
-                        <Link href="/boutique/mes-achats" onClick={() => setMobileOpen(false)}
-                          className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          En cours de livraison
-                        </Link>
-                        <Link href="/boutique/mes-achats" onClick={() => setMobileOpen(false)}
-                          className="flex items-center px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                          Livrés &amp; Annulés
-                        </Link>
-                      </div>
-                    )}
+                    <Link href="/boutique/mes-achats" onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
+                      <ShoppingBagIcon className="w-4 h-4" />
+                      <span>Mes achats</span>
+                    </Link>
                   </div>
                 </div>
               )}
