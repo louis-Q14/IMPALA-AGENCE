@@ -356,14 +356,13 @@ export default function BoutiqueHomePage() {
                   </div>
                 </div>
               ) : slide === 1 ? (
-                <div className="relative w-44 h-44 md:w-96 md:h-96 md:scale-150 overflow-hidden md:overflow-visible" style={{ zIndex: 2, transformOrigin: "center center" }}>
-                  <Image
-                    src={current.image}
-                    alt="hero"
-                    fill
-                    className="object-contain"
-                    sizes="600px"
-                    priority
+                <div className="flex justify-center items-center" style={{ zIndex: 2 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/panier-automobile.gif"
+                    alt="Pièces automobile"
+                    className="w-52 h-52 md:w-[420px] md:h-[420px] object-contain"
+                    style={{ transform: "scale(1.3)", transformOrigin: "center center" }}
                   />
                 </div>
               ) : (
