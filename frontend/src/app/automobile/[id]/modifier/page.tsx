@@ -8,6 +8,8 @@ import {
   ArrowLeftIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
+  XMarkIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
@@ -43,6 +45,9 @@ export default function ModifierAutomobilePage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const [existingPhotos, setExistingPhotos] = useState<string[]>([]);
+  const [photosToDelete, setPhotosToDelete] = useState<string[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     ad_type: "vente", brand: "", model: "", year: "", mileage: "",
@@ -102,10 +107,24 @@ export default function ModifierAutomobilePage() {
     setForm((prev) => ({ ...prev, [k]: v }));
   }
 
+  function handleNewPhotos(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setNewFiles((prev) => [...prev, ...files]);
+    setNewPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+    e.target.value = "";
+  }
+
+  function removeNewPhoto(index: number) {
+    URL.revokeObjectURL(newPreviews[index]);
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+    setNewPreviews((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.brand || !form.model || !form.year) {
-      setError("Marque, modele et annee sont obligatoires.");
+      setError("Marque, modèle et année sont obligatoires.");
       return;
     }
     setLoading(true);
@@ -114,33 +133,31 @@ export default function ModifierAutomobilePage() {
       const token = localStorage.getItem("token");
       if (!token) { router.push("/connexion"); return; }
 
-      const body = {
-        ad_type: adTypeMap[form.ad_type] ?? form.ad_type,
-        brand: form.brand,
-        model: form.model,
-        year: form.year ? parseInt(form.year) : null,
-        mileage: form.mileage ? parseInt(form.mileage) : null,
-        fuel: fuelMap[form.fuel] ?? form.fuel.toLowerCase(),
-        transmission: transMap[form.transmission] ?? form.transmission.toLowerCase(),
-        color: form.color,
-        doors: form.doors ? parseInt(form.doors) : null,
-        plate_number: form.plate_number,
-        location_text: form.location_text,
-        price: form.price ? parseFloat(form.price) : null,
-        rent_price_day: form.rent_price_day ? parseFloat(form.rent_price_day) : null,
-        description: form.description,
-        power: form.power,
-        displacement: form.displacement,
-        circulation_date: form.circulation_date || null,
-      };
+      const fd = new FormData();
+      fd.append("ad_type", adTypeMap[form.ad_type] ?? form.ad_type);
+      fd.append("brand", form.brand);
+      fd.append("model", form.model);
+      fd.append("year", form.year);
+      fd.append("mileage", form.mileage);
+      fd.append("fuel", fuelMap[form.fuel] ?? form.fuel.toLowerCase());
+      fd.append("transmission", transMap[form.transmission] ?? form.transmission.toLowerCase());
+      fd.append("color", form.color);
+      fd.append("doors", form.doors);
+      fd.append("plate_number", form.plate_number);
+      fd.append("location_text", form.location_text);
+      fd.append("price", form.price);
+      fd.append("rent_price_day", form.rent_price_day);
+      fd.append("description", form.description);
+      fd.append("power", form.power);
+      fd.append("displacement", form.displacement);
+      fd.append("circulation_date", form.circulation_date);
+      fd.append("deleted_photos", JSON.stringify(photosToDelete));
+      for (const file of newFiles) fd.append("photos", file);
 
       const res = await fetch(`${API}/auto/ads/${id}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
       });
 
       if (!res.ok) {
@@ -213,24 +230,78 @@ export default function ModifierAutomobilePage() {
           </div>
         )}
 
-        {existingPhotos.length > 0 && (
-          <div className="mb-6 p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-            <h2 className="text-base font-semibold text-[var(--text-primary)] mb-3">Photos actuelles</h2>
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {existingPhotos.map((url, i) => (
-                <img
-                  key={i}
-                  src={url}
-                  alt={`Photo ${i + 1}`}
-                  className="flex-shrink-0 w-24 h-16 object-cover rounded-lg border border-[var(--border-color)]"
-                />
-              ))}
+        <div className="mb-6 p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">Photos</h2>
+
+          {existingPhotos.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-[var(--text-muted)] mb-2">Photos actuelles — survolez pour supprimer</p>
+              <div className="flex flex-wrap gap-2">
+                {existingPhotos.map((url, i) => {
+                  const isDeleted = photosToDelete.includes(url);
+                  return (
+                    <div key={i} className="relative group flex-shrink-0">
+                      <img
+                        src={url}
+                        alt={`Photo ${i + 1}`}
+                        className={`w-24 h-16 object-cover rounded-lg border transition-opacity ${
+                          isDeleted ? "opacity-25 border-red-400" : "border-[var(--border-color)]"
+                        }`}
+                      />
+                      {isDeleted ? (
+                        <button
+                          type="button"
+                          onClick={() => setPhotosToDelete((p) => p.filter((u) => u !== url))}
+                          className="absolute inset-0 flex items-center justify-center rounded-lg bg-red-500/10 text-red-500 text-[10px] font-semibold"
+                        >
+                          Annuler
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setPhotosToDelete((p) => [...p, url])}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                        >
+                          <XMarkIcon className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-            <p className="text-xs text-[var(--text-muted)] mt-2">
-              Pour modifier les photos, contactez l&apos;équipe via WhatsApp.
-            </p>
-          </div>
-        )}
+          )}
+
+          {newPreviews.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-[var(--text-muted)] mb-2">Nouvelles photos</p>
+              <div className="flex flex-wrap gap-2">
+                {newPreviews.map((src, i) => (
+                  <div key={i} className="relative group flex-shrink-0">
+                    <img
+                      src={src}
+                      alt={`Nouveau ${i + 1}`}
+                      className="w-24 h-16 object-cover rounded-lg border-2 border-green-400/50"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeNewPhoto(i)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                    >
+                      <XMarkIcon className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed border-[var(--border-color)] text-[var(--text-muted)] hover:border-amber-400 hover:text-amber-500 cursor-pointer transition-colors text-sm">
+            <PlusIcon className="w-4 h-4" />
+            Ajouter des photos
+            <input type="file" accept="image/*" multiple className="hidden" onChange={handleNewPhotos} />
+          </label>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Informations principales */}

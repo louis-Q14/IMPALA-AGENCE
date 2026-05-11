@@ -236,8 +236,8 @@ router.post("/ads", authenticateToken, requireSubscription("auto"), imageUpload.
   }
 });
 
-// PUT /api/auto/ads/:id — update
-router.put("/ads/:id", authenticateToken, requireSubscription("auto"), async (req, res) => {
+// PUT /api/auto/ads/:id — update (with optional photo management)
+router.put("/ads/:id", authenticateToken, requireSubscription("auto"), imageUpload.array("photos", 15), async (req, res) => {
   try {
     // Vérification de propriété
     const existing = await db.query("SELECT user_id FROM auto_ads WHERE id=$1", [req.params.id]);
@@ -248,16 +248,49 @@ router.put("/ads/:id", authenticateToken, requireSubscription("auto"), async (re
     const vals = buildValues(req.body, req.user.userId);
     const colList = COLS.split(",").slice(1); // skip user_id
     const setClauses = colList.map((c, i) => `${c.trim()}=$${i+1}`).join(",");
-    vals[0] = vals[0]; // user_id not needed for update — shift
     const updateVals = vals.slice(1); // remove user_id
     updateVals.push(req.params.id);
     const result = await db.query(
-      `UPDATE auto_ads SET ${setClauses},updated_at=NOW() WHERE id=$${updateVals.length} RETURNING *`,
+      `UPDATE auto_ads SET ${setClauses},status='pending',updated_at=NOW() WHERE id=$${updateVals.length} RETURNING *`,
       updateVals
     );
     if (!result.rows.length) return res.status(404).json({ error: "Annonce introuvable" });
+
+    // Suppression des photos marquées
+    let deletedPhotos = [];
+    try { deletedPhotos = JSON.parse(req.body.deleted_photos || "[]"); } catch {}
+    for (const url of deletedPhotos) {
+      await db.query(`DELETE FROM ad_photos WHERE ad_id=$1 AND ad_type='auto' AND photo_url=$2`, [req.params.id, url]);
+      try {
+        const filePath = path.join(UPLOADS_DIR, url.replace(/^\/uploads\//, ""));
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      } catch {}
+    }
+
+    // Ajout des nouvelles photos
+    if (req.files && req.files.length > 0) {
+      const maxOrder = await db.query(
+        `SELECT COALESCE(MAX(sort_order), -1) as max_order FROM ad_photos WHERE ad_id=$1 AND ad_type='auto'`,
+        [req.params.id]
+      );
+      let nextOrder = parseInt(maxOrder.rows[0].max_order) + 1;
+      const adFolderPath = path.join(UPLOADS_DIR, "users", String(req.user.userId), "auto", String(req.params.id));
+      fs.mkdirSync(adFolderPath, { recursive: true });
+      for (const file of req.files) {
+        const targetPath = path.join(adFolderPath, file.filename);
+        fs.renameSync(file.path, targetPath);
+        const fileUrl = `/uploads/users/${req.user.userId}/auto/${req.params.id}/${file.filename}`;
+        await db.query(`INSERT INTO ad_photos (ad_id,ad_type,photo_url,sort_order) VALUES ($1,'auto',$2,$3)`,
+          [req.params.id, fileUrl, nextOrder++]);
+      }
+    }
+
     res.json(result.rows[0]);
-  } catch (err) { console.error("Auto update error:", err); res.status(500).json({ error: "Erreur mise à jour" }); }
+  } catch (err) {
+    if (req.files) for (const f of req.files) { try { if (fs.existsSync(f.path)) fs.unlinkSync(f.path); } catch {} }
+    console.error("Auto update error:", err);
+    res.status(500).json({ error: "Erreur mise à jour" });
+  }
 });
 
 // PATCH /api/auto/ads/:id/status — status change
