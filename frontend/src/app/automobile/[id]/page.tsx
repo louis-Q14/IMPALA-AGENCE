@@ -421,7 +421,7 @@ export default function AutomobileDetailPage() {
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Équipements</h2>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {car.features.map((feat) => (
+                {(car.features as string[]).map((feat: string) => (
                   <div key={feat} className="flex items-center gap-2 p-3 rounded-xl bg-[var(--bg-tertiary)]">
                     <ShieldCheckIcon className="w-4 h-4 text-primary flex-shrink-0" />
                     <span className="text-sm text-[var(--text-secondary)]">{feat}</span>
