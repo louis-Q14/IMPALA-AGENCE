@@ -334,7 +334,7 @@ export default function AutomobileDetailPage() {
 
           {/* Thumbnail strip */}
           <div className="flex gap-1 p-2 bg-[var(--bg-card)] overflow-x-auto">
-            {car.images.map((img, i) => (
+            {(car.images as string[]).map((img: string, i: number) => (
               <button
                 key={i}
                 onClick={() => setCurrentSlide(i)}
