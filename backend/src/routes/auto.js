@@ -239,6 +239,12 @@ router.post("/ads", authenticateToken, requireSubscription("auto"), imageUpload.
 // PUT /api/auto/ads/:id — update
 router.put("/ads/:id", authenticateToken, requireSubscription("auto"), async (req, res) => {
   try {
+    // Vérification de propriété
+    const existing = await db.query("SELECT user_id FROM auto_ads WHERE id=$1", [req.params.id]);
+    if (!existing.rows.length) return res.status(404).json({ error: "Annonce introuvable" });
+    if (existing.rows[0].user_id !== req.user.userId && !["admin","super_admin"].includes(req.user.role)) {
+      return res.status(403).json({ error: "Non autorisé : vous n'êtes pas le propriétaire de cette annonce" });
+    }
     const vals = buildValues(req.body, req.user.userId);
     const colList = COLS.split(",").slice(1); // skip user_id
     const setClauses = colList.map((c, i) => `${c.trim()}=$${i+1}`).join(",");

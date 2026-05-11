@@ -19,6 +19,7 @@ import {
   WrenchScrewdriverIcon,
   Cog6ToothIcon,
   VideoCameraIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon, PlayIcon as PlaySolidIcon } from "@heroicons/react/24/solid";
 
@@ -208,6 +209,7 @@ export default function AutomobileDetailPage() {
   const [carLoading, setCarLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", message: "" });
 
   useEffect(() => {
@@ -217,6 +219,16 @@ export default function AutomobileDetailPage() {
       .then((r) => r.ok ? r.json() : null)
       .then((d) => {
         if (d) {
+          // Check ownership
+          try {
+            const token = localStorage.getItem("token");
+            if (token) {
+              const payload = JSON.parse(atob(token.split(".")[1]));
+              if (d.user_id === payload.userId || payload.role === "admin" || payload.role === "super_admin") {
+                setIsOwner(true);
+              }
+            }
+          } catch { /* ignore */ }
           setApiCar({
             ...d,
             type: d.ad_type,
@@ -284,10 +296,21 @@ export default function AutomobileDetailPage() {
   return (
     <div className="min-h-screen bg-[var(--bg-primary)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Back */}
-        <Link href="/automobile" className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-primary mb-6 transition-colors">
-          <ArrowLeftIcon className="w-4 h-4" /> Retour
-        </Link>
+        {/* Back + Modifier */}
+        <div className="flex items-center justify-between mb-6">
+          <Link href="/automobile" className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-primary transition-colors">
+            <ArrowLeftIcon className="w-4 h-4" /> Retour
+          </Link>
+          {isOwner && (
+            <Link
+              href={`/automobile/${params.id}/modifier`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 transition-all text-sm font-medium"
+            >
+              <PencilSquareIcon className="w-4 h-4" />
+              Modifier l&apos;annonce
+            </Link>
+          )}
+        </div>
 
         {/* Media Carousel */}
         <div className="relative rounded-2xl overflow-hidden bg-[var(--bg-tertiary)] mb-8">
