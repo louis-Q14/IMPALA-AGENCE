@@ -25,8 +25,8 @@ const slides = [
   {
     bg: "from-[#1a0a00] to-[#3d1a00]",
     badge: "🔥 Promotion du moment",
-    title: "Électroménager\npour toute la famille",
-    sub: "Réfrigérateurs, cuisinières, machines à laver — livraison à Kinshasa & partout en RDC",
+    title: "Ménager\nvotre Intérieur",
+    sub: "Cuisine, salon, chambre — équipez chaque pièce de votre maison",
     cta: "/boutique/menager",
     ctaLabel: "Voir l'électroménager",
     accent: "#e63900",
