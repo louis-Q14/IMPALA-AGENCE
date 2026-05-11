@@ -89,13 +89,17 @@ export default function PublierAutomobilePage() {
       const token = localStorage.getItem("token");
       if (!token) { router.push("/connexion"); return; }
       const fd = new FormData();
-      fd.append("ad_type", form.ad_type);
+      // Map French form values to DB-accepted English values
+      const adTypeMap: Record<string, string> = { vente: "sale", location: "rent" };
+      const fuelMap: Record<string, string> = { Essence: "essence", Diesel: "diesel", Hybride: "hybride", Electrique: "electrique", GPL: "essence", Autre: "essence" };
+      const transMap: Record<string, string> = { Manuelle: "manuelle", Automatique: "automatique", "Semi-automatique": "manuelle", CVT: "automatique" };
+      fd.append("ad_type", adTypeMap[form.ad_type] ?? form.ad_type);
       fd.append("brand", form.brand);
       fd.append("model", form.model);
       fd.append("year", form.year ? String(parseInt(form.year)) : "");
       fd.append("mileage", form.mileage ? String(parseInt(form.mileage)) : "");
-      fd.append("fuel", form.fuel);
-      fd.append("transmission", form.transmission);
+      fd.append("fuel", fuelMap[form.fuel] ?? form.fuel.toLowerCase());
+      fd.append("transmission", transMap[form.transmission] ?? form.transmission.toLowerCase());
       fd.append("color", form.color);
       fd.append("doors", form.doors ? String(parseInt(form.doors)) : "");
       fd.append("plate_number", form.plate_number);
@@ -114,13 +118,14 @@ export default function PublierAutomobilePage() {
         body: fd,
       });
       if (!res.ok) {
-        const d = await res.json();
-        setError(d.error ?? "Erreur lors de la publication");
+        let msg = `Erreur ${res.status}`;
+        try { const d = await res.json(); msg = d.error ?? msg; } catch { msg = await res.text().then(t => t.slice(0, 200)).catch(() => msg); }
+        setError(msg);
         return;
       }
       setSuccess(true);
-    } catch {
-      setError("Erreur reseau. Veuillez reessayer.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur réseau. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
