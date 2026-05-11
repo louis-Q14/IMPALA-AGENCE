@@ -28,7 +28,7 @@ interface Car {
   transmission: string;
   price: number | null;
   rent_price_day: number | null;
-  ad_type: "vente" | "location";
+  ad_type: "sale" | "rent";
   status: string;
   photos: string[];
   location_text: string;
@@ -49,7 +49,7 @@ export default function AutomobilePage() {
 
   useEffect(() => {
     const params = new URLSearchParams();
-    if (filterType !== "all") params.set("type", filterType);
+    if (filterType !== "all") params.set("type", filterType === "vente" ? "sale" : filterType === "location" ? "rent" : filterType);
     if (search) params.set("brand", search);
     if (fuelFilter) params.set("fuel", fuelFilter);
     if (transFilter) params.set("transmission", transFilter);
@@ -202,8 +202,8 @@ export default function AutomobilePage() {
                     </div>
                   )}
                   <div className="absolute top-3 left-3">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${car.ad_type === "vente" ? "bg-blue-600" : "bg-emerald-600"}`}>
-                      {car.ad_type === "vente" ? "Vente" : "Location"}
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold text-white ${car.ad_type === "sale" ? "bg-blue-600" : "bg-emerald-600"}`}>
+                      {car.ad_type === "sale" ? "Vente" : "Location"}
                     </span>
                   </div>
                   <button onClick={(e) => { e.preventDefault(); toggleFavorite(car.id); }}
@@ -217,9 +217,9 @@ export default function AutomobilePage() {
                 <div className="p-5">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xl font-bold text-primary">
-                      {car.ad_type === "vente"
-                        ? (car.price != null ? `${car.price.toLocaleString("fr-FR")} FC` : "Prix sur demande")
-                        : (car.rent_price_day != null ? `${car.rent_price_day} FC/jour` : "Sur demande")}
+                      {car.ad_type === "sale"
+                        ? (car.price != null ? `${car.price.toLocaleString("fr-FR")} $` : "Prix sur demande")
+                        : (car.rent_price_day != null ? `${car.rent_price_day} $/jour` : "Sur demande")}
                     </span>
                     {car.color && (
                       <span className="text-xs px-2 py-1 rounded-lg bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">{car.color}</span>
@@ -239,7 +239,7 @@ export default function AutomobilePage() {
                     {car.transmission && <span className="px-2.5 py-1 text-xs rounded-lg bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">{car.transmission}</span>}
                     {car.power && <span className="px-2.5 py-1 text-xs rounded-lg bg-[var(--bg-tertiary)] text-[var(--text-secondary)]">{car.power}</span>}
                   </div>
-                  {car.ad_type === "location" && (
+                  {car.ad_type === "rent" && (
                     <button onClick={(e) => e.preventDefault()}
                       className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 text-primary font-medium hover:bg-primary/20 transition-all text-sm">
                       <CalendarIcon className="w-4 h-4" />

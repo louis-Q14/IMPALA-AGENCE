@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -21,6 +21,8 @@ import {
   VideoCameraIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolidIcon, PlayIcon as PlaySolidIcon } from "@heroicons/react/24/solid";
+
+const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
 
 const allCars: Record<string, {
   id: string; brand: string; model: string; year: number; mileage: number; fuel: string;
@@ -202,10 +204,62 @@ function formatPrice(car: typeof allCars[string]) {
 
 export default function AutomobileDetailPage() {
   const params = useParams();
-  const car = allCars[params.id as string];
+  const [apiCar, setApiCar] = useState<Record<string, unknown> | null | undefined>(undefined);
+  const [carLoading, setCarLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", message: "" });
+
+  useEffect(() => {
+    if (!params.id) return;
+    setCarLoading(true);
+    fetch(`${API}/auto/ads/${params.id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        if (d) {
+          setApiCar({
+            ...d,
+            type: d.ad_type,
+            images: Array.isArray(d.photos) && d.photos.length > 0 ? d.photos : [],
+            video: null,
+            location: d.location_text ?? "",
+            rentPriceDay: d.rent_price_day,
+            co2: d.co2_emissions ?? "0",
+            firstReg: d.circulation_date
+              ? new Date(d.circulation_date).toLocaleDateString("fr-FR")
+              : "—",
+            warranty: "",
+            features: [],
+            rating: null,
+            reviews: null,
+            seats: 5,
+            seller: {
+              name: d.owner_name || d.author_name || "Vendeur",
+              phone: d.owner_phone || d.author_phone || "",
+              email: d.owner_email || d.author_email || "",
+              avatar: (d.owner_name || d.author_name || "V").charAt(0).toUpperCase(),
+              type: (d.owner_type || "particulier").toLowerCase(),
+            },
+          });
+        } else {
+          setApiCar(null);
+        }
+      })
+      .catch(() => setApiCar(null))
+      .finally(() => setCarLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const car = apiCar as any;
+
+  if (carLoading) {
+    return (
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center">
+        <div className="text-[var(--text-muted)]">Chargement...</div>
+      </div>
+    );
+  }
 
   if (!car) {
     return (
