@@ -43,8 +43,8 @@ const sections = [
     content: (
       <div className="space-y-3 text-sm text-[var(--text-secondary)] leading-relaxed">
         <ul className="space-y-1">
-          <li><span className="font-medium text-[var(--text-primary)]">Nom et prénom :</span> Francisco Mendess — Gérant ou représentant légal d&apos;IMPALA</li>
-          <li><span className="font-medium text-[var(--text-primary)]">Qualité :</span> Gérant / Directeur général</li>
+          <li><span className="font-medium text-[var(--text-primary)]">Nom et prénom :</span> Francisco Mendess — Gérant légal d&apos;IMPALA</li>
+          <li><span className="font-medium text-[var(--text-primary)]">Qualité :</span> Gérant</li>
         </ul>
         <p>
           Le directeur de la publication est responsable du contenu éditorial publié sur le site impala-agence.
