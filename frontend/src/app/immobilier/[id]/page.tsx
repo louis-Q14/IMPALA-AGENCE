@@ -428,7 +428,7 @@ export default function ImmobilierDetailPage() {
             <section className="rounded-2xl overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)]">
               <div className="relative aspect-[16/9] bg-[var(--bg-secondary)] overflow-hidden">
                 {gallery[currentImage] ? (
-                  <img src={gallery[currentImage]} alt={ad.title} className="w-full h-full object-cover" />
+                  <img src={gallery[currentImage]} alt={ad.title} className="w-full h-full object-cover transition-all duration-500" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-slate-700/40 flex flex-col items-center justify-center gap-3 text-[var(--text-muted)]">
                     <HomeIcon className="w-20 h-20 text-white/60" />
@@ -454,20 +454,31 @@ export default function ImmobilierDetailPage() {
                     >
                       <ChevronRightIcon className="w-5 h-5" />
                     </button>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
-                      {gallery.map((photo, index) => (
-                        <button
-                          key={`${photo}-${index}`}
-                          type="button"
-                          onClick={() => setCurrentImage(index)}
-                          className={`h-2 w-2 rounded-full transition-all ${index === currentImage ? "bg-white" : "bg-white/70"}`}
-                          aria-label={`Aller à l'image ${index + 1}`}
-                        />
-                      ))}
+                    <div className="absolute bottom-3 right-4 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-sm text-white text-xs font-medium">
+                      {currentImage + 1} / {gallery.length}
                     </div>
                   </>
                 )}
               </div>
+
+              {/* Thumbnail strip */}
+              {gallery.length > 1 && (
+                <div className="flex gap-1 p-2 bg-[var(--bg-card)] overflow-x-auto">
+                  {gallery.map((photo, index) => (
+                    <button
+                      key={`${photo}-${index}`}
+                      type="button"
+                      onClick={() => setCurrentImage(index)}
+                      className={`flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden transition-all ${
+                        index === currentImage ? "ring-2 ring-primary opacity-100" : "opacity-50 hover:opacity-80"
+                      }`}
+                      aria-label={`Image ${index + 1}`}
+                    >
+                      <img src={photo} alt={`Miniature ${index + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </section>
 
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr),320px] gap-8 items-start">
