@@ -211,6 +211,8 @@ export default function AutomobileDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [contactForm, setContactForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [contactSending, setContactSending] = useState(false);
+  const [contactFeedback, setContactFeedback] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
   useEffect(() => {
     if (!params.id) return;
@@ -249,6 +251,7 @@ export default function AutomobileDetailPage() {
               name: d.owner_name || d.author_name || "Vendeur",
               phone: d.owner_phone || d.author_phone || "",
               email: d.owner_email || d.author_email || "",
+              adresse: d.author_adresse || "",
               avatar: (d.owner_name || d.author_name || "V").charAt(0).toUpperCase(),
               type: (d.owner_type || "particulier").toLowerCase(),
             },
@@ -261,6 +264,42 @@ export default function AutomobileDetailPage() {
       .finally(() => setCarLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
+
+  const sendContactMessage = async () => {
+    if (!car) return;
+    if (!contactForm.message.trim()) {
+      setContactFeedback({ type: "err", text: "Veuillez saisir un message." });
+      return;
+    }
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!token) {
+      setContactFeedback({ type: "err", text: "Connectez-vous pour envoyer un message." });
+      return;
+    }
+    setContactSending(true);
+    setContactFeedback(null);
+    try {
+      const prefix = contactForm.name || contactForm.email || contactForm.phone
+        ? `Nom: ${contactForm.name || "—"}\nEmail: ${contactForm.email || "—"}\nTéléphone: ${contactForm.phone || "—"}\n\n`
+        : "";
+      const res = await fetch(
+        `${API}/messages/contact-seller`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ adId: car.id, adType: "auto", content: prefix + contactForm.message.trim() }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erreur lors de l'envoi");
+      setContactFeedback({ type: "ok", text: "Message envoyé au vendeur. Suivez la conversation dans votre Messagerie." });
+      setContactForm({ name: "", email: "", phone: "", message: "" });
+    } catch (e) {
+      setContactFeedback({ type: "err", text: e instanceof Error ? e.message : "Erreur lors de l'envoi" });
+    } finally {
+      setContactSending(false);
+    }
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const car = apiCar as any;
@@ -529,59 +568,94 @@ export default function AutomobileDetailPage() {
               </button>
             )}
 
-            {/* Contact Form */}
-            <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] sticky top-24">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Contacter le vendeur</h3>
-              <div className="space-y-3">
-                <input
-                  type="text" placeholder="Votre nom"
-                  value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                <input
-                  type="email" placeholder="Votre email"
-                  value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                <input
-                  type="tel" placeholder="Téléphone (optionnel)"
-                  value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-                <textarea
-                  placeholder="Votre message..." rows={4}
-                  value={contactForm.message} onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                />
-                <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-white font-medium hover:bg-primary-hover transition-all">
-                  <PaperAirplaneIcon className="w-5 h-5" /> Envoyer
-                </button>
-              </div>
-            </div>
+            {/* Contact Card — unified form + seller coords */}
+            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 sticky top-24">
+              <h2 className="text-[20px] font-bold leading-none text-[var(--text-primary)] mb-4">Contacter le vendeur</h2>
+              <div className={`gap-5 ${(car.seller.phone || car.seller.email || car.seller.adresse) ? 'grid grid-cols-1 sm:grid-cols-2' : ''}`}>
+                {/* Formulaire */}
+                <div className="space-y-3">
+                  <input
+                    type="text" placeholder="Votre nom"
+                    value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
+                  />
+                  <input
+                    type="email" placeholder="Votre email"
+                    value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
+                  />
+                  <input
+                    type="tel" placeholder="Téléphone (optionnel)"
+                    value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
+                  />
+                  <textarea
+                    rows={4} placeholder="Votre message..."
+                    value={contactForm.message} onChange={(e) => setContactForm({ ...contactForm, message: e.target.value.slice(0, 5000) })}
+                    className="w-full resize-none rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
+                  />
+                  {contactFeedback && (
+                    <p className={`text-[11px] ${contactFeedback.type === "ok" ? "text-emerald-500" : "text-red-500"}`}>
+                      {contactFeedback.text}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={sendContactMessage}
+                    disabled={contactSending}
+                    className="w-full rounded-full bg-primary px-4 py-3 text-[16px] font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
+                  >
+                    {contactSending ? "Envoi..." : "Envoyer"}
+                  </button>
+                </div>
 
-            {/* Seller Card */}
-            <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-              <h3 className="text-sm font-medium text-[var(--text-muted)] mb-3">Vendeur</h3>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-white font-bold">
-                  {car.seller.avatar}
-                </div>
-                <div>
-                  <p className="font-medium text-[var(--text-primary)]">{car.seller.name}</p>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    car.seller.type === "pro" ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300" : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                  }`}>
-                    {car.seller.type === "pro" ? "Professionnel" : "Particulier"}
-                  </span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <a href={`tel:${car.seller.phone}`} className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-primary transition-colors">
-                  <PhoneIcon className="w-4 h-4" /> {car.seller.phone}
-                </a>
-                <a href={`mailto:${car.seller.email}`} className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-primary transition-colors">
-                  <PaperAirplaneIcon className="w-4 h-4" /> {car.seller.email}
-                </a>
+                {/* Coordonnées du vendeur */}
+                {(car.seller.phone || car.seller.email || car.seller.adresse) && (
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[16px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">Coordonnées du vendeur</p>
+                    {car.seller.name && (
+                      <div className="flex items-center gap-2.5">
+                        <img src="/UserIcon.png" alt="Vendeur" className="w-6 h-6 object-contain shrink-0" />
+                        <span className="text-[18px] text-primary font-medium break-all">{car.seller.name}</span>
+                      </div>
+                    )}
+                    {car.seller.phone && (
+                      <>
+                        <div className="flex items-center gap-2.5">
+                          <img src="/PhoneIcon.png" alt="Téléphone" className="w-6 h-6 object-contain shrink-0" />
+                          <a href={`tel:${car.seller.phone}`} className="text-[18px] text-primary hover:underline break-all">
+                            {car.seller.phone}
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2.5">
+                          <img src="/ChatBubbleLeftEllipsisIcon.png" alt="WhatsApp" className="w-6 h-6 object-contain shrink-0" />
+                          <a
+                            href={`https://wa.me/${car.seller.phone.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[18px] text-emerald-500 hover:underline break-all"
+                          >
+                            WhatsApp
+                          </a>
+                        </div>
+                      </>
+                    )}
+                    {car.seller.email && (
+                      <div className="flex items-center gap-2.5">
+                        <img src="/EnvelopeIcon.png" alt="Email" className="w-6 h-6 object-contain shrink-0" />
+                        <a href={`mailto:${car.seller.email}`} className="text-[18px] text-primary hover:underline break-all">
+                          {car.seller.email}
+                        </a>
+                      </div>
+                    )}
+                    {car.seller.adresse && (
+                      <div className="flex items-start gap-2.5">
+                        <img src="/MapPinIcon.png" alt="Adresse" className="w-6 h-6 object-contain shrink-0 mt-0.5" />
+                        <span className="text-[18px] text-[var(--text-primary)] break-words">{car.seller.adresse}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

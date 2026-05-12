@@ -153,10 +153,11 @@ router.get("/ads/:id", async (req, res) => {
   try {
     const result = await db.query(
       `SELECT a.*, u.full_name as author_name, u.email as author_email, u.phone as author_phone,
+              u.adresse as author_adresse,
               COALESCE(json_agg(p.photo_url ORDER BY p.sort_order) FILTER (WHERE p.id IS NOT NULL), '[]') as photos
        FROM auto_ads a JOIN users u ON a.user_id = u.id
        LEFT JOIN ad_photos p ON p.ad_id = a.id AND p.ad_type = 'auto'
-       WHERE a.id = $1 GROUP BY a.id, u.full_name, u.email, u.phone`,
+       WHERE a.id = $1 GROUP BY a.id, u.full_name, u.email, u.phone, u.adresse`,
       [req.params.id]
     );
     if (!result.rows.length) return res.status(404).json({ error: "Annonce introuvable" });
