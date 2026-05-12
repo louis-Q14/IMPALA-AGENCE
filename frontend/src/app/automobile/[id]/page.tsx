@@ -545,7 +545,7 @@ export default function AutomobileDetailPage() {
             </div>
           </div>
 
-          {/* Right: Contact + Actions */}
+          {/* Right: Actions only */}
           <div className="space-y-6">
             {/* Actions */}
             <div className="flex gap-3">
@@ -567,97 +567,97 @@ export default function AutomobileDetailPage() {
                 <CalendarIcon className="w-5 h-5" /> Réserver ce véhicule
               </button>
             )}
+          </div>
+        </div>
 
-            {/* Contact Card — unified form + seller coords */}
-            <div className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5 sticky top-24">
-              <h2 className="text-[20px] font-bold leading-none text-[var(--text-primary)] mb-4">Contacter le vendeur</h2>
-              <div className={`gap-5 ${(car.seller.phone || car.seller.email || car.seller.adresse) ? 'grid grid-cols-1 sm:grid-cols-2' : ''}`}>
-                {/* Formulaire */}
-                <div className="space-y-3">
-                  <input
-                    type="text" placeholder="Votre nom"
-                    value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
-                  />
-                  <input
-                    type="email" placeholder="Votre email"
-                    value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
-                  />
-                  <input
-                    type="tel" placeholder="Téléphone (optionnel)"
-                    value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
-                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
-                  />
-                  <textarea
-                    rows={4} placeholder="Votre message..."
-                    value={contactForm.message} onChange={(e) => setContactForm({ ...contactForm, message: e.target.value.slice(0, 5000) })}
-                    className="w-full resize-none rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
-                  />
-                  {contactFeedback && (
-                    <p className={`text-[11px] ${contactFeedback.type === "ok" ? "text-emerald-500" : "text-red-500"}`}>
-                      {contactFeedback.text}
-                    </p>
-                  )}
-                  <button
-                    type="button"
-                    onClick={sendContactMessage}
-                    disabled={contactSending}
-                    className="w-full rounded-full bg-primary px-4 py-3 text-[16px] font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
-                  >
-                    {contactSending ? "Envoi..." : "Envoyer"}
-                  </button>
-                </div>
+        {/* Contact Card — full width below content */}
+        <div className="mt-8 rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] p-5">
+          <h2 className="text-[20px] font-bold leading-none text-[var(--text-primary)] mb-5">Contacter le vendeur</h2>
+          <div className={`gap-8 ${(car.seller.phone || car.seller.email || car.seller.adresse) ? 'grid grid-cols-1 sm:grid-cols-2' : ''}`}>
+            {/* Formulaire */}
+            <div className="space-y-3">
+              <input
+                type="text" placeholder="Votre nom"
+                value={contactForm.name} onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
+              />
+              <input
+                type="email" placeholder="Votre email"
+                value={contactForm.email} onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
+              />
+              <input
+                type="tel" placeholder="Téléphone (optionnel)"
+                value={contactForm.phone} onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
+              />
+              <textarea
+                rows={4} placeholder="Votre message..."
+                value={contactForm.message} onChange={(e) => setContactForm({ ...contactForm, message: e.target.value.slice(0, 5000) })}
+                className="w-full resize-none rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-primary"
+              />
+              {contactFeedback && (
+                <p className={`text-[11px] ${contactFeedback.type === "ok" ? "text-emerald-500" : "text-red-500"}`}>
+                  {contactFeedback.text}
+                </p>
+              )}
+              <button
+                type="button"
+                onClick={sendContactMessage}
+                disabled={contactSending}
+                className="w-full rounded-full bg-primary px-4 py-3 text-[16px] font-semibold text-white transition-colors hover:bg-primary-hover disabled:opacity-60"
+              >
+                {contactSending ? "Envoi..." : "Envoyer"}
+              </button>
+            </div>
 
-                {/* Coordonnées du vendeur */}
-                {(car.seller.phone || car.seller.email || car.seller.adresse) && (
-                  <div className="flex flex-col gap-3">
-                    <p className="text-[16px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">Coordonnées du vendeur</p>
-                    {car.seller.name && (
-                      <div className="flex items-center gap-2.5">
-                        <img src="/UserIcon.png" alt="Vendeur" className="w-6 h-6 object-contain shrink-0" />
-                        <span className="text-[18px] text-primary font-medium break-all">{car.seller.name}</span>
-                      </div>
-                    )}
-                    {car.seller.phone && (
-                      <>
-                        <div className="flex items-center gap-2.5">
-                          <img src="/PhoneIcon.png" alt="Téléphone" className="w-6 h-6 object-contain shrink-0" />
-                          <a href={`tel:${car.seller.phone}`} className="text-[18px] text-primary hover:underline break-all">
-                            {car.seller.phone}
-                          </a>
-                        </div>
-                        <div className="flex items-center gap-2.5">
-                          <img src="/ChatBubbleLeftEllipsisIcon.png" alt="WhatsApp" className="w-6 h-6 object-contain shrink-0" />
-                          <a
-                            href={`https://wa.me/${car.seller.phone.replace(/[^0-9]/g, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-[18px] text-emerald-500 hover:underline break-all"
-                          >
-                            WhatsApp
-                          </a>
-                        </div>
-                      </>
-                    )}
-                    {car.seller.email && (
-                      <div className="flex items-center gap-2.5">
-                        <img src="/EnvelopeIcon.png" alt="Email" className="w-6 h-6 object-contain shrink-0" />
-                        <a href={`mailto:${car.seller.email}`} className="text-[18px] text-primary hover:underline break-all">
-                          {car.seller.email}
-                        </a>
-                      </div>
-                    )}
-                    {car.seller.adresse && (
-                      <div className="flex items-start gap-2.5">
-                        <img src="/MapPinIcon.png" alt="Adresse" className="w-6 h-6 object-contain shrink-0 mt-0.5" />
-                        <span className="text-[18px] text-[var(--text-primary)] break-words">{car.seller.adresse}</span>
-                      </div>
-                    )}
+            {/* Coordonnées du vendeur */}
+            {(car.seller.phone || car.seller.email || car.seller.adresse) && (
+              <div className="flex flex-col gap-3">
+                <p className="text-[16px] font-semibold text-[var(--text-secondary)] uppercase tracking-wide">Coordonnées du vendeur</p>
+                {car.seller.name && (
+                  <div className="flex items-center gap-2.5">
+                    <img src="/UserIcon.png" alt="Vendeur" className="w-6 h-6 object-contain shrink-0" />
+                    <span className="text-[18px] text-primary font-medium break-all">{car.seller.name}</span>
+                  </div>
+                )}
+                {car.seller.phone && (
+                  <>
+                    <div className="flex items-center gap-2.5">
+                      <img src="/PhoneIcon.png" alt="Téléphone" className="w-6 h-6 object-contain shrink-0" />
+                      <a href={`tel:${car.seller.phone}`} className="text-[18px] text-primary hover:underline break-all">
+                        {car.seller.phone}
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <img src="/ChatBubbleLeftEllipsisIcon.png" alt="WhatsApp" className="w-6 h-6 object-contain shrink-0" />
+                      <a
+                        href={`https://wa.me/${car.seller.phone.replace(/[^0-9]/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[18px] text-emerald-500 hover:underline break-all"
+                      >
+                        WhatsApp
+                      </a>
+                    </div>
+                  </>
+                )}
+                {car.seller.email && (
+                  <div className="flex items-center gap-2.5">
+                    <img src="/EnvelopeIcon.png" alt="Email" className="w-6 h-6 object-contain shrink-0" />
+                    <a href={`mailto:${car.seller.email}`} className="text-[18px] text-primary hover:underline break-all">
+                      {car.seller.email}
+                    </a>
+                  </div>
+                )}
+                {car.seller.adresse && (
+                  <div className="flex items-start gap-2.5">
+                    <img src="/MapPinIcon.png" alt="Adresse" className="w-6 h-6 object-contain shrink-0 mt-0.5" />
+                    <span className="text-[18px] text-[var(--text-primary)] break-words">{car.seller.adresse}</span>
                   </div>
                 )}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
