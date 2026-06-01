@@ -1,0 +1,10 @@
+-- Migration: add missing columns to users table
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS nom_etablissement VARCHAR(200),
+  ADD COLUMN IF NOT EXISTS piece_identite_url TEXT,
+  ADD COLUMN IF NOT EXISTS documents_path TEXT,
+  ADD COLUMN IF NOT EXISTS phone_fixe VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS phone_otp VARCHAR(6),
+  ADD COLUMN IF NOT EXISTS phone_otp_expires TIMESTAMP WITH TIME ZONE,
+  ADD COLUMN IF NOT EXISTS phone_otp_sent_at TIMESTAMP WITH TIME ZONE,
+  ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN DEFAULT FALSE;

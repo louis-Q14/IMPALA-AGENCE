@@ -21,6 +21,7 @@ async function initDb() {
 
     // Run additional migration SQL files
     const migrationFiles = [
+      "migrate-users-columns.sql",
       "migrate-blog.sql",
       "migrate-boutique.sql",
       "migrate-contact.sql",
