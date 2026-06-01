@@ -26,6 +26,7 @@ async function initDb() {
       "migrate-contact.sql",
       "migrate-discounts.sql",
       "migrate-email-verify.sql",
+      "migrate-otp.sql",
       "migrate-reset-password.sql",
       "migrate-subs.sql",
     ];
