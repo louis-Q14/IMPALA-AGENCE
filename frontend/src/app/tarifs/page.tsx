@@ -308,20 +308,38 @@ export default function TarifsPage() {
       })
       .catch(() => {});
 
-    // Fetch tarifs-frais for each service
-    // Fetch immo-auto standard formula price
+    // Fetch formula configs for subscription packs
     fetch(`${API}/tarifs-frais/public-config/immo-auto`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.config?.standard) {
           const p = parseFloat(data.config.standard);
           if (!isNaN(p) && p > 0) setPrices(prev => ({ ...prev, "immo-auto": p }));
+          if (data.config.unite === "CDF" || data.config.unite === "USD") setCurrency(data.config.unite);
+        }
+      }).catch(() => {});
+
+    fetch(`${API}/tarifs-frais/public-config/immobilier`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.config?.standard) {
+          const p = parseFloat(data.config.standard);
+          if (!isNaN(p) && p > 0) setPrices(prev => ({ ...prev, real_estate: p }));
+          if (data.config.unite === "CDF" || data.config.unite === "USD") setCurrency(data.config.unite);
+        }
+      }).catch(() => {});
+
+    fetch(`${API}/tarifs-frais/public-config/automobile`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.config?.standard) {
+          const p = parseFloat(data.config.standard);
+          if (!isNaN(p) && p > 0) setPrices(prev => ({ ...prev, auto: p }));
+          if (data.config.unite === "CDF" || data.config.unite === "USD") setCurrency(data.config.unite);
         }
       }).catch(() => {});
 
     const mappings: { service: string; key: string; type: string }[] = [
-      { service: "immobilier,general", key: "real_estate", type: "abonnement" },
-      { service: "automobile,general", key: "auto", type: "abonnement" },
       { service: "nettoyage", key: "nettoyage", type: "frais_fixe" },
       { service: "repassage", key: "repassage", type: "frais_fixe" },
       { service: "demenagement", key: "demenagement", type: "frais_fixe" },
