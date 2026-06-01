@@ -713,7 +713,7 @@ function InscriptionContent() {
                         }
                         setNumeroPiece(raw);
                       }}
-                      className={`${inputClass} pl-12 ${step3Attempted && !((typePiece === "carte_electeur" && /^\d{11}$/.test(numeroPiece.trim())) || (typePiece === "passeport" && /^[A-Z]{2}\d{7}$/.test(numeroPiece.trim().toUpperCase()))) ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                      className={`${inputClass} !pl-12 ${step3Attempted && !((typePiece === "carte_electeur" && /^\d{11}$/.test(numeroPiece.trim())) || (typePiece === "passeport" && /^[A-Z]{2}\d{7}$/.test(numeroPiece.trim().toUpperCase()))) ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     />
                   </div>
                   <p className="mt-1 text-xs text-[var(--text-muted)]">
@@ -733,7 +733,7 @@ function InscriptionContent() {
                       placeholder="123 Avenue de la Paix, Lubumbashi"
                       value={adresse}
                       onChange={(e) => setAdresse(e.target.value)}
-                      className={`${inputClass} pl-12 ${step3Attempted && adresse.trim().length < 5 ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                      className={`${inputClass} !pl-12 ${step3Attempted && adresse.trim().length < 5 ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     />
                   </div>
                 </div>
@@ -749,7 +749,7 @@ function InscriptionContent() {
                         placeholder="+243 812 345 678"
                         value={telephonePortable}
                         onChange={(e) => setTelephonePortable(e.target.value)}
-                        className={`${inputClass} pl-12 ${step3Attempted && telephonePortable.trim().length < 8 ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                        className={`${inputClass} !pl-12 ${step3Attempted && telephonePortable.trim().length < 8 ? "border-red-500 ring-1 ring-red-500" : ""}`}
                       />
                     </div>
                   </div>
@@ -762,7 +762,7 @@ function InscriptionContent() {
                         placeholder="+243 1 234 567"
                         value={telephoneFixe}
                         onChange={(e) => setTelephoneFixe(e.target.value)}
-                        className={`${inputClass} pl-12`}
+                        className={`${inputClass} !pl-12`}
                       />
                     </div>
                   </div>
@@ -778,7 +778,7 @@ function InscriptionContent() {
                       placeholder="vous@exemple.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`${inputClass} pl-12 ${step3Attempted && !email.includes("@") ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                      className={`${inputClass} !pl-12 ${step3Attempted && !email.includes("@") ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     />
                   </div>
                 </div>
@@ -793,7 +793,7 @@ function InscriptionContent() {
                       placeholder="Min. 8 caractères"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`${inputClass} pl-12 pr-12 ${step3Attempted && password.length < 8 ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                      className={`${inputClass} !pl-12 !pr-12 ${step3Attempted && password.length < 8 ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     />
                     <button type="button" onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
@@ -815,7 +815,7 @@ function InscriptionContent() {
                       placeholder="Répétez votre mot de passe"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`${inputClass} pl-12 pr-12 ${step3Attempted && confirmPassword !== password ? "border-red-500 ring-1 ring-red-500" : confirmPassword.length > 0 && confirmPassword === password ? "border-green-500 ring-1 ring-green-500" : ""}`}
+                      className={`${inputClass} !pl-12 !pr-12 ${step3Attempted && confirmPassword !== password ? "border-red-500 ring-1 ring-red-500" : confirmPassword.length > 0 && confirmPassword === password ? "border-green-500 ring-1 ring-green-500" : ""}`}
                     />
                     <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]">
