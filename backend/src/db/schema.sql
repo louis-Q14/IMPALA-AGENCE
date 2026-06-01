@@ -98,7 +98,7 @@ CREATE TABLE real_estate_ads (
 
 CREATE INDEX idx_real_estate_status ON real_estate_ads(status);
 CREATE INDEX idx_real_estate_type ON real_estate_ads(ad_type);
-CREATE INDEX idx_real_estate_location ON real_estate_ads USING GIST(location);
+CREATE INDEX idx_real_estate_location ON real_estate_ads USING GIN(location);
 CREATE INDEX idx_real_estate_price ON real_estate_ads(price);
 CREATE INDEX idx_real_estate_city ON real_estate_ads(city);
 
