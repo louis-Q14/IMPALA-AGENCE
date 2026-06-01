@@ -3,7 +3,7 @@
 -- ================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-CREATE EXTENSION IF NOT EXISTS "postgis";
+-- PostGIS extension removed (not available in standard postgres)
 
 -- ================================================
 -- USERS & AUTH
@@ -88,7 +88,7 @@ CREATE TABLE real_estate_ads (
     address TEXT NOT NULL,
     city VARCHAR(100),
     postal_code VARCHAR(10),
-    location GEOMETRY(POINT, 4326),
+    location JSONB,
     ad_type VARCHAR(10) NOT NULL CHECK (ad_type IN ('sale', 'rent')),
     status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'sold', 'rented', 'rejected')),
     views INT DEFAULT 0,
@@ -288,7 +288,7 @@ CREATE TABLE trash_subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     address TEXT NOT NULL,
-    location GEOMETRY(POINT, 4326),
+    location JSONB,
     frequency VARCHAR(20) NOT NULL CHECK (frequency IN ('weekly', 'biweekly', 'monthly')),
     bin_count INT DEFAULT 1 CHECK (bin_count BETWEEN 1 AND 3),
     waste_types TEXT[] NOT NULL DEFAULT '{"general"}',

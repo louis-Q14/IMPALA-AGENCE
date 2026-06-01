@@ -23,6 +23,7 @@ const boutiqueRoutes = require("./routes/boutique");
 const { auditActions } = require("./middleware/auditActions");
 const { ensureAuditFile } = require("./services/actionAudit");
 const { ensureFolderSchema } = require("./db/ensureFolderSchema");
+const { initDb } = require("./db/init");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -86,6 +87,7 @@ app.use((err, _req, res, _next) => {
 
 async function startServer() {
   try {
+    await initDb();
     await ensureFolderSchema();
     app.listen(PORT, () => {
       console.log(`IMPALA-AGENCE API running on port ${PORT}`);
