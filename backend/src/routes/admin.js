@@ -79,7 +79,7 @@ router.patch("/users/:id/status", async (req, res) => {
     }
 
     const result = await db.query(
-      "UPDATE users SET status = $1, is_verified = $2 WHERE id = $3 AND role NOT IN ('admin', 'super_admin', 'finance_agent', 'support_agent', 'trash_agent') RETURNING id, status",
+      "UPDATE users SET status = $1, is_verified = $2, phone_verified = $2 WHERE id = $3 AND role NOT IN ('admin', 'super_admin', 'finance_agent', 'support_agent', 'trash_agent') RETURNING id, status",
       [status, status === "approved", id]
     );
 

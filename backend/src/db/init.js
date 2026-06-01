@@ -38,9 +38,7 @@ async function initDb() {
     "migrate-reset-password.sql",
     "migrate-subs.sql",
     "migrate-reset-superadmin.sql",
-  ];
-
-  for (const file of migrationFiles) {
+      "migrate-fix-verified.sql",
     const filePath = path.join(__dirname, file);
     if (fs.existsSync(filePath)) {
       try {
