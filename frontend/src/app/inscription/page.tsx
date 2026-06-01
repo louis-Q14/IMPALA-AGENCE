@@ -666,7 +666,7 @@ function InscriptionContent() {
 
               <form className="space-y-4 mt-6" onSubmit={(e) => e.preventDefault()}>
                 {/* Pièce d'identité */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                   <div>
                     <label className={labelClass}>Type de pièce *</label>
                     <select
@@ -676,40 +676,12 @@ function InscriptionContent() {
                         setNumeroPiece("");
                         if (step3Attempted) setStep3Attempted(false);
                       }}
-                      className={`${inputClass} ${step3Attempted && typePiece === "" ? "border-red-500 ring-1 ring-red-500" : ""} mb-3`}
+                      className={`${inputClass} ${step3Attempted && typePiece === "" ? "border-red-500 ring-1 ring-red-500" : ""}`}
                     >
                       <option value="">Sélectionner le type...</option>
                       <option value="carte_electeur">Carte d&apos;électeur</option>
                       <option value="passeport">Passeport</option>
                     </select>
-
-                    <label className={labelClass}>N° pièce d&apos;identité *</label>
-                    <div className="relative">
-                      <IdentificationIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-                      <input
-                        type="text"
-                        placeholder={typePiece === "passeport" ? "Ex: AB1234567" : "Ex: 12345678901"}
-                        value={numeroPiece}
-                        onChange={(e) => {
-                          const raw = e.target.value;
-                          if (typePiece === "carte_electeur") {
-                            setNumeroPiece(raw.replace(/\D/g, "").slice(0, 11));
-                            return;
-                          }
-                          if (typePiece === "passeport") {
-                            setNumeroPiece(raw.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 9));
-                            return;
-                          }
-                          setNumeroPiece(raw);
-                        }}
-                        className={`${inputClass} pl-12 ${step3Attempted && !((typePiece === "carte_electeur" && /^\d{11}$/.test(numeroPiece.trim())) || (typePiece === "passeport" && /^[A-Z]{2}\d{7}$/.test(numeroPiece.trim().toUpperCase()))) ? "border-red-500 ring-1 ring-red-500" : ""}`}
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-[var(--text-muted)]">
-                      {typePiece === "passeport"
-                        ? "Format passeport: 2 lettres majuscules + 7 chiffres (ex: AB1234567)."
-                        : "Format carte d'électeur: 11 chiffres."}
-                    </p>
                   </div>
                   <div>
                     <label className={labelClass}>Upload pièce d&apos;identité <span className="text-xs text-[var(--text-muted)]">(bientôt disponible)</span></label>
@@ -718,6 +690,37 @@ function InscriptionContent() {
                       Fonctionnalité temporairement désactivée
                     </div>
                   </div>
+                </div>
+
+                {/* N° pièce d'identité */}
+                <div>
+                  <label className={labelClass}>N° pièce d&apos;identité *</label>
+                  <div className="relative">
+                    <IdentificationIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
+                    <input
+                      type="text"
+                      placeholder={typePiece === "passeport" ? "Ex: AB1234567" : "Ex: 12345678901"}
+                      value={numeroPiece}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (typePiece === "carte_electeur") {
+                          setNumeroPiece(raw.replace(/\D/g, "").slice(0, 11));
+                          return;
+                        }
+                        if (typePiece === "passeport") {
+                          setNumeroPiece(raw.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 9));
+                          return;
+                        }
+                        setNumeroPiece(raw);
+                      }}
+                      className={`${inputClass} pl-12 ${step3Attempted && !((typePiece === "carte_electeur" && /^\d{11}$/.test(numeroPiece.trim())) || (typePiece === "passeport" && /^[A-Z]{2}\d{7}$/.test(numeroPiece.trim().toUpperCase()))) ? "border-red-500 ring-1 ring-red-500" : ""}`}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-[var(--text-muted)]">
+                    {typePiece === "passeport"
+                      ? "Format passeport: 2 lettres majuscules + 7 chiffres (ex: AB1234567)."
+                      : "Format carte d'électeur: 11 chiffres."}
+                  </p>
                 </div>
 
                 {/* Adresse */}
