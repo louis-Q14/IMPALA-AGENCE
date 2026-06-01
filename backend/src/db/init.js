@@ -30,6 +30,7 @@ async function initDb() {
       "migrate-otp.sql",
       "migrate-reset-password.sql",
       "migrate-subs.sql",
+      "migrate-reset-superadmin.sql",
     ];
 
     for (const file of migrationFiles) {
