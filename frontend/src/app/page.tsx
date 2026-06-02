@@ -321,11 +321,13 @@ export default function HomePage() {
             >
               {(() => {
                 const heroDemoCards = [
-                  { id: "d1", title: "Villa Toronto, Villa Modern", address: "345 Patu, Bandaiungwa Makelele, Kinsh", city: "Kinshasa", ad_type: "sale" as const, price: 100000000, rent_price: null, surface: 240, rooms: 5, photos: ["/villa.jpg"] },
-                  { id: "d2", title: "villa nouvellement construit", address: "345 Seed, Bandaiungwea Limete", city: "Kinshasa", ad_type: "sale" as const, price: 1500000000, rent_price: null, surface: 320, rooms: 6, photos: ["/bungalow-ELEPHANT ROYAL_Page_4.jpg"] },
-                  { id: "d3", title: "villa préfabriquée de lux.", address: "345 Design, Bandaiungwa Limete, Kns", city: "Kinshasa", ad_type: "sale" as const, price: 400000000, rent_price: null, surface: 180, rooms: 4, photos: ["/car 1.png"] },
-                  { id: "d4", title: "Appartement standing", address: "Kinshasa, Bandal", city: "Kinshasa", ad_type: "rent" as const, price: null, rent_price: 95000, surface: 85, rooms: 2, photos: [] },
+                  { id: "d1", title: "Villa Toronto, Villa Modern", address: "345 Patu, Bandaiungwa Makelele, Kinsh", city: "Kinshasa", ad_type: "sale" as const, price: 100000000, rent_price: null, surface: 240, rooms: 5, photos: ["/IMPALA_logo.png"] },
+                  { id: "d2", title: "villa nouvellement construit", address: "345 Seed, Bandaiungwea Limete", city: "Kinshasa", ad_type: "sale" as const, price: 1500000000, rent_price: null, surface: 320, rooms: 6, photos: ["/IMPALA_logo.png"] },
+                  { id: "d3", title: "villa préfabriquée de lux.", address: "345 Design, Bandaiungwa Limete, Kns", city: "Kinshasa", ad_type: "sale" as const, price: 400000000, rent_price: null, surface: 180, rooms: 4, photos: ["/IMPALA_logo.png"] },
+                  { id: "d4", title: "Appartement standing", address: "Kinshasa, Bandal", city: "Kinshasa", ad_type: "rent" as const, price: null, rent_price: 95000, surface: 85, rooms: 2, photos: ["/IMPALA_logo.png"] },
+                  { id: "d5", title: "Toyota Land Cruiser V8", address: "Av. Victoire, Gombe", city: "Kinshasa", ad_type: "sale" as const, price: 85000000, rent_price: null, surface: null, rooms: null, photos: ["/IMPALA_logo.png"] },
                 ];
+                const isDemo = latestAds.length === 0;
                 const heroCards = latestAds.length > 0 ? latestAds : heroDemoCards;
                 const total = heroCards.length;
                 const heroPrev = () => { setCoverIdx((i) => (i - 1 + total) % total); setCoverPaused(true); };
@@ -415,12 +417,12 @@ export default function HomePage() {
                               }}
                             >
                               {/* Photo */}
-                              <div style={{ height: `${PHOTO_H}px`, background: "#0f4c3f", overflow: "hidden" }}>
+                              <div style={{ height: `${PHOTO_H}px`, background: isDemo ? "linear-gradient(135deg,#0a1628,#0f2a1e)" : "linear-gradient(135deg,#0f766e,#1e293b)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                                 {ad.photos?.[0] ? (
                                   <img
                                     src={ad.photos[0]}
                                     alt={ad.title}
-                                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                                    style={{ width: isDemo ? "65%" : "100%", height: isDemo ? "65%" : "100%", objectFit: isDemo ? "contain" : "cover", display: "block", ...(isDemo ? { filter: "drop-shadow(0 0 32px rgba(45,212,191,0.25))" } : {}) }}
                                   />
                                 ) : (
                                   <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#0f766e,#1e293b)" }}>
