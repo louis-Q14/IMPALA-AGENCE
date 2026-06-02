@@ -150,7 +150,7 @@ function checkAndSendNotif(sub: { startDate: string; annual: boolean }, serviceK
 }
 
 interface DbTarif { id: number; nom: string; type: string; montant: number; unite: "CDF" | "USD" | "%"; description: string | null; }
-interface PendingRequest { requestId: string; submittedAt: string; formula: string; amount: number; paymentMethod: string; annual: boolean; }
+interface PendingRequest { requestId: string; submittedAt: string; formula: string; formulaLabel?: string; amount: number; unite?: string; paymentMethod: string; annual: boolean; }
 
 function AbonnementContent() {
   const router = useRouter();
@@ -298,7 +298,9 @@ function AbonnementContent() {
           requestId: data.request_id,
           submittedAt: new Date().toISOString(),
           formula,
+          formulaLabel: selectedFormula?.label,
           amount: price,
+          unite: currSymbol,
           paymentMethod,
           annual,
         };
@@ -600,11 +602,11 @@ function AbonnementContent() {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
                       <p className="text-xs text-[var(--text-muted)] mb-1">Formule</p>
-                      <p className="text-sm font-semibold text-[var(--text-primary)] capitalize">{pendingRequest.formula}</p>
+                      <p className="text-sm font-semibold text-[var(--text-primary)] capitalize">{pendingRequest.formulaLabel ?? activeFormulas.find(f => f.id === pendingRequest.formula)?.label ?? pendingRequest.formula}</p>
                     </div>
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
                       <p className="text-xs text-[var(--text-muted)] mb-1">Montant</p>
-                      <p className="text-sm font-semibold text-[var(--text-primary)]">{pendingRequest.amount} FC</p>
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">{pendingRequest.amount} {pendingRequest.unite ?? currSymbol}</p>
                     </div>
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
                       <p className="text-xs text-[var(--text-muted)] mb-1">Période</p>
