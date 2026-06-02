@@ -231,9 +231,9 @@ function AbonnementContent() {
             const cfg = tarifData.config;
             const unite = (cfg.unite || "CDF") as "CDF" | "USD" | "%";
             setDbTarifs([
-              { id: 1, nom: "Basic", type: "abonnement", montant: parseFloat(cfg.basic) || 0, unite, description: null },
-              { id: 2, nom: "Standard", type: "abonnement", montant: parseFloat(cfg.standard) || 0, unite, description: null },
-              { id: 3, nom: "Premium", type: "abonnement", montant: parseFloat(cfg.premium) || 0, unite, description: null },
+              { id: 1 as unknown as number, nom: "Basic",    type: "abonnement", montant: parseFloat(cfg.basic)    || 0, unite, description: "basic" },
+              { id: 2 as unknown as number, nom: "Standard", type: "abonnement", montant: parseFloat(cfg.standard) || 0, unite, description: "standard" },
+              { id: 3 as unknown as number, nom: "Premium",  type: "abonnement", montant: parseFloat(cfg.premium)  || 0, unite, description: "premium" },
             ].filter(f => f.montant > 0));
           }
         }
@@ -256,15 +256,17 @@ function AbonnementContent() {
   };
   const GRADIENTS = SERVICE_GRADIENTS[serviceKey] ?? SERVICE_GRADIENTS.immobilier;
   const BADGES: (string | null)[] = [null, "Populaire", "Meilleure offre"];
+  // Use named IDs so formula state "basic"/"standard"/"premium" always matches
+  const FORMULA_KEYS = ["basic", "standard", "premium"];
   const activeFormulas = dbAbonnements.length > 0
     ? dbAbonnements.map((t, i) => ({
-        id: String(t.id),
+        id: t.description || FORMULA_KEYS[i] || String(t.id),
         label: t.nom,
         badge: BADGES[i] ?? null,
         price: Number(t.montant),
         unite: t.unite,
         gradient: GRADIENTS[i] ?? GRADIENTS[1],
-        features: t.description ? t.description.split(/[\n,]/).map((s: string) => s.trim()).filter(Boolean) : [],
+        features: [],
       }))
     : (DEFAULT_FORMULAS[serviceKey] ?? DEFAULT_FORMULAS.immobilier).map((f, i) => ({ ...f, unite: "CDF" as const, gradient: GRADIENTS[i] ?? f.gradient }));
   const selectedFormula = activeFormulas.find(f => f.id === formula)
@@ -606,7 +608,13 @@ function AbonnementContent() {
                     </div>
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
                       <p className="text-xs text-[var(--text-muted)] mb-1">Montant</p>
-                      <p className="text-sm font-semibold text-[var(--text-primary)]">{pendingRequest.amount} {pendingRequest.unite ?? currSymbol}</p>
+                      {(() => {
+                        // Try to resolve live price from DB config for the stored formula
+                        const liveFormula = activeFormulas.find(f => f.id === pendingRequest.formula || f.label.toLowerCase() === pendingRequest.formula.toLowerCase());
+                        const displayAmount = liveFormula ? (pendingRequest.annual ? Math.round(liveFormula.price * 10) : liveFormula.price) : pendingRequest.amount;
+                        const displayUnite = liveFormula ? (liveFormula.unite === "USD" ? "USD" : "FC") : (pendingRequest.unite ?? currSymbol);
+                        return <p className="text-sm font-semibold text-[var(--text-primary)]">{displayAmount} {displayUnite}</p>;
+                      })()}
                     </div>
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
                       <p className="text-xs text-[var(--text-muted)] mb-1">Période</p>
