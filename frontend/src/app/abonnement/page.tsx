@@ -186,7 +186,6 @@ function AbonnementContent() {
       try {
         const parsed = JSON.parse(saved) as { startDate: string; annual: boolean };
         setSubData(parsed);
-        setTab("suivi");
         checkAndSendNotif(parsed, serviceKey, plan.label);
       } catch { /* ignore */ }
     }
@@ -195,7 +194,6 @@ function AbonnementContent() {
       try {
         const parsed = JSON.parse(savedPending) as PendingRequest;
         setPendingRequest(parsed);
-        if (!saved) setTab("suivi");
       } catch { /* ignore */ }
     }
     if (typeof window !== "undefined" && "Notification" in window) {
@@ -221,7 +219,7 @@ function AbonnementContent() {
               setBackendSub({ startDate: startIso, endDate: endIso, annual: isAnnual });
               setPendingRequest(null);
               localStorage.removeItem(`pending_${serviceKey}`);
-              if (!saved) setTab("suivi");
+            }
             }
           }
         }
@@ -309,7 +307,7 @@ function AbonnementContent() {
         localStorage.setItem(`pending_${serviceKey}`, JSON.stringify(pending));
         setPendingRequest(pending);
         setPaySuccess(true);
-        setTimeout(() => { setPaySuccess(false); setTab("suivi"); }, 2500);
+        setTimeout(() => { setPaySuccess(false); }, 2500);
       }
     } catch { /* ignore */ }
     setProcessing(false);
@@ -377,12 +375,6 @@ function AbonnementContent() {
           <button onClick={() => setTab("paiement")} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === "paiement" ? "bg-primary text-white shadow-md" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"}`}>
             <CreditCardIcon className="w-4 h-4" /> Paiement
           </button>
-          {(subData || backendSub || pendingRequest) && (
-            <button onClick={() => { setTab("suivi"); setCalOffset(0); }} className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${tab === "suivi" ? "bg-primary text-white shadow-md" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"}`}>
-              <CalendarDaysIcon className="w-4 h-4" /> Mon abonnement
-              {pendingRequest && !backendSub && !subData && <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />}
-            </button>
-          )}
         </div>
 
         {tab === "paiement" && (
@@ -586,7 +578,7 @@ function AbonnementContent() {
           </div>
         </div>
         )}
-        {tab === "suivi" && (
+        {tab === "suivi" && false && (
         <div className="space-y-8">
           {pendingRequest && !backendSub && !subData && (
             <div className="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/30">
