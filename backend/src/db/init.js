@@ -40,6 +40,7 @@ async function initDb() {
     "migrate-reset-superadmin.sql",
     "migrate-fix-verified.sql",
     "migrate-sub-unite.sql",
+    "migrate-sub-unite-backfill.sql",
   ];
 
   for (const file of migrationFiles) {
