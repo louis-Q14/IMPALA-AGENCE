@@ -430,7 +430,8 @@ export default function HomePage() {
                                   </div>
                                 )}
                               </div>
-                              {/* Info */}
+                              {/* Info — masqué en mode démo, visible avec vraies annonces */}
+                              {!isDemo && (
                               <div style={{ padding: "18px 22px", background: "var(--bg-card)", backdropFilter: "blur(12px)", borderTop: "1px solid var(--border-color)" }}>
                                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
                                   <span style={{ fontWeight: 700, fontSize: 15, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", flex: 1 }}>{ad.title}</span>
@@ -446,6 +447,7 @@ export default function HomePage() {
                                   {[ad.address, ad.city].filter(Boolean).join(", ")}
                                 </div>
                               </div>
+                              )}
                             </Link>
                           </div>
                         );
