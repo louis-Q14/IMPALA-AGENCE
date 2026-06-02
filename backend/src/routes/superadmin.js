@@ -687,6 +687,55 @@ router.patch("/revenue/transactions/:id/status", async (req, res) => {
       const prefix = id.replace("SUB-", "");
       const dbStatus = status === "paid" ? "approved" : status === "pending" ? "pending" : "rejected";
       await db.query("UPDATE subscription_requests SET status = $1 WHERE SUBSTR(id::text, 1, 8) = $2", [dbStatus, prefix]);
+
+      // When approved, activate user_services for all relevant service types
+      if (status === "paid") {
+        const svcMap = {
+          immobilier: ["real_estate"],
+          automobile: ["auto"],
+          "immo-auto": ["real_estate", "auto"],
+        };
+        const subRow = await db.query(
+          "SELECT user_id, service_type FROM subscription_requests WHERE SUBSTR(id::text, 1, 8) = $1",
+          [prefix]
+        );
+        if (subRow.rows.length > 0) {
+          const { user_id, service_type } = subRow.rows[0];
+          const svcTypes = svcMap[service_type] || [service_type];
+          for (const svc of svcTypes) {
+            await db.query(
+              `INSERT INTO user_services (user_id, service_type, subscription_status)
+               VALUES ($1, $2, 'active')
+               ON CONFLICT (user_id, service_type)
+               DO UPDATE SET subscription_status = 'active'`,
+              [user_id, svc]
+            );
+          }
+        }
+      }
+      // When refunded/pending, revert user_services to pending
+      if (status === "refunded" || status === "pending") {
+        const svcMap = {
+          immobilier: ["real_estate"],
+          automobile: ["auto"],
+          "immo-auto": ["real_estate", "auto"],
+        };
+        const subRow = await db.query(
+          "SELECT user_id, service_type FROM subscription_requests WHERE SUBSTR(id::text, 1, 8) = $1",
+          [prefix]
+        );
+        if (subRow.rows.length > 0) {
+          const { user_id, service_type } = subRow.rows[0];
+          const svcTypes = svcMap[service_type] || [service_type];
+          for (const svc of svcTypes) {
+            await db.query(
+              `UPDATE user_services SET subscription_status = $1
+               WHERE user_id = $2 AND service_type = $3`,
+              [status === "pending" ? "pending" : "cancelled", user_id, svc]
+            );
+          }
+        }
+      }
     }
     res.json({ message: "Statut mis à jour" });
   } catch (err) {

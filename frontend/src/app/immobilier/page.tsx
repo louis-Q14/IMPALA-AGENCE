@@ -272,6 +272,7 @@ export default function ImmobilierPage() {
                         src={ad.photos[0]}
                         alt={ad.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/IMPALA_logo.png"; e.currentTarget.style.objectFit = "contain"; e.currentTarget.style.padding = "16px"; }}
                       />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-blue-500/20 to-slate-700/40 flex items-center justify-center">

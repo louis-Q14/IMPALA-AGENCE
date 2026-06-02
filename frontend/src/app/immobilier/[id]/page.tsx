@@ -1133,7 +1133,7 @@ function EditForm({
               return (
                 <div key={url} className={`relative aspect-square rounded-md overflow-hidden border ${removed ? "border-red-500/60 opacity-40" : "border-white/15"}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <img src={url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = "/IMPALA_logo.png"; e.currentTarget.style.objectFit = "contain"; e.currentTarget.style.padding = "8px"; }} />
                   <button
                     type="button"
                     onClick={() => togglePhotoRemoval(url)}

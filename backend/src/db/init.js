@@ -41,6 +41,7 @@ async function initDb() {
     "migrate-fix-verified.sql",
     "migrate-sub-unite.sql",
     "migrate-sub-unite-backfill.sql",
+    "migrate-activate-approved-subs.sql",
   ];
 
   for (const file of migrationFiles) {
