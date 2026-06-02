@@ -113,7 +113,7 @@ router.get("/mine", authenticateToken, async (req, res) => {
 // POST /api/subscriptions/manual — soumet une demande en attente d'approbation admin
 router.post("/manual", authenticateToken, async (req, res) => {
   try {
-    const { service_type, payment_method, amount, formula, annual } = req.body;
+    const { service_type, payment_method, amount, formula, annual, unite } = req.body;
 
     const planMap = {
       immobilier: "real_estate_pro",
@@ -135,11 +135,11 @@ router.post("/manual", authenticateToken, async (req, res) => {
     // Creer la demande en statut pending
     const reqResult = await db.query(
       `INSERT INTO subscription_requests
-         (user_id, service_type, plan_type, formula, payment_method, amount, annual, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
+         (user_id, service_type, plan_type, formula, payment_method, amount, annual, unite, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')
        RETURNING id, created_at`,
       [req.user.userId, service_type, plan_type, formula || "standard",
-       payment_method || "mobile", amount || 0, !!annual]
+       payment_method || "mobile", amount || 0, !!annual, unite || "CDF"]
     );
     const requestId = reqResult.rows[0].id;
 

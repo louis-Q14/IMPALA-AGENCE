@@ -292,7 +292,7 @@ function AbonnementContent() {
       const res = await fetch(`${API}/subscriptions/manual`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ service_type: serviceKey, payment_method: paymentMethod, amount: price, formula, annual }),
+        body: JSON.stringify({ service_type: serviceKey, payment_method: paymentMethod, amount: price, formula, annual, unite: currSymbol }),
       });
       const data = await res.json();
       if (res.ok) {

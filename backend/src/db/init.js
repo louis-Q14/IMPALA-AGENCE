@@ -39,6 +39,7 @@ async function initDb() {
     "migrate-subs.sql",
     "migrate-reset-superadmin.sql",
     "migrate-fix-verified.sql",
+    "migrate-sub-unite.sql",
   ];
 
   for (const file of migrationFiles) {

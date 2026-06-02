@@ -524,6 +524,7 @@ router.get("/revenue", async (_req, res) => {
            ' (', CASE WHEN sr.annual THEN 'Annuel' ELSE 'Mensuel' END, ')'
          ) AS desc,
          sr.amount::numeric AS amount,
+         COALESCE(sr.unite, 'CDF') AS unite,
          TO_CHAR(COALESCE(sr.reviewed_at, sr.created_at), 'DD/MM/YYYY') AS date,
          'paid' AS status,
          COALESCE(sr.payment_method, 'Mobile Money') AS method,

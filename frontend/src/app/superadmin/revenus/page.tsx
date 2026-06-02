@@ -25,6 +25,7 @@ interface Transaction {
   service: "real_estate" | "auto" | "trash" | "nettoyage" | "repassage" | "demenagement";
   desc: string;
   amount: number;
+  unite?: string;
   date: string;
   status: "paid" | "pending" | "refunded";
   method: string;
@@ -214,7 +215,7 @@ export default function SuperAdminRevenus() {
       tx.email,
       serviceLabels[tx.service],
       tx.desc,
-      Math.round(tx.amount).toLocaleString("fr-FR") + " CDF",
+      Math.round(tx.amount).toLocaleString("fr-FR") + " " + (tx.unite || "CDF"),
       tx.date,
       tx.status === "paid" ? "Payé" : tx.status === "pending" ? "En attente" : "Remboursé",
       tx.method,
@@ -233,6 +234,7 @@ export default function SuperAdminRevenus() {
   void immobilierPaid; void autoPaid; void poubellesPaid; void multiservicesPaid; void chartMultiservices;
 
   const formatAmount = (n: number) => Math.round(n).toLocaleString("fr-FR") + " CDF";
+  const fmtTx = (tx: Transaction) => Math.round(tx.amount).toLocaleString("fr-FR") + " " + (tx.unite || "CDF");
 
   return (
     <>
@@ -498,7 +500,7 @@ export default function SuperAdminRevenus() {
                     </td>
                     <td className="px-4 py-3 text-sm text-[var(--text-muted)]">{tx.desc}</td>
                     <td className="px-4 py-3 text-sm font-medium text-[var(--text-primary)]">
-                      {formatAmount(tx.amount)}
+                      {fmtTx(tx)}
                     </td>
                     <td className="px-4 py-3 text-sm text-[var(--text-muted)]">{tx.date}</td>
                     <td className="px-4 py-3">
@@ -607,7 +609,7 @@ export default function SuperAdminRevenus() {
                 { label: "Email", value: selectedTx.email },
                 { label: "Service", value: serviceLabels[selectedTx.service] },
                 { label: "Description", value: selectedTx.desc },
-                { label: "Montant", value: formatAmount(selectedTx.amount) },
+                { label: "Montant", value: fmtTx(selectedTx) },
                 { label: "Méthode", value: selectedTx.method },
                 { label: "Date", value: selectedTx.date },
               ].map((item) => (
@@ -682,7 +684,7 @@ export default function SuperAdminRevenus() {
               <p className="text-sm text-[var(--text-muted)]">
                 Vous êtes sur le point de rembourser{" "}
                 <span className="font-semibold text-[var(--text-primary)]">
-                  {formatAmount(refundConfirm.amount)}
+                  {fmtTx(refundConfirm)}
                 </span>{" "}
                 à{" "}
                 <span className="font-semibold text-[var(--text-primary)]">{refundConfirm.user}</span>.
