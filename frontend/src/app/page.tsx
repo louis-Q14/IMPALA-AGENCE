@@ -422,6 +422,7 @@ export default function HomePage() {
                                   <img
                                     src={ad.photos[0]}
                                     alt={ad.title}
+                                    onError={(e) => { const img = e.currentTarget; img.onerror = null; img.src = "/IMPALA_logo.png"; img.style.width = "65%"; img.style.height = "65%"; img.style.objectFit = "contain"; }}
                                     style={{ width: isDemo ? "65%" : "100%", height: isDemo ? "65%" : "100%", objectFit: isDemo ? "contain" : "cover", display: "block", ...(isDemo ? { filter: "drop-shadow(0 0 32px rgba(45,212,191,0.25))" } : {}) }}
                                   />
                                 ) : (
