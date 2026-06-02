@@ -235,6 +235,14 @@ export default function SuperAdminRevenus() {
 
   const formatAmount = (n: number) => Math.round(n).toLocaleString("fr-FR") + " CDF";
   const fmtTx = (tx: Transaction) => Math.round(tx.amount).toLocaleString("fr-FR") + " " + (tx.unite || "CDF");
+  const displayCurrency = (() => {
+    const counts = transactions.reduce((acc, t) => { const u = t.unite || "CDF"; acc[u] = (acc[u] || 0) + 1; return acc; }, {} as Record<string, number>);
+    return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || "CDF";
+  })();
+  const fmtTotal = (txs: Transaction[]) => {
+    const byCur = txs.reduce((acc, t) => { const u = t.unite || "CDF"; acc[u] = (acc[u] || 0) + t.amount; return acc; }, {} as Record<string, number>);
+    return Object.entries(byCur).map(([u, v]) => Math.round(v).toLocaleString("fr-FR") + " " + u).join(" · ") || "0 CDF";
+  };
 
   return (
     <>
@@ -280,7 +288,7 @@ export default function SuperAdminRevenus() {
               </span>
             </div>
             <p className="text-2xl font-bold text-[var(--text-primary)]">
-              {Math.round(card.value).toLocaleString("fr-FR")} CDF
+              {Math.round(card.value).toLocaleString("fr-FR")} {displayCurrency}
             </p>
             <p className="text-sm text-[var(--text-muted)]">{card.label}</p>
           </div>
@@ -291,15 +299,15 @@ export default function SuperAdminRevenus() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30">
           <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Payé (transactions)</p>
-          <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{formatAmount(totalPaid)}</p>
+          <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{fmtTotal(transactions.filter(t => t.status === "paid"))}</p>
         </div>
         <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30">
           <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">En attente</p>
-          <p className="text-xl font-bold text-amber-700 dark:text-amber-300">{formatAmount(pendingTotal)}</p>
+          <p className="text-xl font-bold text-amber-700 dark:text-amber-300">{fmtTotal(transactions.filter(t => t.status === "pending"))}</p>
         </div>
         <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30">
           <p className="text-sm text-red-600 dark:text-red-400 font-medium">Remboursé</p>
-          <p className="text-xl font-bold text-red-700 dark:text-red-300">{formatAmount(refundedTotal)}</p>
+          <p className="text-xl font-bold text-red-700 dark:text-red-300">{fmtTotal(transactions.filter(t => t.status === "refunded"))}</p>
         </div>
       </div>
 
@@ -337,26 +345,26 @@ export default function SuperAdminRevenus() {
                   <div
                     className="bg-blue-500 transition-all duration-500"
                     style={{ width: `${(d.immobilier / maxVal) * 100}%` }}
-                    title={`Immobilier: ${Math.round(d.immobilier).toLocaleString("fr-FR")} CDF`}
+                    title={`Immobilier: ${Math.round(d.immobilier).toLocaleString("fr-FR")} ${displayCurrency}`}
                   />
                   <div
                     className="bg-amber-500 transition-all duration-500"
                     style={{ width: `${(d.auto / maxVal) * 100}%` }}
-                    title={`Automobile: ${Math.round(d.auto).toLocaleString("fr-FR")} CDF`}
+                    title={`Automobile: ${Math.round(d.auto).toLocaleString("fr-FR")} ${displayCurrency}`}
                   />
                   <div
                     className="bg-emerald-500 transition-all duration-500"
                     style={{ width: `${(d.poubelles / maxVal) * 100}%` }}
-                    title={`Poubelles: ${Math.round(d.poubelles).toLocaleString("fr-FR")} CDF`}
+                    title={`Poubelles: ${Math.round(d.poubelles).toLocaleString("fr-FR")} ${displayCurrency}`}
                   />
                   <div
                     className="bg-violet-500 transition-all duration-500"
                     style={{ width: `${(d.multiservices / maxVal) * 100}%` }}
-                    title={`Multi-services: ${Math.round(d.multiservices).toLocaleString("fr-FR")} CDF`}
+                    title={`Multi-services: ${Math.round(d.multiservices).toLocaleString("fr-FR")} ${displayCurrency}`}
                   />
                 </div>
                 <span className="text-sm font-medium text-[var(--text-primary)] w-24 text-right">
-                  {Math.round(total).toLocaleString("fr-FR")} CDF
+                  {Math.round(total).toLocaleString("fr-FR")} {displayCurrency}
                 </span>
               </div>
             );
@@ -556,7 +564,7 @@ export default function SuperAdminRevenus() {
           <div className="px-4 py-3 border-t border-[var(--border-color)] bg-[var(--bg-tertiary)] flex justify-between items-center">
             <span className="text-sm text-[var(--text-muted)]">{filtered.length} transaction(s)</span>
             <span className="text-sm font-semibold text-[var(--text-primary)]">
-              Total : {formatAmount(filtered.filter((t) => t.status === "paid").reduce((s, t) => s + t.amount, 0))}
+              Total : {fmtTotal(filtered.filter((t) => t.status === "paid"))}
             </span>
           </div>
         )}
