@@ -703,13 +703,21 @@ router.patch("/revenue/transactions/:id/status", async (req, res) => {
           const { user_id, service_type } = subRow.rows[0];
           const svcTypes = svcMap[service_type] || [service_type];
           for (const svc of svcTypes) {
-            await db.query(
-              `INSERT INTO user_services (user_id, service_type, subscription_status)
-               VALUES ($1, $2, 'active')
-               ON CONFLICT (user_id, service_type)
-               DO UPDATE SET subscription_status = 'active'`,
+            const existing = await db.query(
+              "SELECT id FROM user_services WHERE user_id = $1 AND service_type = $2",
               [user_id, svc]
             );
+            if (existing.rows.length > 0) {
+              await db.query(
+                "UPDATE user_services SET subscription_status = 'active' WHERE user_id = $1 AND service_type = $2",
+                [user_id, svc]
+              );
+            } else {
+              await db.query(
+                "INSERT INTO user_services (user_id, service_type, subscription_status) VALUES ($1, $2, 'active')",
+                [user_id, svc]
+              );
+            }
           }
         }
       }

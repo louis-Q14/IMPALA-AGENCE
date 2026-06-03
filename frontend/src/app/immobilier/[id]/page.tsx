@@ -221,8 +221,9 @@ export default function ImmobilierDetailPage() {
   };
 
   const handleAddImages = (files: FileList | null) => {
-    if (!files) return;
-    setNewImageFiles((prev) => [...prev, ...Array.from(files)]);
+    if (!files || files.length === 0) return;
+    const arr = Array.from(files);
+    setNewImageFiles((prev) => [...prev, ...arr]);
   };
 
   const removeNewFile = (index: number) => {
