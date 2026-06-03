@@ -668,8 +668,8 @@ router.get("/revenue", async (_req, res) => {
 });
 
 // PATCH /api/superadmin/revenue/transactions/:id/status
-router.patch("/revenue/transactions/:id/status", async (req, res) => {
-  try {
+router.patch("/revenue/transactions/:id/status", (req, res) => {
+  (async () => {
     const { id } = req.params;
     const { status } = req.body;
     if (!["paid", "pending", "refunded"].includes(status)) {
@@ -721,7 +721,7 @@ router.patch("/revenue/transactions/:id/status", async (req, res) => {
           }
         }
       }
-      // When refunded/pending, revert user_services to pending
+      // When refunded/pending, revert user_services to pending/cancelled
       if (status === "refunded" || status === "pending") {
         const svcMap = {
           immobilier: ["real_estate"],
@@ -746,9 +746,49 @@ router.patch("/revenue/transactions/:id/status", async (req, res) => {
       }
     }
     res.json({ message: "Statut mis à jour" });
-  } catch (err) {
+  })().catch((err) => {
     console.error("Superadmin revenue status error:", err);
-    res.status(500).json({ error: "Erreur serveur" });
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Erreur serveur", detail: err.message });
+    }
+  });
+});
+
+// POST /api/superadmin/users/:id/activate-service
+// Directly activate (or deactivate) a user_services row — bypasses subscription_requests
+router.post("/users/:id/activate-service", async (req, res) => {
+  const { id } = req.params;
+  const { serviceType, activate = true } = req.body;
+
+  const ALLOWED = ["real_estate", "auto", "trash", "poubelles", "nettoyage", "repassage", "demenagement"];
+  if (!serviceType || !ALLOWED.includes(serviceType)) {
+    return res.status(400).json({ error: "serviceType invalide. Valeurs: " + ALLOWED.join(", ") });
+  }
+
+  try {
+    const userRow = await db.query("SELECT id FROM users WHERE id = $1", [id]);
+    if (userRow.rows.length === 0) return res.status(404).json({ error: "Utilisateur introuvable" });
+
+    const newStatus = activate ? "active" : "inactive";
+    const existing = await db.query(
+      "SELECT id FROM user_services WHERE user_id = $1 AND service_type = $2",
+      [id, serviceType]
+    );
+    if (existing.rows.length > 0) {
+      await db.query(
+        "UPDATE user_services SET subscription_status = $1 WHERE user_id = $2 AND service_type = $3",
+        [newStatus, id, serviceType]
+      );
+    } else {
+      await db.query(
+        "INSERT INTO user_services (user_id, service_type, subscription_status) VALUES ($1, $2, $3)",
+        [id, serviceType, newStatus]
+      );
+    }
+    res.json({ message: `Service ${serviceType} ${activate ? "activé" : "désactivé"} pour l'utilisateur ${id}` });
+  } catch (err) {
+    console.error("Superadmin activate-service error:", err);
+    res.status(500).json({ error: "Erreur serveur", detail: err.message });
   }
 });
 
