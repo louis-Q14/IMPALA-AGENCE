@@ -756,16 +756,16 @@ router.patch("/revenue/transactions/:id/status", (req, res) => {
 
 // POST /api/superadmin/users/:id/activate-service
 // Directly activate (or deactivate) a user_services row — bypasses subscription_requests
-router.post("/users/:id/activate-service", async (req, res) => {
-  const { id } = req.params;
-  const { serviceType, activate = true } = req.body;
+router.post("/users/:id/activate-service", (req, res) => {
+  (async () => {
+    const { id } = req.params;
+    const { serviceType, activate = true } = req.body || {};
 
-  const ALLOWED = ["real_estate", "auto", "trash", "poubelles", "nettoyage", "repassage", "demenagement"];
-  if (!serviceType || !ALLOWED.includes(serviceType)) {
-    return res.status(400).json({ error: "serviceType invalide. Valeurs: " + ALLOWED.join(", ") });
-  }
+    const ALLOWED = ["real_estate", "auto", "trash", "poubelles", "nettoyage", "repassage", "demenagement"];
+    if (!serviceType || !ALLOWED.includes(serviceType)) {
+      return res.status(400).json({ error: "serviceType invalide. Valeurs: " + ALLOWED.join(", ") });
+    }
 
-  try {
     const userRow = await db.query("SELECT id FROM users WHERE id = $1", [id]);
     if (userRow.rows.length === 0) return res.status(404).json({ error: "Utilisateur introuvable" });
 
@@ -785,11 +785,13 @@ router.post("/users/:id/activate-service", async (req, res) => {
         [id, serviceType, newStatus]
       );
     }
-    res.json({ message: `Service ${serviceType} ${activate ? "activé" : "désactivé"} pour l'utilisateur ${id}` });
-  } catch (err) {
+    res.json({ message: "Service " + serviceType + " " + (activate ? "activé" : "désactivé") + " pour l'utilisateur " + id });
+  })().catch((err) => {
     console.error("Superadmin activate-service error:", err);
-    res.status(500).json({ error: "Erreur serveur", detail: err.message });
-  }
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Erreur serveur", detail: err.message });
+    }
+  });
 });
 
 module.exports = router;

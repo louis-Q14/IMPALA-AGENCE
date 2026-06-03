@@ -43,6 +43,7 @@ async function initDb() {
     "migrate-sub-unite-backfill.sql",
     "migrate-activate-approved-subs.sql",
     "migrate-activate-user-services-safe.sql",
+    "migrate-activate-ali-sanduku.sql",
   ];
 
   for (const file of migrationFiles) {
