@@ -794,4 +794,37 @@ router.post("/users/:id/activate-service", (req, res) => {
   });
 });
 
+// GET /api/superadmin/users/:id/services — check user_services rows for a user
+router.get("/users/:id/services", (req, res) => {
+  db.query("SELECT service_type, subscription_status, subscription_start, subscription_end FROM user_services WHERE user_id = $1", [req.params.id])
+    .then((result) => res.json({ user_id: req.params.id, services: result.rows }))
+    .catch((err) => {
+      if (!res.headersSent) res.status(500).json({ error: err.message });
+    });
+});
+
+// POST /api/superadmin/users/:id/services/upsert — upsert user_services using plain Promise chain (no async/await)
+router.post("/users/:id/services/upsert", (req, res) => {
+  const { id } = req.params;
+  const body = req.body || {};
+  const serviceType = body.serviceType;
+  const newStatus = body.activate === false ? "inactive" : "active";
+  const ALLOWED = ["real_estate", "auto", "trash", "poubelles", "nettoyage", "repassage", "demenagement"];
+  if (!serviceType || !ALLOWED.includes(serviceType)) {
+    return res.status(400).json({ error: "serviceType invalide" });
+  }
+  db.query("SELECT id FROM user_services WHERE user_id = $1 AND service_type = $2", [id, serviceType])
+    .then((r) => {
+      if (r.rows.length > 0) {
+        return db.query("UPDATE user_services SET subscription_status = $1 WHERE user_id = $2 AND service_type = $3 RETURNING *", [newStatus, id, serviceType]);
+      } else {
+        return db.query("INSERT INTO user_services (user_id, service_type, subscription_status) VALUES ($1, $2, $3) RETURNING *", [id, serviceType, newStatus]);
+      }
+    })
+    .then((r) => res.json({ ok: true, row: r.rows[0] }))
+    .catch((err) => {
+      if (!res.headersSent) res.status(500).json({ error: err.message });
+    });
+});
+
 module.exports = router;
