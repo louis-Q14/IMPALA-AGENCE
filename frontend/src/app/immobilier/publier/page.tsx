@@ -311,8 +311,15 @@ export default function PublierImmobilierPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Erreur lors de la publication");
+        let errMsg = "Erreur lors de la publication";
+        try {
+          const data = await res.json();
+          errMsg = data.error || errMsg;
+        } catch {
+          const text = await res.text().catch(() => "");
+          if (text && !text.startsWith("<") && text.length < 200) errMsg = text;
+        }
+        throw new Error(errMsg);
       }
 
       const createdAd = await res.json();

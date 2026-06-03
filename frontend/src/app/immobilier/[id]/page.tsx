@@ -318,7 +318,7 @@ export default function ImmobilierDetailPage() {
           }),
         }
       );
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Erreur lors de l'envoi");
       setContactFeedback({ type: "ok", text: "Message envoyé au vendeur. Suivez la conversation dans votre Messagerie." });
       setContactMessage("");
