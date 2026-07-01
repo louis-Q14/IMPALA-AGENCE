@@ -1,8 +1,6 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
-
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ShieldCheckIcon, PlusIcon, TrashIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
@@ -40,7 +38,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   );
 }
 
-export default function AdminsPage() {
+function AdminsContent() {
   const searchParams = useSearchParams();
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -278,5 +276,13 @@ export default function AdminsPage() {
         </Modal>
       )}
     </div>
+  );
+}
+
+export default function AdminsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <AdminsContent />
+    </Suspense>
   );
 }

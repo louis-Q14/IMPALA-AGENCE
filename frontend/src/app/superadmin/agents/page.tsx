@@ -1,8 +1,6 @@
 "use client";
 
-export const dynamic = 'force-dynamic';
-
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { UserGroupIcon, PlusIcon, TrashIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
@@ -39,7 +37,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   );
 }
 
-export default function AgentsPage() {
+function AgentsContent() {
   const searchParams = useSearchParams();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -298,5 +296,13 @@ export default function AgentsPage() {
         </Modal>
       )}
     </div>
+  );
+}
+
+export default function AgentsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <AgentsContent />
+    </Suspense>
   );
 }

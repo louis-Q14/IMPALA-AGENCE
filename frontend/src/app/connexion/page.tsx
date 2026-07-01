@@ -1,14 +1,12 @@
 ﻿"use client";
 
-export const dynamic = 'force-dynamic';
-
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { LogoFull } from "@/components/Logo";
 
-export default function ConnexionPage() {
+function ConnexionContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
@@ -243,5 +241,13 @@ export default function ConnexionPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function ConnexionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <ConnexionContent />
+    </Suspense>
   );
 }
