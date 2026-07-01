@@ -29,6 +29,7 @@ async function initDb() {
   // Always run migrations regardless of schema status
   const migrationFiles = [
     "migrate-users-columns.sql",
+    "migrate-google-auth.sql",
     "migrate-blog.sql",
     "migrate-boutique.sql",
     "migrate-contact.sql",

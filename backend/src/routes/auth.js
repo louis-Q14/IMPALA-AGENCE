@@ -1,6 +1,7 @@
 ﻿const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
@@ -11,6 +12,64 @@ const { generateEmailToken, sendOTPEmail, sendVerificationEmail, sendResetPasswo
 
 const router = express.Router();
 const SALT_ROUNDS = 12;
+const GOOGLE_OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
+const googleOauthState = new Map();
+
+function getBackendPublicUrl() {
+  const configured = process.env.BACKEND_PUBLIC_URL;
+  if (configured && configured.trim()) return configured.trim().replace(/\/$/, "");
+  return `http://localhost:${process.env.PORT || 5000}`;
+}
+
+function getFrontendUrl() {
+  return (process.env.FRONTEND_URL || "http://localhost:3000").trim().replace(/\/$/, "");
+}
+
+function getGoogleConfig() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = `${getBackendPublicUrl()}/api/auth/google/callback`;
+  return { clientId, clientSecret, redirectUri };
+}
+
+function queueOauthState(state) {
+  googleOauthState.set(state, Date.now());
+  setTimeout(() => googleOauthState.delete(state), GOOGLE_OAUTH_STATE_TTL_MS);
+}
+
+function consumeOauthState(state) {
+  const createdAt = googleOauthState.get(state);
+  googleOauthState.delete(state);
+  if (!createdAt) return false;
+  return Date.now() - createdAt <= GOOGLE_OAUTH_STATE_TTL_MS;
+}
+
+function signAccessToken(user) {
+  return jwt.sign(
+    { userId: user.id, email: user.email, role: user.role, full_name: user.full_name },
+    process.env.JWT_SECRET,
+    { expiresIn: "30d" }
+  );
+}
+
+async function getUserWithServicesById(userId) {
+  const result = await db.query(
+    `SELECT u.id, u.email, u.full_name, u.phone, u.role,
+            u.nom, u.post_nom, u.prenom, u.date_naissance, u.lieu_naissance,
+            u.sexe, u.nationalite, u.etat_civil, u.profession,
+            u.numero_piece, u.adresse, u.phone_fixe, u.created_at,
+            COALESCE(
+              json_agg(json_build_object('service', us.service_type, 'status', CASE WHEN us.subscription_status IN ('active', 'approved') THEN 'active' ELSE COALESCE(NULLIF(us.subscription_status, 'pending'), u.status, 'pending') END, 'startDate', us.subscription_start, 'endDate', us.subscription_end))
+              FILTER (WHERE us.id IS NOT NULL), '[]'
+            ) as services
+      FROM users u
+      LEFT JOIN user_services us ON u.id = us.user_id
+      WHERE u.id = $1
+      GROUP BY u.id`,
+    [userId]
+  );
+  return result.rows[0] || null;
+}
 
 // Configure multer for per-user file storage
 const UPLOADS_DIR = path.join(__dirname, "../../uploads");
@@ -226,17 +285,150 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Identifiants incorrects" });
     }
 
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role, full_name: user.full_name },
-      process.env.JWT_SECRET,
-      { expiresIn: "30d" }
-    );
+    const token = signAccessToken(user);
 
     const { password_hash, ...safeUser } = user;
     res.json({ user: safeUser, access_token: token });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Erreur lors de la connexion" });
+  }
+});
+
+// GET /api/auth/google/start
+// Starts Google OAuth 2.0 authorization code flow
+router.get("/google/start", async (_req, res) => {
+  try {
+    const { clientId, clientSecret, redirectUri } = getGoogleConfig();
+    if (!clientId || !clientSecret) {
+      return res.status(500).json({ error: "Configuration Google OAuth manquante" });
+    }
+
+    const state = crypto.randomBytes(24).toString("hex");
+    queueOauthState(state);
+
+    const authUrl = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+    authUrl.searchParams.set("client_id", clientId);
+    authUrl.searchParams.set("redirect_uri", redirectUri);
+    authUrl.searchParams.set("response_type", "code");
+    authUrl.searchParams.set("scope", "openid email profile");
+    authUrl.searchParams.set("access_type", "offline");
+    authUrl.searchParams.set("prompt", "select_account");
+    authUrl.searchParams.set("state", state);
+
+    return res.redirect(authUrl.toString());
+  } catch (err) {
+    console.error("Google start error:", err);
+    return res.status(500).json({ error: "Impossible de démarrer la connexion Google" });
+  }
+});
+
+// GET /api/auth/google/callback
+// Handles Google OAuth callback, upserts user, then redirects to frontend with token
+router.get("/google/callback", async (req, res) => {
+  const frontendUrl = getFrontendUrl();
+  const redirectWithError = (message) =>
+    res.redirect(`${frontendUrl}/connexion?oauth_error=${encodeURIComponent(message)}`);
+
+  try {
+    const { code, state } = req.query;
+    if (!code || !state || !consumeOauthState(String(state))) {
+      return redirectWithError("Session Google invalide, veuillez réessayer.");
+    }
+
+    const { clientId, clientSecret, redirectUri } = getGoogleConfig();
+    if (!clientId || !clientSecret) {
+      return redirectWithError("Configuration Google OAuth manquante.");
+    }
+
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code: String(code),
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }).toString(),
+    });
+
+    if (!tokenRes.ok) {
+      const details = await tokenRes.text();
+      console.error("Google token exchange failed:", details);
+      return redirectWithError("Connexion Google refusée.");
+    }
+
+    const tokenData = await tokenRes.json();
+    const accessToken = tokenData.access_token;
+    if (!accessToken) {
+      return redirectWithError("Token Google invalide.");
+    }
+
+    const profileRes = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    if (!profileRes.ok) {
+      const details = await profileRes.text();
+      console.error("Google userinfo failed:", details);
+      return redirectWithError("Impossible de récupérer le profil Google.");
+    }
+
+    const profile = await profileRes.json();
+    const email = (profile.email || "").toLowerCase().trim();
+    const fullName = (profile.name || "Utilisateur Google").trim();
+    const googleId = profile.sub;
+    const emailVerified = Boolean(profile.email_verified);
+
+    if (!googleId || !email) {
+      return redirectWithError("Profil Google incomplet.");
+    }
+    if (!emailVerified) {
+      return redirectWithError("Votre email Google doit être vérifié.");
+    }
+
+    const existing = await db.query(
+      `SELECT id FROM users WHERE google_id = $1 OR LOWER(email) = LOWER($2) LIMIT 1`,
+      [googleId, email]
+    );
+
+    let userId;
+    if (existing.rows.length > 0) {
+      userId = existing.rows[0].id;
+      await db.query(
+        `UPDATE users
+         SET google_id = $1,
+             full_name = COALESCE(NULLIF(full_name, ''), $2),
+             email_verified = TRUE,
+             is_verified = TRUE,
+             status = 'approved'
+         WHERE id = $3`,
+        [googleId, fullName, userId]
+      );
+    } else {
+      const generatedPassword = crypto.randomBytes(32).toString("hex");
+      const passwordHash = await bcrypt.hash(generatedPassword, SALT_ROUNDS);
+
+      const created = await db.query(
+        `INSERT INTO users (email, password_hash, full_name, role, status, is_verified, email_verified, google_id)
+         VALUES ($1, $2, $3, 'user', 'approved', TRUE, TRUE, $4)
+         RETURNING id`,
+        [email, passwordHash, fullName, googleId]
+      );
+      userId = created.rows[0].id;
+    }
+
+    const user = await getUserWithServicesById(userId);
+    if (!user) {
+      return redirectWithError("Compte introuvable après connexion Google.");
+    }
+
+    const appToken = signAccessToken(user);
+    return res.redirect(`${frontendUrl}/connexion?google_token=${encodeURIComponent(appToken)}`);
+  } catch (err) {
+    console.error("Google callback error:", err);
+    return redirectWithError("Erreur pendant la connexion Google.");
   }
 });
 

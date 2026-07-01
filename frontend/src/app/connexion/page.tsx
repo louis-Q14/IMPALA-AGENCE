@@ -1,18 +1,90 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { LogoFull } from "@/components/Logo";
 
 export default function ConnexionPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const handledGoogleTokenRef = useRef<string | null>(null);
+
+  const getApiBase = () => process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+  const persistSessionAndRedirect = (data: {
+    access_token: string;
+    user: { role: string; services?: Array<{ service: string } | string> };
+  }) => {
+    localStorage.setItem("token", data.access_token);
+    const rawServices = Array.isArray(data.user.services) ? data.user.services : [];
+    localStorage.setItem("userServices", JSON.stringify(rawServices));
+    const userToStore = {
+      ...data.user,
+      services: rawServices.map((s: { service: string } | string) =>
+        typeof s === "string" ? s : s.service
+      ),
+    };
+    localStorage.setItem("user", JSON.stringify(userToStore));
+    window.dispatchEvent(new Event("auth-change"));
+
+    if (data.user.role === "super_admin") {
+      router.push("/superadmin");
+    } else if (data.user.role === "admin") {
+      router.push("/admin");
+    } else if (data.user.role === "finance_agent") {
+      router.push("/finance/tableau-de-bord");
+    } else {
+      router.push("/");
+    }
+  };
+
+  useEffect(() => {
+    const googleToken = searchParams.get("google_token");
+    const oauthError = searchParams.get("oauth_error");
+
+    if (oauthError) {
+      setError(decodeURIComponent(oauthError));
+      return;
+    }
+
+    if (!googleToken || handledGoogleTokenRef.current === googleToken) return;
+    handledGoogleTokenRef.current = googleToken;
+
+    const finalizeGoogleLogin = async () => {
+      setIsLoading(true);
+      setError("");
+      try {
+        localStorage.setItem("token", googleToken);
+        const res = await fetch(`${getApiBase()}/auth/me`, {
+          headers: { Authorization: `Bearer ${googleToken}` },
+        });
+        if (!res.ok) throw new Error("Impossible de récupérer le profil utilisateur");
+
+        const user = await res.json();
+        persistSessionAndRedirect({ access_token: googleToken, user });
+      } catch {
+        localStorage.removeItem("token");
+        setError("Connexion Google impossible");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    finalizeGoogleLogin();
+  }, [router, searchParams]);
+
+  const handleGoogleLogin = () => {
+    const apiBase = getApiBase();
+    const authBase = apiBase.endsWith("/api") ? apiBase.slice(0, -4) : apiBase;
+    window.location.href = `${authBase}/api/auth/google/start`;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +98,7 @@ export default function ConnexionPage() {
     setIsLoading(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/login`,
+        `${getApiBase()}/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -37,28 +109,7 @@ export default function ConnexionPage() {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("token", data.access_token);
-        const rawServices = Array.isArray(data.user.services) ? data.user.services : [];
-        // Store full service objects (with status) for access checks
-        localStorage.setItem("userServices", JSON.stringify(rawServices));
-        // Keep backward-compatible string array for dashboard
-        const userToStore = {
-          ...data.user,
-          services: rawServices.map((s: { service: string } | string) =>
-            typeof s === "string" ? s : s.service
-          ),
-        };
-        localStorage.setItem("user", JSON.stringify(userToStore));
-        window.dispatchEvent(new Event("auth-change"));
-          if (data.user.role === "super_admin") {
-            router.push("/superadmin");
-          } else if (data.user.role === "admin") {
-          router.push("/admin");
-          } else if (data.user.role === "finance_agent") {
-            router.push("/finance/tableau-de-bord");
-        } else {
-          router.push("/");
-        }
+        persistSessionAndRedirect(data);
       } else {
         setError(data.error || "Identifiants incorrects");
       }
@@ -89,9 +140,14 @@ export default function ConnexionPage() {
         <div className="p-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-lg)]">
           {/* OAuth buttons */}
           <div className="space-y-3 mb-6">
-            <button className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl
               border border-[var(--border-color)] text-[var(--text-primary)] font-medium
-              hover:bg-[var(--bg-hover)] transition-all text-sm">
+              hover:bg-[var(--bg-hover)] transition-all text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+            >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -99,14 +155,6 @@ export default function ConnexionPage() {
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
               Continuer avec Google
-            </button>
-            <button className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl
-              border border-[var(--border-color)] text-[var(--text-primary)] font-medium
-              hover:bg-[var(--bg-hover)] transition-all text-sm">
-              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-              Continuer avec Facebook
             </button>
           </div>
 
