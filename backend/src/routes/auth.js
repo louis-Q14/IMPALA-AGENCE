@@ -356,9 +356,7 @@ router.get("/google/callback", async (req, res) => {
     if (!tokenRes.ok) {
       const details = await tokenRes.text();
       console.error("Google token exchange failed:", details);
-      let googleError = "Connexion Google refusée.";
-      try { const parsed = JSON.parse(details); googleError = parsed.error_description || parsed.error || googleError; } catch (_) {}
-      return redirectWithError(googleError);
+      return redirectWithError("Connexion Google refusée.");
     }
 
     const tokenData = await tokenRes.json();
