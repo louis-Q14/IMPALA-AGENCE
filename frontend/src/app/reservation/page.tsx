@@ -2,11 +2,10 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import { MagnifyingGlassIcon, MapPinIcon, StarIcon, HomeModernIcon, BuildingOfficeIcon, CalendarDaysIcon, UserGroupIcon, ShieldCheckIcon, HeartIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, MapPinIcon, HomeModernIcon, BuildingOfficeIcon, CalendarDaysIcon, UserGroupIcon, ShieldCheckIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, MinusIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -95,14 +94,248 @@ function PropertyCard({ p }: { p: Property }) {
   );
 }
 
+// ─── Calendar helpers ──────────────────────────────────────────────────────
+const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+const DAYS_FR   = ["Lu","Ma","Me","Je","Ve","Sa","Di"];
+
+function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate(); }
+function firstDayOfMonth(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7; } // 0=Lu
+
+function isoDate(y: number, m: number, d: number) {
+  return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
+
+type Panel = "where" | "checkin" | "checkout" | "guests" | null;
+
+interface GuestCounts { adults: number; children: number; infants: number; }
+
+// ─── AirbnbSearchBar ───────────────────────────────────────────────────────
+function AirbnbSearchBar({ onSearch }: { onSearch: (city: string, checkIn: string, checkOut: string, guests: number) => void }) {
+  const [panel, setPanel] = useState<Panel>(null);
+  const [city, setCity] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [guests, setGuests] = useState<GuestCounts>({ adults: 0, children: 0, infants: 0 });
+
+  // Calendar state: offset = number of months from today
+  const today = new Date();
+  const [calOffset, setCalOffset] = useState(0);
+
+  const barRef = useRef<HTMLDivElement>(null);
+  const cityRef = useRef<HTMLInputElement>(null);
+
+  // Close panel on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (barRef.current && !barRef.current.contains(e.target as Node)) setPanel(null);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const totalGuests = guests.adults + guests.children;
+
+  const guestLabel = () => {
+    if (totalGuests === 0 && guests.infants === 0) return "Ajouter des voyageurs";
+    const parts = [];
+    if (totalGuests > 0) parts.push(`${totalGuests} voyageur${totalGuests > 1 ? "s" : ""}`);
+    if (guests.infants > 0) parts.push(`${guests.infants} bébé${guests.infants > 1 ? "s" : ""}`);
+    return parts.join(", ");
+  };
+
+  const dateLabel = (d: string) => {
+    if (!d) return null;
+    const dt = new Date(d + "T00:00:00");
+    return dt.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  };
+
+  // Build two calendar months
+  const monthA = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
+  const monthB = new Date(today.getFullYear(), today.getMonth() + calOffset + 1, 1);
+
+  const handleDayClick = (iso: string) => {
+    if (panel === "checkin") {
+      setCheckIn(iso);
+      if (checkOut && checkOut <= iso) setCheckOut("");
+      setPanel("checkout");
+    } else if (panel === "checkout") {
+      if (iso <= checkIn) { setCheckIn(iso); setCheckOut(""); return; }
+      setCheckOut(iso);
+      setPanel("guests");
+    }
+  };
+
+  const dayClass = (iso: string) => {
+    const todayIso = isoDate(today.getFullYear(), today.getMonth(), today.getDate());
+    const isPast = iso < todayIso;
+    const isStart = iso === checkIn;
+    const isEnd = iso === checkOut;
+    const isInRange = checkIn && checkOut && iso > checkIn && iso < checkOut;
+    if (isPast) return "text-gray-300 dark:text-gray-700 cursor-not-allowed";
+    if (isStart || isEnd) return "bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-bold";
+    if (isInRange) return "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white";
+    return "hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full cursor-pointer";
+  };
+
+  function MonthGrid({ year, month }: { year: number; month: number }) {
+    const first = firstDayOfMonth(year, month);
+    const days  = daysInMonth(year, month);
+    const cells: (number | null)[] = Array(first).fill(null);
+    for (let d = 1; d <= days; d++) cells.push(d);
+    while (cells.length % 7 !== 0) cells.push(null);
+
+    return (
+      <div>
+        <p className="font-semibold text-center text-gray-900 dark:text-white mb-3">
+          {MONTHS_FR[month]} {year}
+        </p>
+        <div className="grid grid-cols-7 gap-0.5 text-xs text-center mb-1">
+          {DAYS_FR.map(d => <span key={d} className="text-gray-400 font-medium py-1">{d}</span>)}
+        </div>
+        <div className="grid grid-cols-7 gap-0.5 text-sm text-center">
+          {cells.map((d, i) => {
+            if (!d) return <span key={i} />;
+            const iso = isoDate(year, month, d);
+            const todayIso = isoDate(today.getFullYear(), today.getMonth(), today.getDate());
+            const isPast = iso < todayIso;
+            return (
+              <button key={i} disabled={isPast} onClick={() => handleDayClick(iso)}
+                className={`w-9 h-9 mx-auto flex items-center justify-center rounded-full transition-colors text-sm
+                  ${dayClass(iso)}`}>
+                {d}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  const inputBase = "focus:outline-none bg-transparent w-full text-gray-900 dark:text-white placeholder-gray-400 text-sm";
+  const sectionBase = (active: boolean) =>
+    `relative px-5 py-3.5 cursor-pointer transition-all rounded-full ${active ? "bg-white dark:bg-gray-800 shadow-md z-10" : "hover:bg-white/80 dark:hover:bg-gray-800/60"}`;
+
+  return (
+    <div ref={barRef} className="w-full max-w-4xl mx-auto">
+      {/* Main bar */}
+      <div className={`flex items-center bg-white dark:bg-gray-900 rounded-full shadow-2xl border border-gray-200 dark:border-gray-700 overflow-visible transition-all ${panel ? "ring-2 ring-gray-900 dark:ring-white/20" : ""}`}>
+
+        {/* Où ? */}
+        <div className={`flex-1 min-w-0 ${sectionBase(panel === "where")}`} onClick={() => { setPanel("where"); setTimeout(() => cityRef.current?.focus(), 50); }}>
+          <p className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Où ?</p>
+          <input ref={cityRef} value={city} onChange={e => setCity(e.target.value)}
+            onFocus={() => setPanel("where")}
+            onKeyDown={e => e.key === "Enter" && setPanel("checkin")}
+            placeholder="Ville ou quartier"
+            className={`${inputBase} font-medium`} />
+          {panel === "where" && city && (
+            <button onClick={e => { e.stopPropagation(); setCity(""); }} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+              <XMarkIcon className="w-3 h-3 text-gray-600 dark:text-gray-300" />
+            </button>
+          )}
+        </div>
+
+        <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 shrink-0" />
+
+        {/* Arrivée */}
+        <div className={`shrink-0 ${sectionBase(panel === "checkin")}`} onClick={() => setPanel("checkin")}>
+          <p className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Arrivée</p>
+          <p className={`text-sm font-medium ${checkIn ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+            {dateLabel(checkIn) || "Ajouter une date"}
+          </p>
+        </div>
+
+        <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 shrink-0" />
+
+        {/* Départ */}
+        <div className={`shrink-0 ${sectionBase(panel === "checkout")}`} onClick={() => setPanel("checkout")}>
+          <p className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Départ</p>
+          <p className={`text-sm font-medium ${checkOut ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+            {dateLabel(checkOut) || "Ajouter une date"}
+          </p>
+        </div>
+
+        <div className="w-px h-8 bg-gray-200 dark:bg-gray-700 shrink-0" />
+
+        {/* Voyageurs + Search button */}
+        <div className={`flex items-center gap-3 pr-2 flex-1 min-w-0 ${sectionBase(panel === "guests")}`} onClick={() => setPanel("guests")}>
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wide">Voyageurs</p>
+            <p className={`text-sm font-medium truncate ${totalGuests > 0 ? "text-gray-900 dark:text-white" : "text-gray-400"}`}>
+              {guestLabel()}
+            </p>
+          </div>
+          <button
+            onClick={e => { e.stopPropagation(); setPanel(null); onSearch(city, checkIn, checkOut, Math.max(1, totalGuests)); }}
+            className="shrink-0 bg-rose-500 hover:bg-rose-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg transition-colors"
+          >
+            <MagnifyingGlassIcon className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Calendar dropdown */}
+      {(panel === "checkin" || panel === "checkout") && (
+        <div className="absolute left-1/2 -translate-x-1/2 mt-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl shadow-2xl p-6 z-50 w-max max-w-[95vw]">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={() => setCalOffset(o => Math.max(0, o - 1))} className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <ChevronLeftIcon className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+            </button>
+            <div className="flex gap-12">
+              <MonthGrid year={monthA.getFullYear()} month={monthA.getMonth()} />
+              <MonthGrid year={monthB.getFullYear()} month={monthB.getMonth()} />
+            </div>
+            <button onClick={() => setCalOffset(o => o + 1)} className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+              <ChevronRightIcon className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+            </button>
+          </div>
+          {(checkIn || checkOut) && (
+            <div className="flex justify-end pt-3 border-t border-gray-100 dark:border-gray-800">
+              <button onClick={() => { setCheckIn(""); setCheckOut(""); }} className="text-sm underline text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+                Effacer les dates
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Guests dropdown */}
+      {panel === "guests" && (
+        <div className="absolute right-0 md:right-auto md:left-1/2 md:-translate-x-1/2 mt-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-3xl shadow-2xl p-6 z-50 w-80">
+          {([
+            { key: "adults",   label: "Adultes",  sub: "13 ans et plus" },
+            { key: "children", label: "Enfants",  sub: "De 2 à 12 ans" },
+            { key: "infants",  label: "Bébés",    sub: "Moins de 2 ans" },
+          ] as { key: keyof GuestCounts; label: string; sub: string }[]).map((g, i, arr) => (
+            <div key={g.key} className={`flex items-center justify-between py-4 ${i < arr.length - 1 ? "border-b border-gray-100 dark:border-gray-800" : ""}`}>
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-white">{g.label}</p>
+                <p className="text-sm text-gray-400">{g.sub}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button disabled={guests[g.key] === 0} onClick={e => { e.stopPropagation(); setGuests(prev => ({ ...prev, [g.key]: Math.max(0, prev[g.key] - 1) })); }}
+                  className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center disabled:opacity-30 hover:border-gray-500 transition-colors">
+                  <MinusIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                </button>
+                <span className="w-5 text-center font-semibold text-gray-900 dark:text-white">{guests[g.key]}</span>
+                <button onClick={e => { e.stopPropagation(); setGuests(prev => ({ ...prev, [g.key]: prev[g.key] + 1 })); }}
+                  className="w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center hover:border-gray-500 transition-colors">
+                  <PlusIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main Page ─────────────────────────────────────────────────────────────
 export default function ReservationLanding() {
   const router = useRouter();
   const [featured, setFeatured] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchCity, setSearchCity] = useState("");
-  const [searchGuests, setSearchGuests] = useState(1);
-  const [searchCheckIn, setSearchCheckIn] = useState("");
-  const [searchCheckOut, setSearchCheckOut] = useState("");
   const [activeType, setActiveType] = useState("");
 
   useEffect(() => {
@@ -113,15 +346,15 @@ export default function ReservationLanding() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback((city: string, checkIn: string, checkOut: string, guests: number) => {
     const params = new URLSearchParams();
-    if (searchCity) params.set("city", searchCity);
-    if (searchGuests > 1) params.set("guests", String(searchGuests));
-    if (searchCheckIn) params.set("check_in", searchCheckIn);
-    if (searchCheckOut) params.set("check_out", searchCheckOut);
+    if (city) params.set("city", city);
+    if (guests > 1) params.set("guests", String(guests));
+    if (checkIn) params.set("check_in", checkIn);
+    if (checkOut) params.set("check_out", checkOut);
     if (activeType) params.set("property_type", activeType);
     router.push(`/reservation/recherche?${params.toString()}`);
-  };
+  }, [activeType, router]);
 
   const filteredFeatured = activeType
     ? featured.filter(p => p.property_type === activeType)
@@ -130,7 +363,7 @@ export default function ReservationLanding() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* Hero */}
-      <div className="relative bg-gradient-to-br from-rose-500 via-pink-600 to-purple-700 text-white overflow-hidden">
+      <div className="relative bg-gradient-to-br from-rose-500 via-pink-600 to-purple-700 text-white overflow-visible">
         <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
         <div className="relative max-w-7xl mx-auto px-4 py-20 text-center">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight">
@@ -141,67 +374,9 @@ export default function ReservationLanding() {
             Appartements, maisons, hôtels — réservez en toute confiance partout en RDC et en Afrique.
           </p>
 
-          {/* Search bar */}
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-4 max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div className="md:col-span-1">
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-1">Où ?</label>
-                <div className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 bg-gray-50 dark:bg-gray-800">
-                  <MapPinIcon className="w-4 h-4 text-rose-500 shrink-0" />
-                  <input
-                    type="text"
-                    placeholder="Ville ou quartier"
-                    value={searchCity}
-                    onChange={e => setSearchCity(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && handleSearch()}
-                    className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 text-sm outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-1">Arrivée</label>
-                <input
-                  type="date"
-                  value={searchCheckIn}
-                  onChange={e => setSearchCheckIn(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-1">Départ</label>
-                <input
-                  type="date"
-                  value={searchCheckOut}
-                  onChange={e => setSearchCheckOut(e.target.value)}
-                  min={searchCheckIn || new Date().toISOString().split("T")[0]}
-                  className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-1">Voyageurs</label>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 bg-gray-50 dark:bg-gray-800 flex-1">
-                    <UserGroupIcon className="w-4 h-4 text-rose-500 shrink-0" />
-                    <input
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={searchGuests}
-                      onChange={e => setSearchGuests(parseInt(e.target.value) || 1)}
-                      className="flex-1 bg-transparent text-gray-900 dark:text-white text-sm outline-none w-8"
-                    />
-                  </div>
-                  <button
-                    onClick={handleSearch}
-                    className="bg-rose-500 hover:bg-rose-600 text-white rounded-xl px-4 py-2 flex items-center gap-1 font-semibold transition-colors"
-                  >
-                    <MagnifyingGlassIcon className="w-4 h-4" />
-                    <span className="hidden md:inline">Rechercher</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+          {/* Airbnb-style search bar */}
+          <div className="relative z-20">
+            <AirbnbSearchBar onSearch={handleSearch} />
           </div>
         </div>
       </div>
