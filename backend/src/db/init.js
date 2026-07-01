@@ -45,6 +45,7 @@ async function initDb() {
     "migrate-activate-approved-subs.sql",
     "migrate-activate-user-services-safe.sql",
     "migrate-activate-ali-sanduku.sql",
+    "migrate-reservation.sql",
   ];
 
   for (const file of migrationFiles) {

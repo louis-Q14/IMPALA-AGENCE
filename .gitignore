@@ -15,3 +15,7 @@ nginx/certs/
 # OS
 .DS_Store
 Thumbs.db
+
+frontend/public/*.gif
+frontend/public/*.mp4
+frontend/public/*.webm

@@ -28,6 +28,7 @@ const navigation = [
   { name: "Accueil", href: "/", icon: HomeIcon },
   { name: "Immobilier", href: "/immobilier", icon: HomeIcon },
   { name: "Automobile", href: "/automobile", icon: TruckIcon },
+  { name: "Réservation", href: "/reservation", icon: HomeIcon },
   { name: "Multi-Impala", href: "/multi-impala", icon: BuildingStorefrontIcon },
   { name: "Tarifs", href: "/tarifs", icon: null },
 ];

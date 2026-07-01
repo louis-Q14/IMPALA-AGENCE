@@ -20,6 +20,7 @@ const servicesRoutes = require("./routes/services");
 const contactRoutes = require("./routes/contact");
 const blogRoutes = require("./routes/blog");
 const boutiqueRoutes = require("./routes/boutique");
+const reservationRoutes = require("./routes/reservation");
 const { auditActions } = require("./middleware/auditActions");
 const { ensureAuditFile } = require("./services/actionAudit");
 const { ensureFolderSchema } = require("./db/ensureFolderSchema");
@@ -73,6 +74,7 @@ app.use("/api/services", servicesRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/blog", blogRoutes);
 app.use("/api/boutique", boutiqueRoutes);
+app.use("/api/reservation", reservationRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
