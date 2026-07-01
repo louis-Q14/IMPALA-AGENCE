@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { UserGroupIcon, PlusIcon, TrashIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
