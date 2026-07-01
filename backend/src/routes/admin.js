@@ -609,7 +609,39 @@ router.get("/revenue", async (_req, res) => {
        ORDER BY i.created_at DESC`
     );
 
-    const allTx = [...trashTx.rows, ...invoiceTx.rows]
+    // Transactions from manual subscription requests
+    const manualTx = await db.query(
+      `SELECT
+         'REQ-' || SUBSTR(sr.id::text, 1, 8) AS id,
+         COALESCE(u.full_name, u.email) AS "user",
+         u.email,
+         CASE sr.service_type
+           WHEN 'immobilier' THEN 'real_estate'
+           WHEN 'automobile' THEN 'auto'
+           WHEN 'immo-auto' THEN 'real_estate'
+           WHEN 'reservation' THEN 'reservation'
+           ELSE 'real_estate' END AS service,
+         CONCAT('Abonnement ', INITCAP(REPLACE(sr.service_type, '-', ' ')), ' - Formule ', INITCAP(sr.formula), ' (',
+           CASE WHEN sr.annual THEN 'Annuel' ELSE 'Mensuel' END, ')') AS desc,
+         sr.amount::numeric AS amount,
+         TO_CHAR(sr.created_at, 'DD/MM/YYYY') AS date,
+         CASE sr.status
+           WHEN 'approved' THEN 'paid'
+           WHEN 'pending' THEN 'pending'
+           WHEN 'rejected' THEN 'refunded'
+           ELSE 'pending' END AS status,
+         CASE sr.payment_method
+           WHEN 'mobile' THEN 'Mobile Money'
+           WHEN 'card' THEN 'Carte bancaire'
+           WHEN 'cash' THEN 'Esp\u00e8ces'
+           ELSE sr.payment_method END AS method,
+         sr.created_at
+       FROM subscription_requests sr
+       JOIN users u ON u.id = sr.user_id
+       ORDER BY sr.created_at DESC`
+    );
+
+    const allTx = [...trashTx.rows, ...invoiceTx.rows, ...manualTx.rows]
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .map(({ created_at, ...rest }) => rest);
 
@@ -647,6 +679,24 @@ router.get("/revenue", async (_req, res) => {
          JOIN user_services us ON us.user_id = i.user_id AND us.service_type = 'auto'
          WHERE i.status = 'paid' AND i.created_at >= NOW() - INTERVAL '12 months'
          GROUP BY 1
+       ),
+       manual_immo AS (
+         SELECT date_trunc('month', created_at) AS month, SUM(amount::numeric) AS immobilier
+         FROM subscription_requests
+         WHERE status = 'approved' AND service_type IN ('immobilier', 'immo-auto') AND created_at >= NOW() - INTERVAL '12 months'
+         GROUP BY 1
+       ),
+       manual_auto AS (
+         SELECT date_trunc('month', created_at) AS month, SUM(amount::numeric) AS auto_rev
+         FROM subscription_requests
+         WHERE status = 'approved' AND service_type IN ('automobile', 'immo-auto') AND created_at >= NOW() - INTERVAL '12 months'
+         GROUP BY 1
+       ),
+       manual_reservation AS (
+         SELECT date_trunc('month', created_at) AS month, SUM(amount::numeric) AS reservation
+         FROM subscription_requests
+         WHERE status = 'approved' AND service_type = 'reservation' AND created_at >= NOW() - INTERVAL '12 months'
+         GROUP BY 1
        )
        SELECT
          TO_CHAR(m.month, 'Mon') AS month,
@@ -654,29 +704,39 @@ router.get("/revenue", async (_req, res) => {
          TO_CHAR(m.month, '"Q"Q') AS quarter_label,
          EXTRACT(QUARTER FROM m.month)::int AS quarter_num,
          COALESCE(tm.poubelles, 0)::numeric AS poubelles,
-         COALESCE(im.immobilier, 0)::numeric AS immobilier,
-         COALESCE(am.auto_rev, 0)::numeric AS auto
+         (COALESCE(im.immobilier, 0) + COALESCE(mi.immobilier, 0))::numeric AS immobilier,
+         (COALESCE(am.auto_rev, 0) + COALESCE(ma.auto_rev, 0))::numeric AS auto,
+         COALESCE(rm.reservation, 0)::numeric AS reservation
        FROM months m
        LEFT JOIN trash_monthly tm ON tm.month = m.month
        LEFT JOIN immo_monthly im ON im.month = m.month
        LEFT JOIN auto_monthly am ON am.month = m.month
+       LEFT JOIN manual_immo mi ON mi.month = m.month
+       LEFT JOIN manual_auto ma ON ma.month = m.month
+       LEFT JOIN manual_reservation rm ON rm.month = m.month
        ORDER BY m.month`
     );
 
     // Totals
     const trashTotal = trashTx.rows.filter(t => t.status === 'paid').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-    const immoTotal = invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'real_estate').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-    const autoTotal = invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'auto').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const immoTotal =
+      invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'real_estate').reduce((s, t) => s + parseFloat(t.amount || 0), 0) +
+      manualTx.rows.filter(t => t.status === 'paid' && t.service === 'real_estate').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const autoTotal =
+      invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'auto').reduce((s, t) => s + parseFloat(t.amount || 0), 0) +
+      manualTx.rows.filter(t => t.status === 'paid' && t.service === 'auto').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const reservationTotal = manualTx.rows.filter(t => t.status === 'paid' && t.service === 'reservation').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
     const pendingTotal = allTx.filter(t => t.status === 'pending').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
     const refundedTotal = allTx.filter(t => t.status === 'refunded').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
 
     res.json({
       transactions: allTx,
       totals: {
-        total: trashTotal + immoTotal + autoTotal,
+        total: trashTotal + immoTotal + autoTotal + reservationTotal,
         poubelles: trashTotal,
         immobilier: immoTotal,
         auto: autoTotal,
+        reservation: reservationTotal,
         pending: pendingTotal,
         refunded: refundedTotal,
       },
@@ -684,7 +744,7 @@ router.get("/revenue", async (_req, res) => {
     });
   } catch (err) {
     console.error("Admin revenue error:", err);
-    res.status(500).json({ error: "Erreur serveur", transactions: [], totals: { total: 0, poubelles: 0, immobilier: 0, auto: 0, pending: 0, refunded: 0 }, monthlyChart: [] });
+    res.status(500).json({ error: "Erreur serveur", transactions: [], totals: { total: 0, poubelles: 0, immobilier: 0, auto: 0, reservation: 0, pending: 0, refunded: 0 }, monthlyChart: [] });
   }
 });
 
@@ -815,6 +875,7 @@ router.patch("/subscription-requests/:id/approve", async (req, res) => {
       immobilier: ["real_estate"],
       automobile: ["auto"],
       "immo-auto": ["real_estate", "auto"],
+      reservation: ["reservation"],
     };
     const svc_types = svcMap[sub.service_type] || [];
 
@@ -867,6 +928,7 @@ router.patch("/subscription-requests/:id/reject", async (req, res) => {
       immobilier: ["real_estate"],
       automobile: ["auto"],
       "immo-auto": ["real_estate", "auto"],
+      reservation: ["reservation"],
     };
     const svc_types = svcMap[sub.service_type] || [];
 

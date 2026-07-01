@@ -21,7 +21,7 @@ interface Transaction {
   id: string;
   user: string;
   email: string;
-  service: "real_estate" | "auto" | "trash";
+  service: "real_estate" | "auto" | "trash" | "reservation";
   desc: string;
   amount: number;
   date: string;
@@ -37,6 +37,7 @@ interface MonthlyRow {
   immobilier: number;
   auto: number;
   poubelles: number;
+  reservation: number;
 }
 
 interface ApiTotals {
@@ -44,6 +45,7 @@ interface ApiTotals {
   immobilier: number;
   auto: number;
   poubelles: number;
+  reservation: number;
   pending: number;
   refunded: number;
 }
@@ -52,6 +54,7 @@ const serviceLabels: Record<string, string> = {
   real_estate: "Immobilier",
   auto: "Automobile",
   trash: "Poubelles",
+  reservation: "Réservation",
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -59,35 +62,38 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 function deriveChartData(
   monthly: MonthlyRow[],
   period: string
-): { month: string; immobilier: number; auto: number; poubelles: number }[] {
+): { month: string; immobilier: number; auto: number; poubelles: number; reservation: number }[] {
   if (period === "month") {
     return monthly.slice(-6).map((r) => ({
       month: r.month,
       immobilier: Number(r.immobilier),
       auto: Number(r.auto),
       poubelles: Number(r.poubelles),
+      reservation: Number(r.reservation),
     }));
   }
   if (period === "quarter") {
-    const map = new Map<string, { month: string; immobilier: number; auto: number; poubelles: number }>();
+    const map = new Map<string, { month: string; immobilier: number; auto: number; poubelles: number; reservation: number }>();
     for (const r of monthly) {
       const key = `${r.quarter_label} ${r.year}`;
-      const existing = map.get(key) ?? { month: key, immobilier: 0, auto: 0, poubelles: 0 };
+      const existing = map.get(key) ?? { month: key, immobilier: 0, auto: 0, poubelles: 0, reservation: 0 };
       existing.immobilier += Number(r.immobilier);
       existing.auto += Number(r.auto);
       existing.poubelles += Number(r.poubelles);
+      existing.reservation += Number(r.reservation);
       map.set(key, existing);
     }
     return Array.from(map.values());
   }
   // year
-  const map = new Map<string, { month: string; immobilier: number; auto: number; poubelles: number }>();
+  const map = new Map<string, { month: string; immobilier: number; auto: number; poubelles: number; reservation: number }>();
   for (const r of monthly) {
     const key = r.year;
-    const existing = map.get(key) ?? { month: key, immobilier: 0, auto: 0, poubelles: 0 };
+    const existing = map.get(key) ?? { month: key, immobilier: 0, auto: 0, poubelles: 0, reservation: 0 };
     existing.immobilier += Number(r.immobilier);
     existing.auto += Number(r.auto);
     existing.poubelles += Number(r.poubelles);
+    existing.reservation += Number(r.reservation);
     map.set(key, existing);
   }
   return Array.from(map.values());
@@ -135,21 +141,23 @@ export default function AdminRevenus() {
 
   // Chart data by period
   const chartData = deriveChartData(monthlyData, period);
-  const maxVal = chartData.length > 0 ? Math.max(...chartData.map((m) => m.immobilier + m.auto + m.poubelles)) : 1;
+  const maxVal = chartData.length > 0 ? Math.max(...chartData.map((m) => m.immobilier + m.auto + m.poubelles + m.reservation)) : 1;
 
   // Stats — use server totals if available, fall back to client-side
   const totalPaid = apiTotals ? apiTotals.total : transactions.filter((t) => t.status === "paid").reduce((s, t) => s + t.amount, 0);
   const immobilierPaid = apiTotals ? apiTotals.immobilier : transactions.filter((t) => t.status === "paid" && t.service === "real_estate").reduce((s, t) => s + t.amount, 0);
   const autoPaid = apiTotals ? apiTotals.auto : transactions.filter((t) => t.status === "paid" && t.service === "auto").reduce((s, t) => s + t.amount, 0);
   const poubellesPaid = apiTotals ? apiTotals.poubelles : transactions.filter((t) => t.status === "paid" && t.service === "trash").reduce((s, t) => s + t.amount, 0);
+  const reservationPaid = apiTotals ? (apiTotals.reservation ?? 0) : transactions.filter((t) => t.status === "paid" && t.service === "reservation").reduce((s, t) => s + t.amount, 0);
   const pendingTotal = apiTotals ? apiTotals.pending : transactions.filter((t) => t.status === "pending").reduce((s, t) => s + t.amount, 0);
   const refundedTotal = apiTotals ? apiTotals.refunded : transactions.filter((t) => t.status === "refunded").reduce((s, t) => s + t.amount, 0);
 
   // Chart totals
-  const chartTotal = chartData.reduce((s, m) => s + m.immobilier + m.auto + m.poubelles, 0);
+  const chartTotal = chartData.reduce((s, m) => s + m.immobilier + m.auto + m.poubelles + m.reservation, 0);
   const chartImmo = chartData.reduce((s, m) => s + m.immobilier, 0);
   const chartAuto = chartData.reduce((s, m) => s + m.auto, 0);
   const chartPoubelles = chartData.reduce((s, m) => s + m.poubelles, 0);
+  const chartReservation = chartData.reduce((s, m) => s + m.reservation, 0);
 
   // Filtered transactions
   const filtered = useMemo(() => {
@@ -245,12 +253,13 @@ export default function AdminRevenus() {
       </div>
 
       {/* Revenue Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {[
           { label: "Revenu total", value: chartTotal, icon: CurrencyDollarIcon, color: "bg-primary", change: "+18%" },
           { label: "Immobilier", value: chartImmo, icon: HomeIcon, color: "bg-blue-500", change: "+22%" },
           { label: "Automobile", value: chartAuto, icon: TruckIcon, color: "bg-amber-500", change: "+15%" },
           { label: "Poubelles", value: chartPoubelles, icon: TrashIcon, color: "bg-emerald-500", change: "+25%" },
+          { label: "Réservation", value: chartReservation, icon: HomeIcon, color: "bg-rose-500", change: "+0%" },
         ].map((card) => (
           <div key={card.label} className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
             <div className="flex items-center justify-between mb-4">
@@ -311,7 +320,7 @@ export default function AdminRevenus() {
         </div>
         <div className="space-y-3">
           {chartData.map((d) => {
-            const total = d.immobilier + d.auto + d.poubelles;
+            const total = d.immobilier + d.auto + d.poubelles + d.reservation;
             return (
               <div key={d.month} className="flex items-center gap-4">
                 <span className="w-10 text-sm font-medium text-[var(--text-muted)]">{d.month}</span>
@@ -331,6 +340,11 @@ export default function AdminRevenus() {
                     style={{ width: `${(d.poubelles / maxVal) * 100}%` }}
                     title={`Poubelles: ${d.poubelles.toLocaleString("fr-FR")} FC`}
                   />
+                  <div
+                    className="bg-rose-500 transition-all duration-500"
+                    style={{ width: `${(d.reservation / maxVal) * 100}%` }}
+                    title={`Réservation: ${d.reservation.toLocaleString("fr-FR")}`}
+                  />
                 </div>
                 <span className="text-sm font-medium text-[var(--text-primary)] w-24 text-right">
                   {total.toLocaleString("fr-FR")} FC
@@ -348,6 +362,9 @@ export default function AdminRevenus() {
           </div>
           <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
             <div className="w-3 h-3 rounded-sm bg-emerald-500" /> Poubelles
+          </div>
+          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+            <div className="w-3 h-3 rounded-sm bg-rose-500" /> Réservation
           </div>
         </div>
       </div>
@@ -400,6 +417,7 @@ export default function AdminRevenus() {
                   <option value="real_estate">Immobilier</option>
                   <option value="auto">Automobile</option>
                   <option value="trash">Poubelles</option>
+                  <option value="reservation">Réservation</option>
                 </select>
               </div>
               <div>
@@ -462,12 +480,15 @@ export default function AdminRevenus() {
                             ? "bg-blue-100 dark:bg-blue-900/30"
                             : tx.service === "auto"
                               ? "bg-amber-100 dark:bg-amber-900/30"
-                              : "bg-emerald-100 dark:bg-emerald-900/30"
+                              : tx.service === "reservation"
+                                ? "bg-rose-100 dark:bg-rose-900/30"
+                                : "bg-emerald-100 dark:bg-emerald-900/30"
                         }`}
                       >
                         {tx.service === "real_estate" && <HomeIcon className="w-4 h-4 text-blue-500" />}
                         {tx.service === "auto" && <TruckIcon className="w-4 h-4 text-amber-500" />}
                         {tx.service === "trash" && <TrashIcon className="w-4 h-4 text-emerald-500" />}
+                        {tx.service === "reservation" && <HomeIcon className="w-4 h-4 text-rose-500" />}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-[var(--text-muted)]">{tx.desc}</td>
@@ -553,12 +574,15 @@ export default function AdminRevenus() {
                       ? "bg-blue-100 dark:bg-blue-900/30"
                       : selectedTx.service === "auto"
                         ? "bg-amber-100 dark:bg-amber-900/30"
-                        : "bg-emerald-100 dark:bg-emerald-900/30"
+                        : selectedTx.service === "reservation"
+                          ? "bg-rose-100 dark:bg-rose-900/30"
+                          : "bg-emerald-100 dark:bg-emerald-900/30"
                   }`}
                 >
                   {selectedTx.service === "real_estate" && <HomeIcon className="w-6 h-6 text-blue-500" />}
                   {selectedTx.service === "auto" && <TruckIcon className="w-6 h-6 text-amber-500" />}
                   {selectedTx.service === "trash" && <TrashIcon className="w-6 h-6 text-emerald-500" />}
+                  {selectedTx.service === "reservation" && <HomeIcon className="w-6 h-6 text-rose-500" />}
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[var(--text-primary)]">{selectedTx.id}</h3>
