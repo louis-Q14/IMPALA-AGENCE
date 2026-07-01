@@ -22,7 +22,7 @@ interface Transaction {
   id: string;
   user: string;
   email: string;
-  service: "real_estate" | "auto" | "trash" | "nettoyage" | "repassage" | "demenagement";
+  service: "real_estate" | "auto" | "trash" | "nettoyage" | "repassage" | "demenagement" | "reservation";
   desc: string;
   amount: number;
   unite?: string;
@@ -42,6 +42,7 @@ interface MonthlyRow {
   nettoyage: number;
   repassage: number;
   demenagement: number;
+  reservation: number;
 }
 
 interface ApiTotals {
@@ -50,6 +51,7 @@ interface ApiTotals {
   auto: number;
   poubelles: number;
   multiservices: number;
+  reservation: number;
   pending: number;
   refunded: number;
 }
@@ -61,11 +63,12 @@ const serviceLabels: Record<string, string> = {
   nettoyage: "Nettoyage",
   repassage: "Repassage",
   demenagement: "Déménagement",
+  reservation: "Réservation",
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-type ChartRow = { month: string; immobilier: number; auto: number; poubelles: number; multiservices: number };
+type ChartRow = { month: string; immobilier: number; auto: number; poubelles: number; multiservices: number; reservation: number };
 
 function deriveChartData(
   monthly: MonthlyRow[],
@@ -77,6 +80,7 @@ function deriveChartData(
     auto: Number(r.auto),
     poubelles: Number(r.poubelles),
     multiservices: Number(r.nettoyage || 0) + Number(r.repassage || 0) + Number(r.demenagement || 0),
+    reservation: Number(r.reservation || 0),
   });
   if (period === "month") {
     return monthly.slice(-6).map((r) => toRow(r, r.month));
@@ -85,11 +89,12 @@ function deriveChartData(
     const map = new Map<string, ChartRow>();
     for (const r of monthly) {
       const key = `${r.quarter_label} ${r.year}`;
-      const existing = map.get(key) ?? { month: key, immobilier: 0, auto: 0, poubelles: 0, multiservices: 0 };
+      const existing = map.get(key) ?? { month: key, immobilier: 0, auto: 0, poubelles: 0, multiservices: 0, reservation: 0 };
       existing.immobilier += Number(r.immobilier);
       existing.auto += Number(r.auto);
       existing.poubelles += Number(r.poubelles);
       existing.multiservices += Number(r.nettoyage || 0) + Number(r.repassage || 0) + Number(r.demenagement || 0);
+      existing.reservation += Number(r.reservation || 0);
       map.set(key, existing);
     }
     return Array.from(map.values());
@@ -97,11 +102,12 @@ function deriveChartData(
   const map = new Map<string, ChartRow>();
   for (const r of monthly) {
     const key = r.year;
-    const existing = map.get(key) ?? { month: key, immobilier: 0, auto: 0, poubelles: 0, multiservices: 0 };
+    const existing = map.get(key) ?? { month: key, immobilier: 0, auto: 0, poubelles: 0, multiservices: 0, reservation: 0 };
     existing.immobilier += Number(r.immobilier);
     existing.auto += Number(r.auto);
     existing.poubelles += Number(r.poubelles);
     existing.multiservices += Number(r.nettoyage || 0) + Number(r.repassage || 0) + Number(r.demenagement || 0);
+    existing.reservation += Number(r.reservation || 0);
     map.set(key, existing);
   }
   return Array.from(map.values());
@@ -148,21 +154,23 @@ export default function SuperAdminRevenus() {
   }, [fetchRevenue]);
 
   const chartData = deriveChartData(monthlyData, period);
-  const maxVal = chartData.length > 0 ? Math.max(...chartData.map((m) => m.immobilier + m.auto + m.poubelles + m.multiservices)) : 1;
+  const maxVal = chartData.length > 0 ? Math.max(...chartData.map((m) => m.immobilier + m.auto + m.poubelles + m.multiservices + m.reservation)) : 1;
 
   const totalPaid = apiTotals ? apiTotals.total : transactions.filter((t) => t.status === "paid").reduce((s, t) => s + t.amount, 0);
   const immobilierPaid = apiTotals ? apiTotals.immobilier : transactions.filter((t) => t.status === "paid" && t.service === "real_estate").reduce((s, t) => s + t.amount, 0);
   const autoPaid = apiTotals ? apiTotals.auto : transactions.filter((t) => t.status === "paid" && t.service === "auto").reduce((s, t) => s + t.amount, 0);
   const poubellesPaid = apiTotals ? apiTotals.poubelles : transactions.filter((t) => t.status === "paid" && t.service === "trash").reduce((s, t) => s + t.amount, 0);
   const multiservicesPaid = apiTotals ? (apiTotals.multiservices || 0) : transactions.filter((t) => t.status === "paid" && ["nettoyage","repassage","demenagement"].includes(t.service)).reduce((s, t) => s + t.amount, 0);
+  const reservationPaid = apiTotals ? (apiTotals.reservation ?? 0) : transactions.filter((t) => t.status === "paid" && t.service === "reservation").reduce((s, t) => s + t.amount, 0);
   const pendingTotal = apiTotals ? apiTotals.pending : transactions.filter((t) => t.status === "pending").reduce((s, t) => s + t.amount, 0);
   const refundedTotal = apiTotals ? apiTotals.refunded : transactions.filter((t) => t.status === "refunded").reduce((s, t) => s + t.amount, 0);
 
-  const chartTotal = chartData.reduce((s, m) => s + m.immobilier + m.auto + m.poubelles + m.multiservices, 0);
+  const chartTotal = chartData.reduce((s, m) => s + m.immobilier + m.auto + m.poubelles + m.multiservices + m.reservation, 0);
   const chartImmo = chartData.reduce((s, m) => s + m.immobilier, 0);
   const chartAuto = chartData.reduce((s, m) => s + m.auto, 0);
   const chartPoubelles = chartData.reduce((s, m) => s + m.poubelles, 0);
   const chartMultiservices = chartData.reduce((s, m) => s + m.multiservices, 0);
+  const chartReservation = chartData.reduce((s, m) => s + m.reservation, 0);
 
   const filtered = useMemo(() => {
     return transactions.filter((tx) => {
@@ -231,7 +239,7 @@ export default function SuperAdminRevenus() {
   };
 
   // suppress unused variable warnings
-  void immobilierPaid; void autoPaid; void poubellesPaid; void multiservicesPaid; void chartMultiservices;
+  void immobilierPaid; void autoPaid; void poubellesPaid; void multiservicesPaid; void reservationPaid; void chartMultiservices;
 
   const formatAmount = (n: number) => Math.round(n).toLocaleString("fr-FR") + " CDF";
   const fmtTx = (tx: Transaction) => Math.round(tx.amount).toLocaleString("fr-FR") + " " + (tx.unite || "CDF");
@@ -270,13 +278,14 @@ export default function SuperAdminRevenus() {
       </div>
 
       {/* Revenue Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
         {[
           { label: "Revenu total", value: chartTotal, icon: CurrencyDollarIcon, color: "bg-primary", change: "+18%" },
           { label: "Immobilier", value: chartImmo, icon: HomeIcon, color: "bg-blue-500", change: "+22%" },
           { label: "Automobile", value: chartAuto, icon: TruckIcon, color: "bg-amber-500", change: "+15%" },
           { label: "Poubelles", value: chartPoubelles, icon: TrashIcon, color: "bg-emerald-500", change: "+25%" },
           { label: "Multi-services", value: chartData.reduce((s, m) => s + m.multiservices, 0), icon: BoltIcon, color: "bg-violet-500", change: "+0%" },
+          { label: "Réservation", value: chartReservation, icon: HomeIcon, color: "bg-rose-500", change: "+0%" },
         ].map((card) => (
           <div key={card.label} className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
             <div className="flex items-center justify-between mb-4">
@@ -337,7 +346,7 @@ export default function SuperAdminRevenus() {
         </div>
         <div className="space-y-3">
           {chartData.map((d) => {
-            const total = d.immobilier + d.auto + d.poubelles + d.multiservices;
+            const total = d.immobilier + d.auto + d.poubelles + d.multiservices + d.reservation;
             return (
               <div key={d.month} className="flex items-center gap-4">
                 <span className="w-10 text-sm font-medium text-[var(--text-muted)]">{d.month}</span>
@@ -348,6 +357,32 @@ export default function SuperAdminRevenus() {
                     title={`Immobilier: ${Math.round(d.immobilier).toLocaleString("fr-FR")} ${displayCurrency}`}
                   />
                   <div
+                    className="bg-amber-500 transition-all duration-500"
+                    style={{ width: `${(d.auto / maxVal) * 100}%` }}
+                    title={`Automobile: ${Math.round(d.auto).toLocaleString("fr-FR")} ${displayCurrency}`}
+                  />
+                  <div
+                    className="bg-emerald-500 transition-all duration-500"
+                    style={{ width: `${(d.poubelles / maxVal) * 100}%` }}
+                    title={`Poubelles: ${Math.round(d.poubelles).toLocaleString("fr-FR")} ${displayCurrency}`}
+                  />
+                  <div
+                    className="bg-violet-500 transition-all duration-500"
+                    style={{ width: `${(d.multiservices / maxVal) * 100}%` }}
+                    title={`Multi-services: ${Math.round(d.multiservices).toLocaleString("fr-FR")} ${displayCurrency}`}
+                  />
+                  <div
+                    className="bg-rose-500 transition-all duration-500"
+                    style={{ width: `${(d.reservation / maxVal) * 100}%` }}
+                    title={`Réservation: ${Math.round(d.reservation).toLocaleString("fr-FR")}`}
+                  />
+                </div>
+                <span className="text-sm font-medium text-[var(--text-primary)] w-24 text-right">
+                  {Math.round(total).toLocaleString("fr-FR")} {displayCurrency}
+                </span>
+              </div>
+            );
+          })}
                     className="bg-amber-500 transition-all duration-500"
                     style={{ width: `${(d.auto / maxVal) * 100}%` }}
                     title={`Automobile: ${Math.round(d.auto).toLocaleString("fr-FR")} ${displayCurrency}`}
@@ -382,8 +417,9 @@ export default function SuperAdminRevenus() {
           </div>
           <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
             <div className="w-3 h-3 rounded-sm bg-violet-500" /> Multi-services
-          </div>
-        </div>
+          </div>          <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+            <div className="w-3 h-3 rounded-sm bg-rose-500" /> Réservation
+          </div>        </div>
       </div>
 
       {/* Transactions */}
@@ -436,6 +472,7 @@ export default function SuperAdminRevenus() {
                   <option value="nettoyage">Nettoyage</option>
                   <option value="repassage">Repassage</option>
                   <option value="demenagement">Déménagement</option>
+                  <option value="reservation">Réservation</option>
                 </select>
               </div>
               <div>
@@ -497,13 +534,16 @@ export default function SuperAdminRevenus() {
                               ? "bg-amber-100 dark:bg-amber-900/30"
                               : tx.service === "trash"
                                 ? "bg-emerald-100 dark:bg-emerald-900/30"
-                                : "bg-violet-100 dark:bg-violet-900/30"
+                                : tx.service === "reservation"
+                                  ? "bg-rose-100 dark:bg-rose-900/30"
+                                  : "bg-violet-100 dark:bg-violet-900/30"
                         }`}
                       >
                         {tx.service === "real_estate" && <HomeIcon className="w-4 h-4 text-blue-500" />}
                         {tx.service === "auto" && <TruckIcon className="w-4 h-4 text-amber-500" />}
                         {tx.service === "trash" && <TrashIcon className="w-4 h-4 text-emerald-500" />}
                         {["nettoyage","repassage","demenagement"].includes(tx.service) && <BoltIcon className="w-4 h-4 text-violet-500" />}
+                        {tx.service === "reservation" && <HomeIcon className="w-4 h-4 text-rose-500" />}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-[var(--text-muted)]">{tx.desc}</td>
@@ -590,13 +630,16 @@ export default function SuperAdminRevenus() {
                         ? "bg-amber-100 dark:bg-amber-900/30"
                         : selectedTx.service === "trash"
                           ? "bg-emerald-100 dark:bg-emerald-900/30"
-                          : "bg-violet-100 dark:bg-violet-900/30"
+                          : selectedTx.service === "reservation"
+                            ? "bg-rose-100 dark:bg-rose-900/30"
+                            : "bg-violet-100 dark:bg-violet-900/30"
                   }`}
                 >
                   {selectedTx.service === "real_estate" && <HomeIcon className="w-6 h-6 text-blue-500" />}
                   {selectedTx.service === "auto" && <TruckIcon className="w-6 h-6 text-amber-500" />}
                   {selectedTx.service === "trash" && <TrashIcon className="w-6 h-6 text-emerald-500" />}
                   {["nettoyage","repassage","demenagement"].includes(selectedTx.service) && <BoltIcon className="w-6 h-6 text-violet-500" />}
+                  {selectedTx.service === "reservation" && <HomeIcon className="w-6 h-6 text-rose-500" />}
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[var(--text-primary)]">{selectedTx.id}</h3>

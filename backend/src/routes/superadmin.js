@@ -510,6 +510,7 @@ router.get("/revenue", async (_req, res) => {
          CASE sr.service_type
            WHEN 'immobilier' THEN 'real_estate'
            WHEN 'automobile' THEN 'auto'
+           WHEN 'reservation' THEN 'reservation'
            ELSE 'real_estate'
          END AS service,
          CONCAT(
@@ -518,6 +519,7 @@ router.get("/revenue", async (_req, res) => {
              WHEN 'immobilier' THEN 'Immobilier'
              WHEN 'automobile' THEN 'Automobile'
              WHEN 'immo-auto' THEN 'Immo+Auto'
+             WHEN 'reservation' THEN 'R\u00e9servation'
              ELSE INITCAP(sr.service_type)
            END,
            ' - Formule ', sr.formula::text,
@@ -608,6 +610,15 @@ router.get("/revenue", async (_req, res) => {
          FROM demenagement_client_bookings
          WHERE status IN ('active', 'confirmed') AND updated_at >= NOW() - INTERVAL '12 months'
          GROUP BY 1
+       ),
+       reservation_monthly AS (
+         SELECT
+           date_trunc('month', COALESCE(reviewed_at, created_at)) AS month,
+           SUM(amount::numeric) AS reservation
+         FROM subscription_requests
+         WHERE status = 'approved' AND service_type = 'reservation'
+           AND COALESCE(reviewed_at, created_at) >= NOW() - INTERVAL '12 months'
+         GROUP BY 1
        )
        SELECT
          TO_CHAR(m.month, 'Mon') AS month,
@@ -619,7 +630,8 @@ router.get("/revenue", async (_req, res) => {
          COALESCE(am.auto_rev, 0)::numeric AS auto,
          COALESCE(nm.nettoyage, 0)::numeric AS nettoyage,
          COALESCE(rm.repassage, 0)::numeric AS repassage,
-         COALESCE(dm.demenagement, 0)::numeric AS demenagement
+         COALESCE(dm.demenagement, 0)::numeric AS demenagement,
+         COALESCE(resm.reservation, 0)::numeric AS reservation
        FROM months m
        LEFT JOIN trash_monthly tm ON tm.month = m.month
        LEFT JOIN immo_monthly im ON im.month = m.month
@@ -627,6 +639,7 @@ router.get("/revenue", async (_req, res) => {
        LEFT JOIN nettoyage_monthly nm ON nm.month = m.month
        LEFT JOIN repassage_monthly rm ON rm.month = m.month
        LEFT JOIN demenagement_monthly dm ON dm.month = m.month
+       LEFT JOIN reservation_monthly resm ON resm.month = m.month
        ORDER BY m.month`
     );
 
@@ -638,6 +651,7 @@ router.get("/revenue", async (_req, res) => {
     const autoTotal =
       invoiceTx.rows.filter(t => t.status === 'paid' && t.service === 'auto').reduce((s, t) => s + parseFloat(t.amount || 0), 0) +
       subTx.rows.filter(t => t.service === 'auto').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+    const reservationTotal = subTx.rows.filter(t => t.service === 'reservation').reduce((s, t) => s + parseFloat(t.amount || 0), 0);
     const nettoyageTotal = paid(nettoyageTx.rows);
     const repassageTotal = paid(repassageTx.rows);
     const demenagementTotal = paid(demenagementTx.rows);
@@ -648,7 +662,7 @@ router.get("/revenue", async (_req, res) => {
     res.json({
       transactions: allTx,
       totals: {
-        total: trashTotal + immoTotal + autoTotal + multiservicesTotal,
+        total: trashTotal + immoTotal + autoTotal + multiservicesTotal + reservationTotal,
         poubelles: trashTotal,
         immobilier: immoTotal,
         auto: autoTotal,
@@ -656,6 +670,7 @@ router.get("/revenue", async (_req, res) => {
         repassage: repassageTotal,
         demenagement: demenagementTotal,
         multiservices: multiservicesTotal,
+        reservation: reservationTotal,
         pending: pendingTotal,
         refunded: refundedTotal,
       },
