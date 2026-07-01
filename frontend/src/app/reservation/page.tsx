@@ -94,114 +94,88 @@ function PropertyCard({ p }: { p: Property }) {
   );
 }
 
-// ─── Calendar helpers ──────────────────────────────────────────────────────
+// ─── Calendar helpers ────────────────────────────────────────────────────
 const MONTHS_FR = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 const DAYS_FR   = ["Lu","Ma","Me","Je","Ve","Sa","Di"];
-
 function daysInMonth(y: number, m: number) { return new Date(y, m + 1, 0).getDate(); }
-function firstDayOfMonth(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7; } // 0=Lu
-
+function firstDayOfMonth(y: number, m: number) { return (new Date(y, m, 1).getDay() + 6) % 7; }
 function isoDate(y: number, m: number, d: number) {
-  return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+function fmtDate(iso: string) {
+  if (!iso) return null;
+  return new Date(iso + "T00:00:00").toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 }
 
-type Panel = "where" | "checkin" | "checkout" | "guests" | null;
-
+type Panel = "where" | "dates" | "guests" | null;
 interface GuestCounts { adults: number; children: number; infants: number; }
 
-// ─── AirbnbSearchBar ───────────────────────────────────────────────────────
-function AirbnbSearchBar({ onSearch }: { onSearch: (city: string, checkIn: string, checkOut: string, guests: number) => void }) {
+// ─── SearchBar ────────────────────────────────────────────────────────────
+function SearchBar({ onSearch }: { onSearch: (city: string, checkIn: string, checkOut: string, guests: number) => void }) {
   const [panel, setPanel] = useState<Panel>(null);
   const [city, setCity] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guests, setGuests] = useState<GuestCounts>({ adults: 0, children: 0, infants: 0 });
-
-  // Calendar state: offset = number of months from today
-  const today = new Date();
   const [calOffset, setCalOffset] = useState(0);
-
   const barRef = useRef<HTMLDivElement>(null);
   const cityRef = useRef<HTMLInputElement>(null);
+  const today = new Date();
 
-  // Close panel on outside click
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (barRef.current && !barRef.current.contains(e.target as Node)) setPanel(null);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    const h = (e: MouseEvent) => { if (barRef.current && !barRef.current.contains(e.target as Node)) setPanel(null); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
   }, []);
 
   const totalGuests = guests.adults + guests.children;
+  const guestLabel = totalGuests > 0 || guests.infants > 0
+    ? [totalGuests > 0 && `${totalGuests} voy.`, guests.infants > 0 && `${guests.infants} bébé${guests.infants > 1 ? "s" : ""}`].filter(Boolean).join(", ")
+    : null;
 
-  const guestLabel = () => {
-    if (totalGuests === 0 && guests.infants === 0) return "Ajouter des voyageurs";
-    const parts = [];
-    if (totalGuests > 0) parts.push(`${totalGuests} voyageur${totalGuests > 1 ? "s" : ""}`);
-    if (guests.infants > 0) parts.push(`${guests.infants} bébé${guests.infants > 1 ? "s" : ""}`);
-    return parts.join(", ");
-  };
+  const datesLabel = checkIn && checkOut
+    ? `${fmtDate(checkIn)} → ${fmtDate(checkOut)}`
+    : checkIn ? `${fmtDate(checkIn)} → ?` : null;
 
-  const dateLabel = (d: string) => {
-    if (!d) return null;
-    const dt = new Date(d + "T00:00:00");
-    return dt.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-  };
-
-  // Build two calendar months
   const monthA = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
   const monthB = new Date(today.getFullYear(), today.getMonth() + calOffset + 1, 1);
+  const todayIso = isoDate(today.getFullYear(), today.getMonth(), today.getDate());
 
-  const handleDayClick = (iso: string) => {
-    if (panel === "checkin") {
-      setCheckIn(iso);
-      if (checkOut && checkOut <= iso) setCheckOut("");
-      setPanel("checkout");
-    } else if (panel === "checkout") {
-      if (iso <= checkIn) { setCheckIn(iso); setCheckOut(""); return; }
-      setCheckOut(iso);
-      setPanel("guests");
-    }
+  const handleDay = (iso: string) => {
+    if (!checkIn || (checkIn && checkOut)) { setCheckIn(iso); setCheckOut(""); }
+    else if (iso <= checkIn) { setCheckIn(iso); setCheckOut(""); }
+    else { setCheckOut(iso); setPanel("guests"); }
   };
 
-  const dayClass = (iso: string) => {
-    const todayIso = isoDate(today.getFullYear(), today.getMonth(), today.getDate());
+  const getDayStyle = (iso: string): string => {
     const isPast = iso < todayIso;
-    const isStart = iso === checkIn;
-    const isEnd = iso === checkOut;
-    const isInRange = checkIn && checkOut && iso > checkIn && iso < checkOut;
-    if (isPast) return "text-gray-300 dark:text-gray-700 cursor-not-allowed";
-    if (isStart || isEnd) return "bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-bold";
-    if (isInRange) return "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white";
-    return "hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full cursor-pointer";
+    if (isPast) return "text-gray-300 cursor-not-allowed pointer-events-none";
+    if (iso === checkIn || iso === checkOut)
+      return "bg-rose-500 text-white font-bold cursor-pointer";
+    if (checkIn && checkOut && iso > checkIn && iso < checkOut)
+      return "bg-rose-100 text-rose-800 cursor-pointer";
+    return "text-gray-800 hover:bg-gray-100 cursor-pointer";
   };
 
   function MonthGrid({ year, month }: { year: number; month: number }) {
     const first = firstDayOfMonth(year, month);
-    const days  = daysInMonth(year, month);
-    const cells: (number | null)[] = Array(first).fill(null);
-    for (let d = 1; d <= days; d++) cells.push(d);
-    while (cells.length % 7 !== 0) cells.push(null);
-
+    const total = daysInMonth(year, month);
+    const cells: (number | null)[] = [...Array(first).fill(null)];
+    for (let d = 1; d <= total; d++) cells.push(d);
+    while (cells.length % 7) cells.push(null);
     return (
-      <div>
-        <p className="font-semibold text-center text-gray-900 dark:text-white mb-3">
-          {MONTHS_FR[month]} {year}
-        </p>
-        <div className="grid grid-cols-7 gap-0.5 text-xs text-center mb-1">
-          {DAYS_FR.map(d => <span key={d} className="text-gray-400 font-medium py-1">{d}</span>)}
+      <div className="min-w-[17rem]">
+        <p className="text-sm font-bold text-center text-gray-900 mb-3">{MONTHS_FR[month]} {year}</p>
+        <div className="grid grid-cols-7 text-xs text-center mb-1">
+          {DAYS_FR.map(d => <span key={d} className="py-1 font-semibold text-gray-500">{d}</span>)}
         </div>
-        <div className="grid grid-cols-7 gap-0.5 text-sm text-center">
+        <div className="grid grid-cols-7 text-sm text-center gap-y-0.5">
           {cells.map((d, i) => {
             if (!d) return <span key={i} />;
             const iso = isoDate(year, month, d);
-            const todayIso = isoDate(today.getFullYear(), today.getMonth(), today.getDate());
-            const isPast = iso < todayIso;
             return (
-              <button key={i} disabled={isPast} onClick={() => handleDayClick(iso)}
-                className={`w-9 h-9 mx-auto flex items-center justify-center rounded-full transition-colors text-sm
-                  ${dayClass(iso)}`}>
+              <button key={i} type="button" onClick={() => handleDay(iso)}
+                className={`h-9 w-9 mx-auto rounded-full flex items-center justify-center transition-colors text-sm ${getDayStyle(iso)}`}>
                 {d}
               </button>
             );
@@ -211,13 +185,126 @@ function AirbnbSearchBar({ onSearch }: { onSearch: (city: string, checkIn: strin
     );
   }
 
-  const inputBase = "focus:outline-none bg-transparent w-full text-gray-900 dark:text-white placeholder-gray-400 text-sm";
-  const sectionBase = (active: boolean) =>
-    `relative px-5 py-3.5 cursor-pointer transition-all rounded-full ${active ? "bg-white dark:bg-gray-800 shadow-md z-10" : "hover:bg-white/80 dark:hover:bg-gray-800/60"}`;
+  const activeSection = (p: Panel) =>
+    `transition-colors rounded-full ${panel === p ? "bg-white shadow-sm" : "hover:bg-white/70"}`;
 
   return (
-    <div ref={barRef} className="w-full max-w-4xl mx-auto">
-      {/* Main bar */}
+    <div ref={barRef} className="relative w-full max-w-3xl mx-auto">
+      {/* Compact pill bar */}
+      <div className="flex items-center bg-white/95 backdrop-blur-sm rounded-full shadow-xl border border-white/60 px-1 py-1 gap-0">
+
+        {/* Où ? */}
+        <div className={`flex items-center gap-2 px-4 py-2 flex-1 min-w-0 cursor-pointer ${activeSection("where")}`}
+          onClick={() => { setPanel("where"); setTimeout(() => cityRef.current?.focus(), 30); }}>
+          <MapPinIcon className="w-4 h-4 text-rose-500 shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider leading-none mb-0.5">Où ?</p>
+            <input ref={cityRef} value={city} onChange={e => setCity(e.target.value)}
+              onFocus={() => setPanel("where")}
+              onKeyDown={e => e.key === "Enter" && setPanel("dates")}
+              placeholder="Ville ou quartier"
+              className="w-full bg-transparent text-sm font-medium text-gray-900 placeholder-gray-400 outline-none leading-none" />
+          </div>
+          {city && <button type="button" onClick={e => { e.stopPropagation(); setCity(""); }}
+            className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+            <XMarkIcon className="w-2.5 h-2.5 text-gray-600" />
+          </button>}
+        </div>
+
+        <div className="w-px h-6 bg-gray-200 shrink-0" />
+
+        {/* Arrivée & Départ */}
+        <div className={`flex items-center gap-2 px-4 py-2 cursor-pointer shrink-0 ${activeSection("dates")}`}
+          onClick={() => setPanel(panel === "dates" ? null : "dates")}>
+          <CalendarDaysIcon className="w-4 h-4 text-rose-500 shrink-0" />
+          <div>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider leading-none mb-0.5">Arrivée &amp; Départ</p>
+            <p className={`text-sm font-medium leading-none ${datesLabel ? "text-gray-900" : "text-gray-400"}`}>
+              {datesLabel || "Ajouter des dates"}
+            </p>
+          </div>
+          {(checkIn || checkOut) && <button type="button" onClick={e => { e.stopPropagation(); setCheckIn(""); setCheckOut(""); }}
+            className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
+            <XMarkIcon className="w-2.5 h-2.5 text-gray-600" />
+          </button>}
+        </div>
+
+        <div className="w-px h-6 bg-gray-200 shrink-0" />
+
+        {/* Voyageurs */}
+        <div className={`flex items-center gap-2 px-4 py-2 cursor-pointer shrink-0 ${activeSection("guests")}`}
+          onClick={() => setPanel(panel === "guests" ? null : "guests")}>
+          <UserGroupIcon className="w-4 h-4 text-rose-500 shrink-0" />
+          <div>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider leading-none mb-0.5">Voyageurs</p>
+            <p className={`text-sm font-medium leading-none ${guestLabel ? "text-gray-900" : "text-gray-400"}`}>
+              {guestLabel || "Ajouter"}
+            </p>
+          </div>
+        </div>
+
+        {/* Search button */}
+        <button type="button"
+          onClick={() => { setPanel(null); onSearch(city, checkIn, checkOut, Math.max(1, totalGuests)); }}
+          className="ml-1 bg-rose-500 hover:bg-rose-600 text-white rounded-full w-11 h-11 flex items-center justify-center shadow-md transition-colors shrink-0">
+          <MagnifyingGlassIcon className="w-5 h-5" />
+        </button>
+      </div>
+
+      {/* Calendar popup */}
+      {panel === "dates" && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 bg-white border border-gray-200 rounded-2xl shadow-2xl p-5 z-50 w-max">
+          <p className="text-xs text-center text-gray-500 mb-4">
+            {!checkIn ? "Sélectionnez la date d'arrivée" : !checkOut ? "Sélectionnez la date de départ" : `${fmtDate(checkIn)} → ${fmtDate(checkOut)}`}
+          </p>
+          <div className="flex items-start gap-6">
+            <button type="button" onClick={() => setCalOffset(o => Math.max(0, o - 1))}
+              className="mt-1 w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 shrink-0">
+              <ChevronLeftIcon className="w-3.5 h-3.5 text-gray-700" />
+            </button>
+            <MonthGrid year={monthA.getFullYear()} month={monthA.getMonth()} />
+            <MonthGrid year={monthB.getFullYear()} month={monthB.getMonth()} />
+            <button type="button" onClick={() => setCalOffset(o => o + 1)}
+              className="mt-1 w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 shrink-0">
+              <ChevronRightIcon className="w-3.5 h-3.5 text-gray-700" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Guests popup */}
+      {panel === "guests" && (
+        <div className="absolute right-0 top-full mt-3 bg-white border border-gray-200 rounded-2xl shadow-2xl p-5 z-50 w-72">
+          {([
+            { key: "adults",   label: "Adultes",  sub: "13 ans et plus" },
+            { key: "children", label: "Enfants",  sub: "2 à 12 ans" },
+            { key: "infants",  label: "Bébés",    sub: "Moins de 2 ans" },
+          ] as { key: keyof GuestCounts; label: string; sub: string }[]).map((g, i, arr) => (
+            <div key={g.key} className={`flex items-center justify-between py-3 ${i < arr.length - 1 ? "border-b border-gray-100" : ""}`}>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">{g.label}</p>
+                <p className="text-xs text-gray-400">{g.sub}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button type="button" disabled={guests[g.key] === 0}
+                  onClick={e => { e.stopPropagation(); setGuests(p => ({ ...p, [g.key]: Math.max(0, p[g.key] - 1) })); }}
+                  className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center disabled:opacity-30 hover:border-gray-500 transition-colors">
+                  <MinusIcon className="w-3 h-3 text-gray-700" />
+                </button>
+                <span className="w-4 text-center text-sm font-semibold text-gray-900">{guests[g.key]}</span>
+                <button type="button"
+                  onClick={e => { e.stopPropagation(); setGuests(p => ({ ...p, [g.key]: p[g.key] + 1 })); }}
+                  className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-500 transition-colors">
+                  <PlusIcon className="w-3 h-3 text-gray-700" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
       <div className={`flex items-center bg-white dark:bg-gray-900 rounded-full shadow-2xl border border-gray-200 dark:border-gray-700 overflow-visible transition-all ${panel ? "ring-2 ring-gray-900 dark:ring-white/20" : ""}`}>
 
         {/* Où ? */}
@@ -376,7 +463,7 @@ export default function ReservationLanding() {
 
           {/* Airbnb-style search bar */}
           <div className="relative z-20">
-            <AirbnbSearchBar onSearch={handleSearch} />
+            <SearchBar onSearch={handleSearch} />
           </div>
         </div>
       </div>
