@@ -26,6 +26,7 @@ const SERVICES = [
   { value: "general", label: "Général" },
   { value: "immobilier", label: "Immobilier" },
   { value: "automobile", label: "Automobile" },
+  { value: "reservation", label: "Réservation" },
   { value: "poubelles", label: "Ramassage de poubelles" },
   { value: "nettoyage", label: "Nettoyage de bureau" },
   { value: "repassage", label: "Repassage à domicile" },
@@ -101,6 +102,8 @@ export default function TarifsFraisPage() {
   const [automobileSaved, setAutomobileSaved] = useState(false);
   const [immoAutoConfig, setImmoAutoConfig] = useState({ basic: "35000", standard: "55000", premium: "90000", unite: "CDF" });
   const [immoAutoSaved, setImmoAutoSaved] = useState(false);
+  const [reservationConfig, setReservationConfig] = useState({ basic: "20000", standard: "35000", premium: "55000", unite: "USD" });
+  const [reservationSaved, setReservationSaved] = useState(false);
   const [poubTab, setPoubTab] = useState<"formules" | "promotions">("formules");
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -145,6 +148,14 @@ export default function TarifsFraisPage() {
         if (data?.config) {
           const c = data.config;
           setImmoAutoConfig({ basic: c.basic || "35000", standard: c.standard || "55000", premium: c.premium || "90000", unite: c.unite || "CDF" });
+        }
+      }).catch(() => {});
+    fetch(`${API}/tarifs-frais/public-config/reservation`, { headers: h })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.config) {
+          const c = data.config;
+          setReservationConfig({ basic: c.basic || "20000", standard: c.standard || "35000", premium: c.premium || "55000", unite: c.unite || "USD" });
         }
       }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -356,6 +367,18 @@ if (t.service === "automobile") {
     setTimeout(() => setImmoAutoSaved(false), 3000);
   };
 
+  const saveReservationFormula = async () => {
+    const tok = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (!tok) return;
+    const h = { "Content-Type": "application/json", Authorization: `Bearer ${tok}` };
+    await fetch(`${API}/tarifs-frais/config/reservation`, {
+      method: "PUT", headers: h,
+      body: JSON.stringify({ config: { basic: reservationConfig.basic, standard: reservationConfig.standard, premium: reservationConfig.premium, unite: reservationConfig.unite } }),
+    });
+    setReservationSaved(true);
+    setTimeout(() => setReservationSaved(false), 3000);
+  };
+
   const filtered = tarifs.filter(t => {
     const matchSearch = t.nom.toLowerCase().includes(search.toLowerCase()) ||
       (t.description || "").toLowerCase().includes(search.toLowerCase());
@@ -401,8 +424,8 @@ if (t.service === "automobile") {
         })}
       </div>
 
-      {/* Formules Automobile & Immobilier & Pack Combo */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Formules Automobile & Immobilier & Pack Combo & Réservation */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Automobile */}
         <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
           <div className="flex items-center justify-between mb-4">
@@ -535,6 +558,51 @@ if (t.service === "automobile") {
           <button onClick={saveImmoAutoFormula}
             className={`w-full py-2 rounded-xl text-sm font-medium text-white transition-all ${immoAutoSaved ? "bg-emerald-500" : "bg-gradient-to-r from-violet-500 to-purple-700 hover:from-violet-600 hover:to-purple-800"}`}>
             {immoAutoSaved ? "✓ Enregistré & appliqué" : "Enregistrer les formules"}
+          </button>
+        </div>
+
+        {/* Réservation */}
+        <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
+                <span className="text-white text-sm">🏠</span>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]">Formules Réservation</h3>
+                <p className="text-xs text-[var(--text-muted)]">Appliquées sur /abonnement?service=reservation</p>
+              </div>
+            </div>
+            <select value={reservationConfig.unite} onChange={e => setReservationConfig(p => ({ ...p, unite: e.target.value }))}
+              className="text-xs px-2 py-1 rounded-lg border border-[var(--border-color)] bg-[var(--bg-input)] text-[var(--text-primary)]">
+              <option value="CDF">CDF</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+          <div className="space-y-2 mb-4">
+            {([
+              { key: "basic" as const, label: "Basic", color: "from-slate-400 to-slate-600" },
+              { key: "standard" as const, label: "Standard", color: "from-rose-400 to-pink-500" },
+              { key: "premium" as const, label: "Premium", color: "from-rose-600 to-red-700" },
+            ]).map(tier => (
+              <div key={tier.key} className="flex items-center gap-3">
+                <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${tier.color} flex items-center justify-center shrink-0`}>
+                  <span className="text-white text-xs font-bold">{tier.label[0]}</span>
+                </div>
+                <span className="text-sm text-[var(--text-secondary)] w-20 shrink-0">{tier.label}</span>
+                <div className="relative flex-1">
+                  <input type="text" value={reservationConfig[tier.key]}
+                    onChange={e => setReservationConfig(p => ({ ...p, [tier.key]: e.target.value.replace(/[^0-9]/g, "") }))}
+                    className="w-full px-3 py-1.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-input)] text-sm text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-rose-400/50"
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[var(--text-muted)]">{reservationConfig.unite}/mois</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button onClick={saveReservationFormula}
+            className={`w-full py-2 rounded-xl text-sm font-medium text-white transition-all ${reservationSaved ? "bg-emerald-500" : "bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700"}`}>
+            {reservationSaved ? "✓ Enregistré & appliqué" : "Enregistrer les formules"}
           </button>
         </div>
       </div>

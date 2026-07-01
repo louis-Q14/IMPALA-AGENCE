@@ -71,6 +71,24 @@ const plans = [
     ],
     popular: true,
   },
+  {
+    id: "reservation",
+    name: "Pack Réservation",
+    period: "mois",
+    description: "Pour les propriétaires et hôtes",
+    icon: HomeIcon,
+    color: "from-rose-500 to-pink-600",
+    features: [
+      "Publication de biens illimitée",
+      "Calendrier de disponibilité",
+      "Réservations en ligne 24/7",
+      "Paiements intégrés (Mobile Money, Visa)",
+      "Avis & notations voyageurs",
+      "Badge Pro vérifié",
+      "Statistiques & revenus",
+    ],
+    popular: false,
+  },
 ];
 
 const trashPlan = {
@@ -201,7 +219,7 @@ export default function TarifsPage() {
   const [currency, setCurrency] = useState("CDF");
   const [globalPromo, setGlobalPromo] = useState<{ type: string; percent: number; startsAt: string; endsAt: string } | null>(null);
   const [prices, setPrices] = useState<Record<string, number>>({
-    real_estate: 0, auto: 0, "immo-auto": 0, trashBasic: 0,
+    real_estate: 0, auto: 0, "immo-auto": 0, reservation: 0, trashBasic: 0,
     nettoyage: 0, repassage: 0, demenagement: 0, poubelles: 0,
   });
 
@@ -339,6 +357,15 @@ export default function TarifsPage() {
         }
       }).catch(() => {});
 
+    fetch(`${API}/tarifs-frais/public-config/reservation`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.config?.standard) {
+          const p = parseFloat(data.config.standard);
+          if (!isNaN(p) && p > 0) setPrices(prev => ({ ...prev, reservation: p }));
+        }
+      }).catch(() => {});
+
     const mappings: { service: string; key: string; type: string }[] = [
       { service: "nettoyage", key: "nettoyage", type: "frais_fixe" },
       { service: "repassage", key: "repassage", type: "frais_fixe" },
@@ -466,7 +493,7 @@ export default function TarifsPage() {
         </div>
 
         {/* Main Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto w-full items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full items-stretch">
           {plans.map((plan) => (
             <div
               key={plan.id}
@@ -507,6 +534,7 @@ export default function TarifsPage() {
                   onClick={() => {
                     if (plan.id === "auto") router.push("/abonnement?service=automobile");
                     else if (plan.id === "immo-auto") router.push("/abonnement?service=immo-auto");
+                    else if (plan.id === "reservation") router.push("/abonnement?service=reservation");
                     else router.push("/abonnement?service=immobilier");
                   }}
                   className="mt-6 w-full block text-center py-3 rounded-xl font-semibold transition-all bg-blue-700 text-white hover:bg-blue-800 shadow-md"
