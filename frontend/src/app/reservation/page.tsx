@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MagnifyingGlassIcon, MapPinIcon, HomeModernIcon, BuildingOfficeIcon, CalendarDaysIcon, UserGroupIcon, ShieldCheckIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, MinusIcon, PlusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, MapPinIcon, HomeModernIcon, BuildingOfficeIcon, CalendarDaysIcon, UserGroupIcon, ShieldCheckIcon, HeartIcon, ChevronLeftIcon, ChevronRightIcon, MinusIcon, PlusIcon, XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -312,6 +312,7 @@ export default function ReservationLanding() {
   const [featured, setFeatured] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeType, setActiveType] = useState("");
+  const [reservationSubStatus, setReservationSubStatus] = useState<"none" | "pending" | "active">("none");
 
   useEffect(() => {
     fetch(`${API}/reservation/featured`)
@@ -319,6 +320,21 @@ export default function ReservationLanding() {
       .then(d => { if (Array.isArray(d)) setFeatured(d); })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    if (token) {
+      fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.ok ? r.json() : null)
+        .then(me => {
+          if (!me) return;
+          const svc = Array.isArray(me.services)
+            ? me.services.find((s: { service: string; status: string }) => s.service === "reservation")
+            : null;
+          if (svc?.status === "active") setReservationSubStatus("active");
+          else if (svc?.status === "pending") setReservationSubStatus("pending");
+          else setReservationSubStatus("none");
+        }).catch(() => {});
+    }
   }, []);
 
   const handleSearch = useCallback((city: string, checkIn: string, checkOut: string, guests: number) => {
@@ -392,9 +408,20 @@ export default function ReservationLanding() {
             <HomeModernIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Aucun bien disponible</h3>
             <p className="text-gray-500 dark:text-gray-500">Soyez le premier à publier un bien sur IMPALA Réservation !</p>
-            <Link href="/tableau-de-bord/reservation/nouveau" className="mt-6 inline-block bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
-              Publier mon bien
-            </Link>
+            {reservationSubStatus === "active" ? (
+              <Link href="/tableau-de-bord/reservation/nouveau" className="mt-6 inline-block bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                Publier mon bien
+              </Link>
+            ) : reservationSubStatus === "pending" ? (
+              <div className="mt-6 inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 px-6 py-3 rounded-xl font-semibold text-sm">
+                <ClockIcon className="w-4 h-4 shrink-0" />
+                Paiement en attente d&apos;approbation admin
+              </div>
+            ) : (
+              <Link href="/abonnement?service=reservation" className="mt-6 inline-block bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+                Publier mon bien
+              </Link>
+            )}
           </div>
         ) : (
           <>
@@ -443,9 +470,20 @@ export default function ReservationLanding() {
           <BuildingOfficeIcon className="w-12 h-12 mx-auto mb-4 opacity-80" />
           <h2 className="text-3xl font-bold mb-3">Vous avez un bien à louer ?</h2>
           <p className="text-rose-100 text-lg mb-8">Publiez votre bien sur IMPALA Réservation et commencez à recevoir des voyageurs.</p>
-          <Link href="/tableau-de-bord/reservation/nouveau" className="bg-white text-rose-600 hover:bg-rose-50 px-8 py-4 rounded-xl font-bold text-lg transition-colors inline-block shadow-lg">
-            Publier mon bien gratuitement
-          </Link>
+          {reservationSubStatus === "active" ? (
+            <Link href="/tableau-de-bord/reservation/nouveau" className="bg-white text-rose-600 hover:bg-rose-50 px-8 py-4 rounded-xl font-bold text-lg transition-colors inline-block shadow-lg">
+              Publier mon bien
+            </Link>
+          ) : reservationSubStatus === "pending" ? (
+            <div className="inline-flex items-center gap-2 bg-white/20 border border-white/40 text-white px-8 py-4 rounded-xl font-bold text-lg cursor-not-allowed opacity-80">
+              <ClockIcon className="w-5 h-5 shrink-0" />
+              Paiement en attente d&apos;approbation
+            </div>
+          ) : (
+            <Link href="/abonnement?service=reservation" className="bg-white text-rose-600 hover:bg-rose-50 px-8 py-4 rounded-xl font-bold text-lg transition-colors inline-block shadow-lg">
+              Publier mon bien
+            </Link>
+          )}
         </div>
       </div>
     </div>

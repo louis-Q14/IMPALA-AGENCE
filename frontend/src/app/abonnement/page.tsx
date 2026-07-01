@@ -1,4 +1,4 @@
-ï»¿"use client";
+"use client";
 
 export const dynamic = 'force-dynamic';
 
@@ -32,12 +32,12 @@ const SERVICE_PLANS = {
     gradient: "from-blue-500 to-indigo-600",
     backHref: "/tableau-de-bord",
     features: [
-      "Publication illimitÃ©e d'annonces",
-      "Photos HD (jusqu'Ã  10)",
+      "Publication illimitée d'annonces",
+      "Photos HD (jusqu'à 10)",
       "Statistiques de vues",
       "Position sur la carte",
-      "Contact via chat intÃ©grÃ©",
-      "Badge Pro vÃ©rifiÃ©",
+      "Contact via chat intégré",
+      "Badge Pro vérifié",
       "Mise en avant des annonces",
     ],
   },
@@ -49,29 +49,46 @@ const SERVICE_PLANS = {
     gradient: "from-amber-500 to-orange-600",
     backHref: "/tableau-de-bord",
     features: [
-      "Publication illimitÃ©e d'annonces",
-      "Calendrier de rÃ©servation",
-      "Gestion des disponibilitÃ©s",
-      "Paiements intÃ©grÃ©s",
+      "Publication illimitée d'annonces",
+      "Calendrier de réservation",
+      "Gestion des disponibilités",
+      "Paiements intégrés",
       "Avis et notations",
-      "Badge Pro vÃ©rifiÃ©",
-      "Statistiques avancÃ©es",
+      "Badge Pro vérifié",
+      "Statistiques avancées",
     ],
   },
   "immo-auto": {
     label: "Pack Immo & Auto",
-    description: "Immobilier + Automobile Ã  prix rÃ©duit",
+    description: "Immobilier + Automobile à prix réduit",
     price: 49,
     icon: SparklesIcon,
     gradient: "from-violet-500 to-purple-700",
     backHref: "/tableau-de-bord",
     features: [
-      "AccÃ¨s complet Immobilier",
-      "AccÃ¨s complet Automobile",
-      "Annonces illimitÃ©es (les 2 services)",
-      "Badge Pro vÃ©rifiÃ©",
-      "Statistiques avancÃ©es",
+      "Accès complet Immobilier",
+      "Accès complet Automobile",
+      "Annonces illimitées (les 2 services)",
+      "Badge Pro vérifié",
+      "Statistiques avancées",
       "Support prioritaire",
+    ],
+  },
+  reservation: {
+    label: "Pack Réservation",
+    description: "Pour les propriétaires et hôtes",
+    price: 35,
+    icon: HomeIcon,
+    gradient: "from-rose-500 to-pink-600",
+    backHref: "/tableau-de-bord/reservation",
+    features: [
+      "Publication de biens illimitée",
+      "Calendrier de disponibilité",
+      "Réservations en ligne 24/7",
+      "Paiements intégrés (Mobile Money, Visa)",
+      "Avis & notations voyageurs",
+      "Badge Pro vérifié",
+      "Statistiques & revenus",
     ],
   },
 };
@@ -93,34 +110,34 @@ const methods = [
   },
   {
     id: "cash" as const,
-    label: "Paiement en espÃ¨ces",
+    label: "Paiement en espèces",
     desc: "Au bureau",
     icon: BanknotesIcon,
     gradient: "from-emerald-400 to-green-600",
   },
 ];
 
-const MONTH_NAMES = ["Janvier","FÃ©vrier","Mars","Avril","Mai","Juin","Juillet","AoÃ»t","Septembre","Octobre","Novembre","DÃ©cembre"];
+const MONTH_NAMES = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
 
 const DEFAULT_FORMULAS: Record<string, Array<{ id: string; label: string; badge: string | null; price: number; gradient: string; features: string[] }>> = {
   immobilier: [
-    { id: "basic",    label: "Basic",    badge: null,             price: 29000, gradient: "from-slate-400 to-slate-600",   features: ["5 annonces actives", "Photos HD (jusqu'Ã  5)", "Contact via messagerie", "Statistiques de base"] },
-    { id: "standard", label: "Standard", badge: "Populaire",      price: 49000, gradient: "from-blue-500 to-indigo-600",  features: ["20 annonces actives", "Photos HD (jusqu'Ã  10)", "Position sur la carte", "Badge Pro vÃ©rifiÃ©", "Statistiques avancÃ©es", "Mise en avant des annonces"] },
-    { id: "premium",  label: "Premium",  badge: "Meilleure offre", price: 79000, gradient: "from-violet-500 to-purple-700", features: ["Annonces illimitÃ©es", "Photos HD (jusqu'Ã  20)", "Position prioritaire", "Badge Premium vÃ©rifiÃ©", "Statistiques complÃ¨tes", "Support prioritaire"] },
+    { id: "basic",    label: "Basic",    badge: null,             price: 29000, gradient: "from-slate-400 to-slate-600",   features: ["5 annonces actives", "Photos HD (jusqu'à 5)", "Contact via messagerie", "Statistiques de base"] },
+    { id: "standard", label: "Standard", badge: "Populaire",      price: 49000, gradient: "from-blue-500 to-indigo-600",  features: ["20 annonces actives", "Photos HD (jusqu'à 10)", "Position sur la carte", "Badge Pro vérifié", "Statistiques avancées", "Mise en avant des annonces"] },
+    { id: "premium",  label: "Premium",  badge: "Meilleure offre", price: 79000, gradient: "from-violet-500 to-purple-700", features: ["Annonces illimitées", "Photos HD (jusqu'à 20)", "Position prioritaire", "Badge Premium vérifié", "Statistiques complètes", "Support prioritaire"] },
   ],
   automobile: [
-    { id: "basic",    label: "Basic",    badge: null,             price: 20000, gradient: "from-slate-400 to-slate-600",   features: ["5 annonces actives", "Photos HD (jusqu'Ã  5)", "Contact via messagerie", "Statistiques de base"] },
-    { id: "standard", label: "Standard", badge: "Populaire",      price: 40000, gradient: "from-amber-500 to-orange-600", features: ["20 annonces actives", "Calendrier de rÃ©servation", "Badge Pro vÃ©rifiÃ©", "Statistiques avancÃ©es", "Gestion des disponibilitÃ©s"] },
-    { id: "premium",  label: "Premium",  badge: "Meilleure offre", price: 70000, gradient: "from-red-500 to-rose-700",     features: ["Annonces illimitÃ©es", "Calendrier prioritaire", "Badge Premium vÃ©rifiÃ©", "Statistiques complÃ¨tes", "Support prioritaire"] },
+    { id: "basic",    label: "Basic",    badge: null,             price: 20000, gradient: "from-slate-400 to-slate-600",   features: ["5 annonces actives", "Photos HD (jusqu'à 5)", "Contact via messagerie", "Statistiques de base"] },
+    { id: "standard", label: "Standard", badge: "Populaire",      price: 40000, gradient: "from-amber-500 to-orange-600", features: ["20 annonces actives", "Calendrier de réservation", "Badge Pro vérifié", "Statistiques avancées", "Gestion des disponibilités"] },
+    { id: "premium",  label: "Premium",  badge: "Meilleure offre", price: 70000, gradient: "from-red-500 to-rose-700",     features: ["Annonces illimitées", "Calendrier prioritaire", "Badge Premium vérifié", "Statistiques complètes", "Support prioritaire"] },
   ],
   "immo-auto": [
-    { id: "basic",    label: "Basic",    badge: null,             price: 35000, gradient: "from-slate-400 to-slate-600",    features: ["AccÃ¨s Immobilier Basic", "AccÃ¨s Automobile Basic", "10 annonces actives", "Statistiques de base"] },
-    { id: "standard", label: "Standard", badge: "Populaire",      price: 55000, gradient: "from-violet-500 to-purple-600", features: ["AccÃ¨s Immobilier Standard", "AccÃ¨s Automobile Standard", "40 annonces actives", "Badge Pro vÃ©rifiÃ©", "Statistiques avancÃ©es"] },
-    { id: "premium",  label: "Premium",  badge: "Meilleure offre", price: 90000, gradient: "from-purple-600 to-fuchsia-700", features: ["AccÃ¨s illimitÃ© Immobilier + Auto", "Annonces illimitÃ©es", "Badge Premium vÃ©rifiÃ©", "Statistiques complÃ¨tes", "Support prioritaire"] },
+    { id: "basic",    label: "Basic",    badge: null,             price: 35000, gradient: "from-slate-400 to-slate-600",    features: ["Accès Immobilier Basic", "Accès Automobile Basic", "10 annonces actives", "Statistiques de base"] },
+    { id: "standard", label: "Standard", badge: "Populaire",      price: 55000, gradient: "from-violet-500 to-purple-600", features: ["Accès Immobilier Standard", "Accès Automobile Standard", "40 annonces actives", "Badge Pro vérifié", "Statistiques avancées"] },
+    { id: "premium",  label: "Premium",  badge: "Meilleure offre", price: 90000, gradient: "from-purple-600 to-fuchsia-700", features: ["Accès illimité Immobilier + Auto", "Annonces illimitées", "Badge Premium vérifié", "Statistiques complètes", "Support prioritaire"] },
   ],
 };
 const PROMOS: { code: string; label: string; discount: number }[] = [
-  // DÃ©commentez pour activer une promotion :
+  // Décommentez pour activer une promotion :
   // { code: "IMPALA20", label: "Lancement -20%", discount: 20 },
 ];
 
@@ -201,7 +218,7 @@ function AbonnementContent() {
     if (typeof window !== "undefined" && "Notification" in window) {
       setNotifStatus(Notification.permission as "default" | "granted" | "denied");
     }
-    const svcMap: Record<string, string> = { immobilier: "real_estate", automobile: "auto", "immo-auto": "immo_auto" };
+    const svcMap: Record<string, string> = { immobilier: "real_estate", automobile: "auto", "immo-auto": "immo_auto", reservation: "reservation" };
     const svcType = svcMap[serviceKey];
     (async () => {
       try {
@@ -214,7 +231,7 @@ function AbonnementContent() {
           if (svcType && Array.isArray(me.services)) {
             const svc = me.services.find((s: { service: string; status: string; startDate?: string; endDate?: string }) => s.service === svcType && s.status === "active");
             if (svc) {
-              // Service is active â€” clear pending regardless of whether startDate is set
+              // Service is active — clear pending regardless of whether startDate is set
               const startIso = svc.startDate || new Date().toISOString();
               const endIso = svc.endDate || new Date(new Date(startIso).getTime() + 30 * 86400000).toISOString();
               const isAnnual = svc.endDate ? Math.round((new Date(svc.endDate).getTime() - new Date(startIso).getTime()) / 86400000) > 60 : false;
@@ -252,6 +269,7 @@ function AbonnementContent() {
     immobilier: ["from-slate-400 to-slate-600", "from-blue-500 to-indigo-600", "from-violet-500 to-purple-700"],
     automobile: ["from-slate-400 to-slate-600", "from-amber-500 to-orange-600", "from-red-500 to-rose-700"],
     "immo-auto": ["from-slate-400 to-slate-600", "from-violet-500 to-purple-600", "from-purple-600 to-fuchsia-700"],
+    reservation: ["from-slate-400 to-slate-600", "from-rose-500 to-pink-600", "from-rose-600 to-red-700"],
   };
   const GRADIENTS = SERVICE_GRADIENTS[serviceKey] ?? SERVICE_GRADIENTS.immobilier;
   const BADGES: (string | null)[] = [null, "Populaire", "Meilleure offre"];
@@ -281,7 +299,7 @@ function AbonnementContent() {
   const applyPromo = () => {
     const found = PROMOS.find(p => p.code.toLowerCase() === promoCode.trim().toLowerCase());
     if (found) { setAppliedPromo(found); setPromoError(""); }
-    else { setAppliedPromo(null); setPromoError("Code invalide ou expirÃ©."); }
+    else { setAppliedPromo(null); setPromoError("Code invalide ou expiré."); }
   };
 
   const handlePay = async () => {
@@ -350,7 +368,7 @@ function AbonnementContent() {
       {paySuccess && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-3 rounded-2xl bg-amber-500 text-white shadow-xl shadow-amber-500/30 font-semibold text-sm">
           <ClockIcon className="w-5 h-5 shrink-0" />
-          Demande soumise â€” En attente d&apos;approbation admin
+          Demande soumise — En attente d&apos;approbation admin
         </div>
       )}
       <div className="bg-[var(--bg-card)] border-b border-[var(--border-color)]">
@@ -382,19 +400,19 @@ function AbonnementContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">PÃ©riode de facturation</h2>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Période de facturation</h2>
               <div className="flex gap-3">
                 <button onClick={() => setAnnual(false)} className={`flex-1 py-3 rounded-xl text-sm font-medium border-2 transition-all ${!annual ? "border-primary bg-primary/5 text-primary" : "border-[var(--border-color)] text-[var(--text-secondary)]"}`}>
-                  Mensuel â€” {basePrice} {currSymbol}/mois
+                  Mensuel — {basePrice} {currSymbol}/mois
                 </button>
                 <button onClick={() => setAnnual(true)} className={`flex-1 py-3 rounded-xl text-sm font-medium border-2 transition-all relative ${annual ? "border-primary bg-primary/5 text-primary" : "border-[var(--border-color)] text-[var(--text-secondary)]"}`}>
-                  Annuel â€” {annualBasePrice} {currSymbol}/an
+                  Annuel — {annualBasePrice} {currSymbol}/an
                   <span className="ml-2 px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">-17%</span>
                 </button>
               </div>
             </div>
 
-            {(dbAbonnements.length > 0 || serviceKey === "immobilier" || serviceKey === "automobile" || serviceKey === "immo-auto") && (
+            {(dbAbonnements.length > 0 || serviceKey === "immobilier" || serviceKey === "automobile" || serviceKey === "immo-auto" || serviceKey === "reservation") && (
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Formule d&apos;abonnement</h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -430,7 +448,7 @@ function AbonnementContent() {
             </div>
             )}
 
-            {(dbAbonnements.length > 0 || serviceKey === "immobilier" || serviceKey === "automobile" || serviceKey === "immo-auto") && (
+            {(dbAbonnements.length > 0 || serviceKey === "immobilier" || serviceKey === "automobile" || serviceKey === "immo-auto" || serviceKey === "reservation") && (
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Promotions &amp; Remises</h2>
               {PROMOS.length === 0 && !appliedPromo ? (
@@ -441,7 +459,7 @@ function AbonnementContent() {
                     <div className="flex flex-wrap gap-2 mb-2">
                       {PROMOS.map((p) => (
                         <span key={p.code} className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-                          {p.label} â€” {p.discount}% de rÃ©duction
+                          {p.label} — {p.discount}% de réduction
                         </span>
                       ))}
                     </div>
@@ -451,7 +469,7 @@ function AbonnementContent() {
                       <CheckCircleIcon className="w-5 h-5 text-emerald-500 shrink-0" />
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">{appliedPromo.label}</p>
-                        <p className="text-xs text-[var(--text-muted)]">-{appliedPromo.discount}% appliquÃ©s â€” Ã©conomie de {discountAmt} {currSymbol}</p>
+                        <p className="text-xs text-[var(--text-muted)]">-{appliedPromo.discount}% appliqués — économie de {discountAmt} {currSymbol}</p>
                       </div>
                       <button onClick={() => { setAppliedPromo(null); setPromoCode(""); }} className="text-xs text-[var(--text-muted)] hover:text-red-400 transition-colors">Retirer</button>
                     </div>
@@ -466,13 +484,13 @@ function AbonnementContent() {
             </div>
             )}
 
-            {(dbAbonnements.length > 0 || serviceKey === "immobilier" || serviceKey === "automobile" || serviceKey === "immo-auto") && (
+            {(dbAbonnements.length > 0 || serviceKey === "immobilier" || serviceKey === "automobile" || serviceKey === "immo-auto" || serviceKey === "reservation") && (
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">RÃ©sumÃ© de facturation</h2>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Résumé de facturation</h2>
               <div className="space-y-2.5">
                 <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">{selectedFormula.label}</span><span className="font-medium text-[var(--text-primary)]">{rawPrice} {currSymbol}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">PÃ©riode</span><span className="font-medium text-[var(--text-primary)]">{annual ? "Annuelle" : "Mensuelle"}</span></div>
-                {annual && <div className="flex justify-between text-sm"><span className="text-emerald-500">Ã‰conomie annuelle (-17%)</span><span className="font-medium text-emerald-500">-{Math.round(selectedFormula.price * 12 - annualBasePrice)} {currSymbol}</span></div>}
+                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Période</span><span className="font-medium text-[var(--text-primary)]">{annual ? "Annuelle" : "Mensuelle"}</span></div>
+                {annual && <div className="flex justify-between text-sm"><span className="text-emerald-500">Économie annuelle (-17%)</span><span className="font-medium text-emerald-500">-{Math.round(selectedFormula.price * 12 - annualBasePrice)} {currSymbol}</span></div>}
                 {appliedPromo && <div className="flex justify-between text-sm"><span className="text-emerald-500">Code promo ({appliedPromo.code})</span><span className="font-medium text-emerald-500">-{discountAmt} {currSymbol}</span></div>}
                 <div className="border-t border-[var(--border-color)] pt-2.5 flex justify-between items-center">
                   <span className="font-semibold text-[var(--text-primary)]">Total</span>
@@ -483,7 +501,7 @@ function AbonnementContent() {
             )}
 
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">RÃ©sumÃ© de la commande</h2>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Résumé de la commande</h2>
               <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center`}><Icon className="w-5 h-5 text-white" /></div>
@@ -521,12 +539,12 @@ function AbonnementContent() {
 
             {paymentMethod === "mobile" && (
               <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">NumÃ©ro Mobile Money</h2>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Numéro Mobile Money</h2>
                 <div className="relative">
                   <DevicePhoneMobileIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
                   <input type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+243 XXX XXX XXX" className="w-full pl-12 pr-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" />
                 </div>
-                <p className="text-xs text-[var(--text-muted)] mt-2">Un SMS de confirmation sera envoyÃ© Ã  ce numÃ©ro</p>
+                <p className="text-xs text-[var(--text-muted)] mt-2">Un SMS de confirmation sera envoyé à ce numéro</p>
               </div>
             )}
 
@@ -534,7 +552,7 @@ function AbonnementContent() {
               <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
                 <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Informations de carte</h2>
                 <div className="space-y-4">
-                  <div><label className="text-sm text-[var(--text-secondary)] mb-1 block">NumÃ©ro de carte</label><input type="text" placeholder="XXXX XXXX XXXX XXXX" className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" /></div>
+                  <div><label className="text-sm text-[var(--text-secondary)] mb-1 block">Numéro de carte</label><input type="text" placeholder="XXXX XXXX XXXX XXXX" className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div><label className="text-sm text-[var(--text-secondary)] mb-1 block">Expiration</label><input type="text" placeholder="MM/AA" className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" /></div>
                     <div><label className="text-sm text-[var(--text-secondary)] mb-1 block">CVC</label><input type="text" placeholder="XXX" className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" /></div>
@@ -545,13 +563,13 @@ function AbonnementContent() {
 
             {paymentMethod === "cash" && (
               <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Paiement en espÃ¨ces</h2>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Paiement en espèces</h2>
                 <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30">
                   <p className="text-sm text-amber-600 dark:text-amber-400 font-medium mb-2">Instructions</p>
                   <ul className="text-sm text-[var(--text-secondary)] space-y-2">
-                    <li className="flex items-start gap-2"><span className="text-amber-500 mt-0.5">1.</span>PrÃ©sentez-vous Ã  nos bureaux avec votre piÃ¨ce d&apos;identitÃ©</li>
+                    <li className="flex items-start gap-2"><span className="text-amber-500 mt-0.5">1.</span>Présentez-vous à nos bureaux avec votre pièce d&apos;identité</li>
                     <li className="flex items-start gap-2"><span className="text-amber-500 mt-0.5">2.</span>Effectuez le paiement au comptoir</li>
-                    <li className="flex items-start gap-2"><span className="text-amber-500 mt-0.5">3.</span>Vous recevrez un reÃ§u par SMS et e-mail</li>
+                    <li className="flex items-start gap-2"><span className="text-amber-500 mt-0.5">3.</span>Vous recevrez un reçu par SMS et e-mail</li>
                   </ul>
                 </div>
               </div>
@@ -560,11 +578,11 @@ function AbonnementContent() {
 
           <div className="lg:col-span-1">
             <div className="sticky top-24 p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-lg)]">
-              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Total Ã  payer</h3>
+              <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Total à payer</h3>
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">{plan.label}</span><span className="font-medium text-[var(--text-primary)]">{price} {currSymbol}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">PÃ©riode</span><span className="font-medium text-[var(--text-primary)]">1 {annual ? "an" : "mois"}</span></div>
-                {annual && <div className="flex justify-between text-sm"><span className="text-emerald-500">Ã‰conomie (-17%)</span><span className="font-medium text-emerald-500">-{basePrice * 12 - annualBasePrice} FC</span></div>}
+                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Période</span><span className="font-medium text-[var(--text-primary)]">1 {annual ? "an" : "mois"}</span></div>
+                {annual && <div className="flex justify-between text-sm"><span className="text-emerald-500">Économie (-17%)</span><span className="font-medium text-emerald-500">-{basePrice * 12 - annualBasePrice} FC</span></div>}
                 <div className="border-t border-[var(--border-color)] pt-3">
                   <div className="flex justify-between items-center"><span className="font-semibold text-[var(--text-primary)]">Total</span><span className="text-2xl font-bold text-primary">{price} {currSymbol}</span></div>
                 </div>
@@ -573,7 +591,7 @@ function AbonnementContent() {
                 {processing ? (<><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Traitement...</>) : (<>Payer {price} {currSymbol}<CreditCardIcon className="w-4 h-4" /></>)}
               </button>
               <div className="mt-4 flex items-center gap-2 text-xs text-[var(--text-muted)]">
-                <ShieldCheckIcon className="w-4 h-4" /><span>Paiement sÃ©curisÃ© et chiffrÃ©</span>
+                <ShieldCheckIcon className="w-4 h-4" /><span>Paiement sécurisé et chiffré</span>
               </div>
             </div>
           </div>
@@ -592,7 +610,7 @@ function AbonnementContent() {
                     Demande en attente d&apos;approbation
                   </h2>
                   <p className="text-sm text-[var(--text-secondary)] mb-4">
-                    Votre demande d&apos;abonnement a bien Ã©tÃ© soumise. Un administrateur va l&apos;examiner et l&apos;activer prochainement.
+                    Votre demande d&apos;abonnement a bien été soumise. Un administrateur va l&apos;examiner et l&apos;activer prochainement.
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
@@ -610,7 +628,7 @@ function AbonnementContent() {
                       })()}
                     </div>
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-                      <p className="text-xs text-[var(--text-muted)] mb-1">PÃ©riode</p>
+                      <p className="text-xs text-[var(--text-muted)] mb-1">Période</p>
                       <p className="text-sm font-semibold text-[var(--text-primary)]">{pendingRequest.annual ? "Annuel" : "Mensuel"}</p>
                     </div>
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
@@ -628,7 +646,7 @@ function AbonnementContent() {
             {notifStatus !== "granted" && (
               <div className="flex items-center gap-4 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30">
                 <BellIcon className="w-5 h-5 text-amber-500 shrink-0" />
-                <p className="flex-1 text-sm text-amber-600 dark:text-amber-400">Activez les notifications pour Ãªtre alertÃ© chaque fin de semaine du temps restant.</p>
+                <p className="flex-1 text-sm text-amber-600 dark:text-amber-400">Activez les notifications pour être alerté chaque fin de semaine du temps restant.</p>
                 {notifStatus === "default" && <button onClick={requestNotifications} className="px-4 py-2 rounded-xl bg-amber-500 text-white text-xs font-semibold hover:bg-amber-600 transition-all shrink-0">Activer</button>}
               </div>
             )}
@@ -639,16 +657,16 @@ function AbonnementContent() {
                 <div><h2 className="text-lg font-semibold text-[var(--text-primary)]">{plan.label}</h2><p className="text-sm text-[var(--text-muted)]">{calData.annual ? "Abonnement annuel" : "Abonnement mensuel"}</p></div>
                 <div className="ml-auto text-right"><p className="text-2xl font-bold text-emerald-500">{calData.remainingDays}</p><p className="text-xs text-[var(--text-muted)]">jours restants</p></div>
               </div>
-              <div className="flex justify-between text-xs text-[var(--text-muted)] mb-2"><span>{calData.consumedDays} jours consommÃ©s</span><span>{calData.progressPct}%</span></div>
+              <div className="flex justify-between text-xs text-[var(--text-muted)] mb-2"><span>{calData.consumedDays} jours consommés</span><span>{calData.progressPct}%</span></div>
               <div className="h-3 rounded-full bg-[var(--bg-tertiary)] overflow-hidden mb-4"><div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all" style={{ width: `${calData.progressPct}%` }} /></div>
-              <div className="flex justify-between text-xs text-[var(--text-secondary)]"><span>DÃ©but : {calData.start.toLocaleDateString("fr-FR")}</span><span>Expiration : {calData.end.toLocaleDateString("fr-FR")}</span></div>
+              <div className="flex justify-between text-xs text-[var(--text-secondary)]"><span>Début : {calData.start.toLocaleDateString("fr-FR")}</span><span>Expiration : {calData.end.toLocaleDateString("fr-FR")}</span></div>
             </div>
 
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
               <div className="flex items-center justify-between mb-6">
-                <button onClick={() => setCalOffset(o => o - 1)} className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] transition-all">â€¹</button>
+                <button onClick={() => setCalOffset(o => o - 1)} className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] transition-all">‹</button>
                 <h3 className="text-base font-semibold text-[var(--text-primary)]">{MONTH_NAMES[calData.calMonth]} {calData.calYear}</h3>
-                <button onClick={() => setCalOffset(o => o + 1)} className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] transition-all">â€º</button>
+                <button onClick={() => setCalOffset(o => o + 1)} className="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--bg-tertiary)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] transition-all">›</button>
               </div>
               <div className="grid grid-cols-7 mb-2">
                 {["L","M","M","J","V","S","D"].map((d, i) => <div key={i} className="flex items-center justify-center h-8 text-xs font-semibold text-[var(--text-muted)]">{d}</div>)}
@@ -673,7 +691,7 @@ function AbonnementContent() {
                 })}
               </div>
               <div className="flex flex-wrap gap-4 mt-6 pt-4 border-t border-[var(--border-color)]">
-                <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]"><div className="w-3 h-3 rounded-full bg-blue-500/60" /> ConsommÃ©</div>
+                <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]"><div className="w-3 h-3 rounded-full bg-blue-500/60" /> Consommé</div>
                 <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]"><div className="w-3 h-3 rounded-full bg-gradient-to-br from-violet-500 to-purple-600" /> Aujourd&apos;hui</div>
                 <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]"><div className="w-3 h-3 rounded-full bg-emerald-500/60" /> Restant</div>
               </div>

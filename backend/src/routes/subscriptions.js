@@ -119,11 +119,13 @@ router.post("/manual", authenticateToken, async (req, res) => {
       immobilier: "real_estate_pro",
       automobile: "auto_pro",
       "immo-auto": "immo_auto_pro",
+      reservation: "reservation_pro",
     };
     const svcMap = {
       immobilier: ["real_estate"],
       automobile: ["auto"],
       "immo-auto": ["real_estate", "auto"],
+      reservation: ["reservation"],
     };
 
     const plan_type = planMap[service_type];
