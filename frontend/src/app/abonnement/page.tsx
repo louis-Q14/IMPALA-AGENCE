@@ -220,7 +220,6 @@ function AbonnementContent() {
               setPendingRequest(null);
               localStorage.removeItem(`pending_${serviceKey}`);
             }
-            }
           }
         }
         if (tarifRes.ok) {
