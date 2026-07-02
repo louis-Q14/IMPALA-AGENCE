@@ -11,6 +11,8 @@ import {
   ClockIcon, CheckCircleIcon, XCircleIcon, MapPinIcon,
   ArrowRightIcon, UserGroupIcon,
 } from "@heroicons/react/24/outline";
+
+type SubStatus = "none" | "pending" | "active";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
@@ -39,6 +41,7 @@ export default function ReservationDashboard() {
   const [properties, setProperties] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [subStatus, setSubStatus] = useState<SubStatus>("none");
 
   const getToken = () => {
     if (typeof window === "undefined") return null;
@@ -50,6 +53,20 @@ export default function ReservationDashboard() {
     if (!token) { router.push("/connexion"); return; }
 
     const headers = { Authorization: `Bearer ${token}` };
+
+    // Check subscription status
+    fetch(`${API}/auth/me`, { headers })
+      .then(r => r.json())
+      .then(data => {
+        const svc = Array.isArray(data.services)
+          ? data.services.find((s: any) => s.service === "reservation")
+          : null;
+        if (svc && (svc.status === "active" || svc.status === "approved")) setSubStatus("active");
+        else if (svc && svc.status === "pending") setSubStatus("pending");
+        else setSubStatus("none");
+      })
+      .catch(() => {});
+
     setLoading(true);
 
     Promise.all([
@@ -100,10 +117,21 @@ export default function ReservationDashboard() {
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Gérez vos biens et réservations</p>
           </div>
-          <Link href="/tableau-de-bord/reservation/nouveau"
-            className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl font-semibold transition-colors text-sm">
-            <PlusIcon className="w-4 h-4" /> Ajouter un bien
-          </Link>
+          {subStatus === "active" ? (
+            <Link href="/tableau-de-bord/reservation/nouveau"
+              className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl font-semibold transition-colors text-sm">
+              <PlusIcon className="w-4 h-4" /> Ajouter un bien
+            </Link>
+          ) : subStatus === "pending" ? (
+            <span className="inline-flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 px-4 py-2 rounded-xl font-semibold text-sm cursor-not-allowed">
+              <ClockIcon className="w-4 h-4" /> Paiement en attente
+            </span>
+          ) : (
+            <Link href="/abonnement?service=reservation"
+              className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-xl font-semibold transition-colors text-sm">
+              <PlusIcon className="w-4 h-4" /> Ajouter un bien
+            </Link>
+          )}
         </div>
 
         {/* Tabs */}
@@ -235,9 +263,19 @@ export default function ReservationDashboard() {
                     <HomeModernIcon className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Aucun bien publié</h3>
                     <p className="text-gray-500 dark:text-gray-500 mb-6">Commencez à louer votre bien dès aujourd'hui !</p>
-                    <Link href="/tableau-de-bord/reservation/nouveau" className="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center gap-2">
-                      <PlusIcon className="w-4 h-4" /> Publier mon premier bien
-                    </Link>
+                    {subStatus === "active" ? (
+                      <Link href="/tableau-de-bord/reservation/nouveau" className="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center gap-2">
+                        <PlusIcon className="w-4 h-4" /> Publier mon premier bien
+                      </Link>
+                    ) : subStatus === "pending" ? (
+                      <span className="inline-flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 px-6 py-3 rounded-xl font-semibold cursor-not-allowed">
+                        <ClockIcon className="w-4 h-4" /> Paiement en attente d&apos;approbation admin
+                      </span>
+                    ) : (
+                      <Link href="/abonnement?service=reservation" className="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center gap-2">
+                        <PlusIcon className="w-4 h-4" /> Souscrire pour publier
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
@@ -250,9 +288,19 @@ export default function ReservationDashboard() {
                   <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
                     <HomeModernIcon className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">Aucun bien publié</h3>
-                    <Link href="/tableau-de-bord/reservation/nouveau" className="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center gap-2">
-                      <PlusIcon className="w-4 h-4" /> Ajouter un bien
-                    </Link>
+                    {subStatus === "active" ? (
+                      <Link href="/tableau-de-bord/reservation/nouveau" className="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center gap-2">
+                        <PlusIcon className="w-4 h-4" /> Ajouter un bien
+                      </Link>
+                    ) : subStatus === "pending" ? (
+                      <span className="inline-flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 px-6 py-3 rounded-xl font-semibold cursor-not-allowed">
+                        <ClockIcon className="w-4 h-4" /> Paiement en attente d&apos;approbation admin
+                      </span>
+                    ) : (
+                      <Link href="/abonnement?service=reservation" className="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center gap-2">
+                        <PlusIcon className="w-4 h-4" /> Souscrire pour publier
+                      </Link>
+                    )}
                   </div>
                 ) : properties.map(p => {
                   const cover = p.images?.find((i: any) => i.is_cover)?.url || p.images?.[0]?.url;
