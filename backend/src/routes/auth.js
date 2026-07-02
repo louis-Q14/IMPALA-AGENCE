@@ -271,9 +271,9 @@ router.post("/login", async (req, res) => {
               ) as services
        FROM users u
        LEFT JOIN user_services us ON u.id = us.user_id
-       WHERE u.email = $1
+       WHERE LOWER(u.email) = LOWER($1)
        GROUP BY u.id`,
-      [email]
+      [email.trim()]
     );
     if (result.rows.length === 0) {
       return res.status(401).json({ error: "Identifiants incorrects" });
