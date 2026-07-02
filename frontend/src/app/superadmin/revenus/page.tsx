@@ -383,27 +383,6 @@ export default function SuperAdminRevenus() {
               </div>
             );
           })}
-                    className="bg-amber-500 transition-all duration-500"
-                    style={{ width: `${(d.auto / maxVal) * 100}%` }}
-                    title={`Automobile: ${Math.round(d.auto).toLocaleString("fr-FR")} ${displayCurrency}`}
-                  />
-                  <div
-                    className="bg-emerald-500 transition-all duration-500"
-                    style={{ width: `${(d.poubelles / maxVal) * 100}%` }}
-                    title={`Poubelles: ${Math.round(d.poubelles).toLocaleString("fr-FR")} ${displayCurrency}`}
-                  />
-                  <div
-                    className="bg-violet-500 transition-all duration-500"
-                    style={{ width: `${(d.multiservices / maxVal) * 100}%` }}
-                    title={`Multi-services: ${Math.round(d.multiservices).toLocaleString("fr-FR")} ${displayCurrency}`}
-                  />
-                </div>
-                <span className="text-sm font-medium text-[var(--text-primary)] w-24 text-right">
-                  {Math.round(total).toLocaleString("fr-FR")} {displayCurrency}
-                </span>
-              </div>
-            );
-          })}
         </div>
         <div className="flex flex-wrap items-center gap-6 mt-6 pt-4 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
