@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   HomeIcon,
   TruckIcon,
+  HomeModernIcon,
   TrashIcon,
   UserCircleIcon,
   ArrowRightIcon,
@@ -43,6 +44,7 @@ interface UserData {
 const SERVICE_META: Record<string, { label: string; gradient: string; emoji: string }> = {
   real_estate:  { label: "Immobilier",    gradient: "from-blue-500 to-indigo-600",   emoji: "🏠" },
   auto:         { label: "Automobile",    gradient: "from-amber-500 to-orange-600",  emoji: "🚗" },
+  reservation:  { label: "Reservation",   gradient: "from-rose-500 to-pink-600",     emoji: "🛏️" },
   trash:        { label: "Poubelles",     gradient: "from-emerald-500 to-green-600", emoji: "🗑️" },
   nettoyage:    { label: "Nettoyage",     gradient: "from-blue-400 to-cyan-500",     emoji: "🧹" },
   repassage:    { label: "Repassage",     gradient: "from-purple-400 to-violet-500", emoji: "👔" },
@@ -87,6 +89,21 @@ const SERVICE_CONFIG: Record<string, {
       { label: "Vehicules listes", value: "0" },
       { label: "Vues totales", value: "0" },
       { label: "Reservations", value: "0" },
+    ],
+    recentItems: [],
+  },
+  reservation: {
+    label: "Reservation",
+    description: "Gerez vos biens et vos reservations",
+    icon: HomeModernIcon,
+    gradient: "from-rose-500 to-pink-600",
+    bg: "bg-rose-50 dark:bg-rose-900/10",
+    href: "/abonnement?service=reservation",
+    publishHref: "/tableau-de-bord/reservation",
+    stats: [
+      { label: "Biens publies", value: "0" },
+      { label: "Reservations actives", value: "0" },
+      { label: "Revenus totaux", value: "0" },
     ],
     recentItems: [],
   },
@@ -146,6 +163,12 @@ interface ServiceStats {
   repassage: { date: string | null; status: string | null };
   demenagement: { date: string | null; status: string | null };
   totals: { ads: number; views: number; messages: number; favorites: number };
+}
+
+interface ReservationStats {
+  properties: number;
+  active_bookings: number;
+  total_revenue: number;
 }
 
 interface TrashSub {
@@ -292,6 +315,7 @@ export default function TableauDeBord() {
   const [loading, setLoading] = useState(true);
   const [trashSub, setTrashSub] = useState<TrashSub | null>(null);
   const [stats, setStats] = useState<ServiceStats | null>(null);
+  const [reservationStats, setReservationStats] = useState<ReservationStats | null>(null);
   const [calendarTab, setCalendarTab] = useState<string>("");
   const [bookings, setBookings] = useState<Record<string, string[]>>({});
 
@@ -322,6 +346,12 @@ export default function TableauDeBord() {
         try {
           const sRes = await fetch(`${API}/auth/stats`, { headers: { Authorization: `Bearer ${token}` } });
           if (sRes.ok) setStats(await sRes.json());
+        } catch {}
+      }
+      if (token) {
+        try {
+          const rRes = await fetch(`${API}/reservation/stats`, { headers: { Authorization: `Bearer ${token}` } });
+          if (rRes.ok) setReservationStats(await rRes.json());
         } catch {}
       }
       for (const svc of ["nettoyage", "repassage", "demenagement"]) {
@@ -440,6 +470,11 @@ export default function TableauDeBord() {
       { label: "Vehicules listes", value: String(stats?.auto.active_ads ?? 0) },
       { label: "Vues totales", value: String(stats?.auto.total_views ?? 0) },
       { label: "Reservations", value: String(stats?.auto.rentals ?? 0) },
+    ];
+    if (serviceId === "reservation") return [
+      { label: "Biens publies", value: String(reservationStats?.properties ?? 0) },
+      { label: "Reservations actives", value: String(reservationStats?.active_bookings ?? 0) },
+      { label: "Revenus totaux", value: `$${(reservationStats?.total_revenue ?? 0).toLocaleString()}` },
     ];
     if (serviceId === "nettoyage") return [
       { label: "Reservations", value: stats?.nettoyage.status ? "1" : "0" },
@@ -586,7 +621,7 @@ export default function TableauDeBord() {
                     </Link>
                     {serviceId !== "trash" && (
                       <Link href={config.publishHref} className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] transition-all">
-                        <PlusIcon className="w-4 h-4" /> Publier
+                        <PlusIcon className="w-4 h-4" /> {serviceId === "reservation" ? "Gérer" : "Publier"}
                       </Link>
                     )}
                   </div>
