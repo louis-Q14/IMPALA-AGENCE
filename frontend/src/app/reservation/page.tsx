@@ -330,7 +330,7 @@ export default function ReservationLanding() {
           const svc = Array.isArray(me.services)
             ? me.services.find((s: { service: string; status: string }) => s.service === "reservation")
             : null;
-          if (svc?.status === "active") setReservationSubStatus("active");
+          if (svc?.status === "active" || svc?.status === "approved") setReservationSubStatus("active");
           else if (svc?.status === "pending") setReservationSubStatus("pending");
           else setReservationSubStatus("none");
         }).catch(() => {});

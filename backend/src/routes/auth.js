@@ -59,7 +59,7 @@ async function getUserWithServicesById(userId) {
             u.sexe, u.nationalite, u.etat_civil, u.profession,
             u.numero_piece, u.adresse, u.phone_fixe, u.created_at,
             COALESCE(
-              json_agg(json_build_object('service', us.service_type, 'status', CASE WHEN us.subscription_status IN ('active', 'approved') THEN 'active' ELSE COALESCE(NULLIF(us.subscription_status, 'pending'), u.status, 'pending') END, 'startDate', us.subscription_start, 'endDate', us.subscription_end))
+              json_agg(json_build_object('service', us.service_type, 'status', CASE WHEN us.subscription_status IN ('active', 'approved') THEN 'active' ELSE COALESCE(us.subscription_status, 'pending') END, 'startDate', us.subscription_start, 'endDate', us.subscription_end))
               FILTER (WHERE us.id IS NOT NULL), '[]'
             ) as services
       FROM users u
@@ -266,7 +266,7 @@ router.post("/login", async (req, res) => {
               u.sexe, u.nationalite, u.etat_civil, u.profession,
               u.numero_piece, u.adresse, u.phone_fixe, u.created_at,
               COALESCE(
-                json_agg(json_build_object('service', us.service_type, 'status', CASE WHEN us.subscription_status IN ('active', 'approved') THEN 'active' ELSE COALESCE(NULLIF(us.subscription_status, 'pending'), u.status, 'pending') END, 'startDate', us.subscription_start, 'endDate', us.subscription_end))
+                json_agg(json_build_object('service', us.service_type, 'status', CASE WHEN us.subscription_status IN ('active', 'approved') THEN 'active' ELSE COALESCE(us.subscription_status, 'pending') END, 'startDate', us.subscription_start, 'endDate', us.subscription_end))
                 FILTER (WHERE us.id IS NOT NULL), '[]'
               ) as services
        FROM users u
@@ -655,7 +655,7 @@ router.get("/me", authenticateToken, async (req, res) => {
               u.nom, u.post_nom, u.prenom, u.date_naissance, u.lieu_naissance,
               u.sexe, u.nationalite, u.etat_civil, u.profession,
               u.numero_piece, u.adresse, u.phone_fixe, u.created_at,
-              COALESCE(json_agg(json_build_object('service', us.service_type, 'status', CASE WHEN us.subscription_status IN ('active', 'approved') THEN 'active' ELSE COALESCE(NULLIF(us.subscription_status, 'pending'), u.status, 'pending') END, 'startDate', us.subscription_start, 'endDate', us.subscription_end))
+              COALESCE(json_agg(json_build_object('service', us.service_type, 'status', CASE WHEN us.subscription_status IN ('active', 'approved') THEN 'active' ELSE COALESCE(us.subscription_status, 'pending') END, 'startDate', us.subscription_start, 'endDate', us.subscription_end))
               FILTER (WHERE us.id IS NOT NULL), '[]') as services
        FROM users u
        LEFT JOIN user_services us ON u.id = us.user_id
