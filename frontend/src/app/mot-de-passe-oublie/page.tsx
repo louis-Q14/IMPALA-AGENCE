@@ -47,7 +47,7 @@ export default function MotDePasseOubliePage() {
     return () => { if (resendTimer.current) clearTimeout(resendTimer.current); };
   }, [resendCooldown]);
 
-  // Step 1 — send OTP
+  // Step 1 Ã¢â‚¬â€ send OTP
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
@@ -70,20 +70,20 @@ export default function MotDePasseOubliePage() {
         setStep("otp");
       }
     } catch {
-      setEmailError("Service indisponible. Réessayez.");
+      setEmailError("Service indisponible. RÃƒÂ©essayez.");
     } finally {
       setEmailLoading(false);
     }
   };
 
-  // Step 2 — verify OTP inline (just move to step 3, real validation at step 3 submit)
+  // Step 2 Ã¢â‚¬â€ verify OTP inline (just move to step 3, real validation at step 3 submit)
   const handleVerifyOtp = () => {
-    if (otp.trim().length !== 6) { setOtpError("Saisissez le code à 6 chiffres"); return; }
+    if (otp.trim().length !== 6) { setOtpError("Saisissez le code ÃƒÂ  6 chiffres"); return; }
     setOtpError("");
     setStep("password");
   };
 
-  // Step 2 — resend OTP
+  // Step 2 Ã¢â‚¬â€ resend OTP
   const handleResend = async () => {
     if (resendCooldown > 0) return;
     setOtpError("");
@@ -101,15 +101,15 @@ export default function MotDePasseOubliePage() {
         setOtpError("");
       }
     } catch {
-      setOtpError("Erreur de connexion. Réessayez.");
+      setOtpError("Erreur de connexion. RÃƒÂ©essayez.");
     }
   };
 
-  // Step 3 — reset password
+  // Step 3 Ã¢â‚¬â€ reset password
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError("");
-    if (password.length < 8) { setPasswordError("Le mot de passe doit contenir au moins 8 caractères"); return; }
+    if (password.length < 8) { setPasswordError("Le mot de passe doit contenir au moins 8 caractÃƒÂ¨res"); return; }
     if (password !== confirmPassword) { setPasswordError("Les mots de passe ne correspondent pas"); return; }
     setPasswordLoading(true);
     try {
@@ -122,15 +122,15 @@ export default function MotDePasseOubliePage() {
       if (res.ok) {
         setStep("done");
       } else {
-        setPasswordError(data.error || "Erreur lors de la réinitialisation");
-        if (data.error?.includes("Code invalide") || data.error?.includes("expiré")) {
+        setPasswordError(data.error || "Erreur lors de la rÃƒÂ©initialisation");
+        if (data.error?.includes("Code invalide") || data.error?.includes("expirÃƒÂ©")) {
           setStep("otp");
           setOtp("");
           setOtpError(data.error);
         }
       }
     } catch {
-      setPasswordError("Service indisponible. Réessayez.");
+      setPasswordError("Service indisponible. RÃƒÂ©essayez.");
     } finally {
       setPasswordLoading(false);
     }
@@ -145,16 +145,16 @@ export default function MotDePasseOubliePage() {
             <LogoFull className="h-12 w-auto" />
           </Link>
           <h1 className="mt-6 text-2xl font-bold text-[var(--text-primary)]">
-            {step === "email" && "Mot de passe oublié"}
-            {step === "otp" && "Vérification du code"}
+            {step === "email" && "Mot de passe oubliÃƒÂ©"}
+            {step === "otp" && "VÃƒÂ©rification du code"}
             {step === "password" && "Nouveau mot de passe"}
-            {step === "done" && "Mot de passe mis à jour"}
+            {step === "done" && "Mot de passe mis ÃƒÂ  jour"}
           </h1>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            {step === "email" && "Entrez votre email pour recevoir un code de réinitialisation"}
-            {step === "otp" && `Un code à 6 chiffres a été envoyé à ${emailMasked}`}
-            {step === "password" && "Choisissez un mot de passe sécurisé"}
-            {step === "done" && "Votre mot de passe a été modifié avec succès"}
+            {step === "email" && "Entrez votre email pour recevoir un code de rÃƒÂ©initialisation"}
+            {step === "otp" && `Un code ÃƒÂ  6 chiffres a ÃƒÂ©tÃƒÂ© envoyÃƒÂ© ÃƒÂ  ${emailMasked}`}
+            {step === "password" && "Choisissez un mot de passe sÃƒÂ©curisÃƒÂ©"}
+            {step === "done" && "Votre mot de passe a ÃƒÂ©tÃƒÂ© modifiÃƒÂ© avec succÃƒÂ¨s"}
           </p>
         </div>
 
@@ -176,7 +176,7 @@ export default function MotDePasseOubliePage() {
 
         <div className="p-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-lg)]">
 
-          {/* ── STEP 1: Email ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 1: Email Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {step === "email" && (
             <form onSubmit={handleSendOtp} className="space-y-4">
               {emailError && (
@@ -219,13 +219,13 @@ export default function MotDePasseOubliePage() {
               <div className="text-center pt-2">
                 <Link href="/connexion" className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-primary transition-colors">
                   <ArrowLeftIcon className="w-4 h-4" />
-                  Retour à la connexion
+                  Retour ÃƒÂ  la connexion
                 </Link>
               </div>
             </form>
           )}
 
-          {/* ── STEP 2: OTP ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 2: OTP Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {step === "otp" && (
             <div className="space-y-4">
               <div className="text-center">
@@ -233,7 +233,7 @@ export default function MotDePasseOubliePage() {
                   <EnvelopeIcon className="w-8 h-8 text-primary" />
                 </div>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  Vérifiez vos spams si vous ne trouvez pas l&apos;email.
+                  VÃƒÂ©rifiez vos spams si vous ne trouvez pas l&apos;email.
                 </p>
               </div>
 
@@ -251,7 +251,7 @@ export default function MotDePasseOubliePage() {
                   bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)]
                   placeholder:tracking-normal placeholder:text-2xl
                   focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="••••••"
+                placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
                 autoFocus
               />
 
@@ -290,7 +290,7 @@ export default function MotDePasseOubliePage() {
             </div>
           )}
 
-          {/* ── STEP 3: New password ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 3: New password Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {step === "password" && (
             <form onSubmit={handleResetPassword} className="space-y-4">
               {passwordError && (
@@ -309,7 +309,7 @@ export default function MotDePasseOubliePage() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Minimum 8 caractères"
+                    placeholder="Minimum 8 caractÃƒÂ¨res"
                     autoFocus
                     className="w-full pl-12 pr-12 py-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]
                       text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
@@ -320,7 +320,7 @@ export default function MotDePasseOubliePage() {
                   </button>
                 </div>
                 {password.length > 0 && password.length < 8 && (
-                  <p className="text-xs text-amber-500 mt-1">Minimum 8 caractères ({password.length}/8)</p>
+                  <p className="text-xs text-amber-500 mt-1">Minimum 8 caractÃƒÂ¨res ({password.length}/8)</p>
                 )}
               </div>
               <div>
@@ -333,7 +333,7 @@ export default function MotDePasseOubliePage() {
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Répétez le mot de passe"
+                    placeholder="RÃƒÂ©pÃƒÂ©tez le mot de passe"
                     className="w-full pl-12 pr-12 py-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]
                       text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
                       focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
@@ -355,9 +355,9 @@ export default function MotDePasseOubliePage() {
                 {passwordLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                    Mise à jour...
+                    Mise ÃƒÂ  jour...
                   </span>
-                ) : "Mettre à jour le mot de passe"}
+                ) : "Mettre ÃƒÂ  jour le mot de passe"}
               </button>
               <div className="text-center pt-1">
                 <button
@@ -372,17 +372,17 @@ export default function MotDePasseOubliePage() {
             </form>
           )}
 
-          {/* ── STEP 4: Done ── */}
+          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 4: Done Ã¢â€â‚¬Ã¢â€â‚¬ */}
           {step === "done" && (
             <div className="text-center py-4">
               <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
                 <CheckCircleIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
-                Mot de passe mis à jour !
+                Mot de passe mis ÃƒÂ  jour !
               </h2>
               <p className="text-sm text-[var(--text-secondary)] mb-6">
-                Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter.
+                Votre mot de passe a ÃƒÂ©tÃƒÂ© modifiÃƒÂ© avec succÃƒÂ¨s. Vous pouvez maintenant vous connecter.
               </p>
               <Link
                 href="/connexion"
@@ -408,133 +408,3 @@ export default function MotDePasseOubliePage() {
   );
 }
 
-
-export default function MotDePasseOubliePage() {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    if (!email) {
-      setError("Veuillez saisir votre adresse email");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
-      if (res.ok) {
-        setSent(true);
-      } else {
-        const data = await res.json();
-        setError(data.error || "Erreur lors de l'envoi");
-      }
-    } catch {
-      setError("Service indisponible. Réessayez.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-[var(--bg-secondary)]">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex justify-center mb-2">
-            <LogoFull className="h-12 w-auto" />
-          </Link>
-          <h1 className="mt-6 text-2xl font-bold text-[var(--text-primary)]">
-            Mot de passe oublié
-          </h1>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Entrez votre email pour recevoir un lien de réinitialisation
-          </p>
-        </div>
-
-        <div className="p-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-lg)]">
-          {sent ? (
-            /* Success state */
-            <div className="text-center py-4">
-              <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-                <CheckCircleIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
-              </div>
-              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
-                Email envoyé !
-              </h2>
-              <p className="text-sm text-[var(--text-secondary)] mb-6">
-                Si un compte existe pour <strong>{email}</strong>, vous recevrez un lien de réinitialisation valable <strong>1 heure</strong>.
-              </p>
-              <p className="text-xs text-[var(--text-muted)] mb-6">
-                Vérifiez vos spams si vous ne trouvez pas l&apos;email.
-              </p>
-              <Link
-                href="/connexion"
-                className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
-              >
-                <ArrowLeftIcon className="w-4 h-4" />
-                Retour à la connexion
-              </Link>
-            </div>
-          ) : (
-            /* Form state */
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2">
-                  Adresse email
-                </label>
-                <div className="relative">
-                  <EnvelopeIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="vous@exemple.com"
-                    autoFocus
-                    className="w-full pl-12 pr-4 py-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]
-                      text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
-                      focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3.5 rounded-xl bg-primary text-white font-semibold
-                  hover:bg-primary-hover shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? "Envoi en cours..." : "Envoyer le lien de réinitialisation"}
-              </button>
-
-              <div className="text-center pt-2">
-                <Link
-                  href="/connexion"
-                  className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-primary transition-colors"
-                >
-                  <ArrowLeftIcon className="w-4 h-4" />
-                  Retour à la connexion
-                </Link>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
