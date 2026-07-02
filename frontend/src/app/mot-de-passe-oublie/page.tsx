@@ -47,7 +47,7 @@ export default function MotDePasseOubliePage() {
     return () => { if (resendTimer.current) clearTimeout(resendTimer.current); };
   }, [resendCooldown]);
 
-  // Step 1 Ã¢â‚¬â€ send OTP
+  // Step 1 �� send OTP
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError("");
@@ -70,20 +70,20 @@ export default function MotDePasseOubliePage() {
         setStep("otp");
       }
     } catch {
-      setEmailError("Service indisponible. RÃƒÂ©essayez.");
+      setEmailError("Service indisponible. Réessayez.");
     } finally {
       setEmailLoading(false);
     }
   };
 
-  // Step 2 Ã¢â‚¬â€ verify OTP inline (just move to step 3, real validation at step 3 submit)
+  // Step 2 �� verify OTP inline (just move to step 3, real validation at step 3 submit)
   const handleVerifyOtp = () => {
-    if (otp.trim().length !== 6) { setOtpError("Saisissez le code ÃƒÂ  6 chiffres"); return; }
+    if (otp.trim().length !== 6) { setOtpError("Saisissez le code à 6 chiffres"); return; }
     setOtpError("");
     setStep("password");
   };
 
-  // Step 2 Ã¢â‚¬â€ resend OTP
+  // Step 2 �� resend OTP
   const handleResend = async () => {
     if (resendCooldown > 0) return;
     setOtpError("");
@@ -101,15 +101,15 @@ export default function MotDePasseOubliePage() {
         setOtpError("");
       }
     } catch {
-      setOtpError("Erreur de connexion. RÃƒÂ©essayez.");
+      setOtpError("Erreur de connexion. Réessayez.");
     }
   };
 
-  // Step 3 Ã¢â‚¬â€ reset password
+  // Step 3 �� reset password
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError("");
-    if (password.length < 8) { setPasswordError("Le mot de passe doit contenir au moins 8 caractÃƒÂ¨res"); return; }
+    if (password.length < 8) { setPasswordError("Le mot de passe doit contenir au moins 8 caractères"); return; }
     if (password !== confirmPassword) { setPasswordError("Les mots de passe ne correspondent pas"); return; }
     setPasswordLoading(true);
     try {
@@ -122,15 +122,15 @@ export default function MotDePasseOubliePage() {
       if (res.ok) {
         setStep("done");
       } else {
-        setPasswordError(data.error || "Erreur lors de la rÃƒÂ©initialisation");
-        if (data.error?.includes("Code invalide") || data.error?.includes("expirÃƒÂ©")) {
+        setPasswordError(data.error || "Erreur lors de la réinitialisation");
+        if (data.error?.includes("Code invalide") || data.error?.includes("expiré")) {
           setStep("otp");
           setOtp("");
           setOtpError(data.error);
         }
       }
     } catch {
-      setPasswordError("Service indisponible. RÃƒÂ©essayez.");
+      setPasswordError("Service indisponible. Réessayez.");
     } finally {
       setPasswordLoading(false);
     }
@@ -145,16 +145,16 @@ export default function MotDePasseOubliePage() {
             <LogoFull className="h-12 w-auto" />
           </Link>
           <h1 className="mt-6 text-2xl font-bold text-[var(--text-primary)]">
-            {step === "email" && "Mot de passe oubliÃƒÂ©"}
-            {step === "otp" && "VÃƒÂ©rification du code"}
+            {step === "email" && "Mot de passe oublié"}
+            {step === "otp" && "Vérification du code"}
             {step === "password" && "Nouveau mot de passe"}
-            {step === "done" && "Mot de passe mis ÃƒÂ  jour"}
+            {step === "done" && "Mot de passe mis à jour"}
           </h1>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            {step === "email" && "Entrez votre email pour recevoir un code de rÃƒÂ©initialisation"}
-            {step === "otp" && `Un code ÃƒÂ  6 chiffres a ÃƒÂ©tÃƒÂ© envoyÃƒÂ© ÃƒÂ  ${emailMasked}`}
-            {step === "password" && "Choisissez un mot de passe sÃƒÂ©curisÃƒÂ©"}
-            {step === "done" && "Votre mot de passe a ÃƒÂ©tÃƒÂ© modifiÃƒÂ© avec succÃƒÂ¨s"}
+            {step === "email" && "Entrez votre email pour recevoir un code de réinitialisation"}
+            {step === "otp" && `Un code à 6 chiffres a été envoyé à ${emailMasked}`}
+            {step === "password" && "Choisissez un mot de passe sécurisé"}
+            {step === "done" && "Votre mot de passe a été modifié avec succès"}
           </p>
         </div>
 
@@ -176,7 +176,7 @@ export default function MotDePasseOubliePage() {
 
         <div className="p-8 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-lg)]">
 
-          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 1: Email Ã¢â€â‚¬Ã¢â€â‚¬ */}
+          {/* ������ STEP 1: Email ������ */}
           {step === "email" && (
             <form onSubmit={handleSendOtp} className="space-y-4">
               {emailError && (
@@ -219,13 +219,13 @@ export default function MotDePasseOubliePage() {
               <div className="text-center pt-2">
                 <Link href="/connexion" className="inline-flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-primary transition-colors">
                   <ArrowLeftIcon className="w-4 h-4" />
-                  Retour ÃƒÂ  la connexion
+                  Retour à la connexion
                 </Link>
               </div>
             </form>
           )}
 
-          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 2: OTP Ã¢â€â‚¬Ã¢â€â‚¬ */}
+          {/* ������ STEP 2: OTP ������ */}
           {step === "otp" && (
             <div className="space-y-4">
               <div className="text-center">
@@ -233,7 +233,7 @@ export default function MotDePasseOubliePage() {
                   <EnvelopeIcon className="w-8 h-8 text-primary" />
                 </div>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  VÃƒÂ©rifiez vos spams si vous ne trouvez pas l&apos;email.
+                  Vérifiez vos spams si vous ne trouvez pas l&apos;email.
                 </p>
               </div>
 
@@ -251,7 +251,7 @@ export default function MotDePasseOubliePage() {
                   bg-[var(--bg-input)] border border-[var(--border-color)] text-[var(--text-primary)]
                   placeholder:tracking-normal placeholder:text-2xl
                   focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
+                placeholder="••••••"
                 autoFocus
               />
 
@@ -290,7 +290,7 @@ export default function MotDePasseOubliePage() {
             </div>
           )}
 
-          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 3: New password Ã¢â€â‚¬Ã¢â€â‚¬ */}
+          {/* ������ STEP 3: New password ������ */}
           {step === "password" && (
             <form onSubmit={handleResetPassword} className="space-y-4">
               {passwordError && (
@@ -309,7 +309,7 @@ export default function MotDePasseOubliePage() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Minimum 8 caractÃƒÂ¨res"
+                    placeholder="Minimum 8 caractères"
                     autoFocus
                     className="w-full pl-12 pr-12 py-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]
                       text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
@@ -320,7 +320,7 @@ export default function MotDePasseOubliePage() {
                   </button>
                 </div>
                 {password.length > 0 && password.length < 8 && (
-                  <p className="text-xs text-amber-500 mt-1">Minimum 8 caractÃƒÂ¨res ({password.length}/8)</p>
+                  <p className="text-xs text-amber-500 mt-1">Minimum 8 caractères ({password.length}/8)</p>
                 )}
               </div>
               <div>
@@ -333,7 +333,7 @@ export default function MotDePasseOubliePage() {
                     type={showConfirm ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="RÃƒÂ©pÃƒÂ©tez le mot de passe"
+                    placeholder="Répétez le mot de passe"
                     className="w-full pl-12 pr-12 py-3 rounded-xl bg-[var(--bg-input)] border border-[var(--border-color)]
                       text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
                       focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
@@ -355,9 +355,9 @@ export default function MotDePasseOubliePage() {
                 {passwordLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <ArrowPathIcon className="w-4 h-4 animate-spin" />
-                    Mise ÃƒÂ  jour...
+                    Mise à jour...
                   </span>
-                ) : "Mettre ÃƒÂ  jour le mot de passe"}
+                ) : "Mettre à jour le mot de passe"}
               </button>
               <div className="text-center pt-1">
                 <button
@@ -372,17 +372,17 @@ export default function MotDePasseOubliePage() {
             </form>
           )}
 
-          {/* Ã¢â€â‚¬Ã¢â€â‚¬ STEP 4: Done Ã¢â€â‚¬Ã¢â€â‚¬ */}
+          {/* ������ STEP 4: Done ������ */}
           {step === "done" && (
             <div className="text-center py-4">
               <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
                 <CheckCircleIcon className="w-8 h-8 text-green-600 dark:text-green-400" />
               </div>
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
-                Mot de passe mis ÃƒÂ  jour !
+                Mot de passe mis à jour !
               </h2>
               <p className="text-sm text-[var(--text-secondary)] mb-6">
-                Votre mot de passe a ÃƒÂ©tÃƒÂ© modifiÃƒÂ© avec succÃƒÂ¨s. Vous pouvez maintenant vous connecter.
+                Votre mot de passe a été modifié avec succès. Vous pouvez maintenant vous connecter.
               </p>
               <Link
                 href="/connexion"
