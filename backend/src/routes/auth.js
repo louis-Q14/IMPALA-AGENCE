@@ -8,7 +8,7 @@ const fs = require("fs");
 const db = require("../db");
 const { authenticateToken } = require("../middleware/auth");
 const { generateOTP } = require("../services/smsService");
-const { generateEmailToken, sendOTPEmail, sendVerificationEmail, sendResetPasswordEmail } = require("../services/emailService");
+const { generateEmailToken, sendOTPEmail, sendVerificationEmail, sendResetPasswordOTPEmail } = require("../services/emailService");
 
 const router = express.Router();
 const SALT_ROUNDS = 12;
@@ -727,35 +727,49 @@ router.get("/stats", authenticateToken, async (req, res) => {
 });
 
 // POST /api/auth/forgot-password
-// Send a password reset link to the user's email
+// Send a 6-digit OTP code to the user's email for password reset
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: "Email requis" });
 
-    const result = await db.query("SELECT id, full_name FROM users WHERE email = $1", [email]);
+    const result = await db.query(
+      "SELECT id, full_name, reset_token_expires FROM users WHERE LOWER(email) = LOWER($1)",
+      [email.trim()]
+    );
+
+    const emailMasked = email.trim().replace(/(.)(.*)(@.*)/, (_, a, b, c) => a + "*".repeat(Math.max(2, b.length)) + c);
 
     // Always return 200 to avoid email enumeration
     if (result.rows.length === 0) {
-      return res.json({ success: true, message: "Si cet email existe, un lien a été envoyé." });
+      return res.json({ success: true, email_masked: emailMasked });
     }
 
     const user = result.rows[0];
-    const token = require("crypto").randomBytes(32).toString("hex");
+
+    // Rate limit: 1 OTP per 2 minutes
+    if (user.reset_token_expires) {
+      const secondsLeft = (new Date(user.reset_token_expires).getTime() - Date.now()) / 1000;
+      if (secondsLeft > 58 * 60) {
+        return res.status(429).json({ error: "Veuillez attendre 2 minutes avant de demander un nouveau code." });
+      }
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     await db.query(
       "UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3",
-      [token, expires, user.id]
+      [otp, expires, user.id]
     );
 
     try {
-      await sendResetPasswordEmail(email, user.full_name, token);
+      await sendResetPasswordOTPEmail(email.trim(), user.full_name, otp);
     } catch (emailErr) {
-      console.error("Reset email error:", emailErr.message);
+      console.error("Reset OTP email error:", emailErr.message);
     }
 
-    res.json({ success: true, message: "Si cet email existe, un lien a été envoyé." });
+    res.json({ success: true, email_masked: emailMasked });
   } catch (err) {
     console.error("Forgot-password error:", err);
     res.status(500).json({ error: "Erreur serveur" });
@@ -763,20 +777,20 @@ router.post("/forgot-password", async (req, res) => {
 });
 
 // POST /api/auth/reset-password
-// Validate token and set new password
+// Validate OTP and set new password
 router.post("/reset-password", async (req, res) => {
   try {
-    const { token, password } = req.body;
-    if (!token || !password) return res.status(400).json({ error: "Token et mot de passe requis" });
+    const { email, otp, password } = req.body;
+    if (!email || !otp || !password) return res.status(400).json({ error: "Email, code et mot de passe requis" });
     if (password.length < 8) return res.status(400).json({ error: "Le mot de passe doit contenir au moins 8 caractères" });
 
     const result = await db.query(
-      "SELECT id FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()",
-      [token]
+      "SELECT id FROM users WHERE LOWER(email) = LOWER($1) AND reset_token = $2 AND reset_token_expires > NOW()",
+      [email.trim(), otp.trim()]
     );
 
     if (result.rows.length === 0) {
-      return res.status(400).json({ error: "Lien invalide ou expiré. Faites une nouvelle demande." });
+      return res.status(400).json({ error: "Code invalide ou expiré. Faites une nouvelle demande." });
     }
 
     const hashed = await bcrypt.hash(password, SALT_ROUNDS);

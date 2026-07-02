@@ -1,8 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function ReinitialiserMotDePassePage() {
+  const router = useRouter();
+  useEffect(() => {
+    router.replace("/mot-de-passe-oublie");
+  }, [router]);
+  return null;
+}
+
 import { LockClosedIcon, EyeIcon, EyeSlashIcon, CheckCircleIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { LogoFull } from "@/components/Logo";
 
