@@ -14,7 +14,6 @@ import {
   DevicePhoneMobileIcon,
   ShieldCheckIcon,
   CheckCircleIcon,
-  ArrowLeftIcon,
   CheckIcon,
   BellIcon,
   CalendarDaysIcon,
@@ -373,10 +372,6 @@ function AbonnementContent() {
       )}
       <div className="bg-[var(--bg-card)] border-b border-[var(--border-color)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Link href={plan.backHref} className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-primary transition-colors mb-4">
-            <ArrowLeftIcon className="w-4 h-4" />
-            Retour au tableau de bord
-          </Link>
           <div className="flex items-center gap-3">
             <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center`}>
               <Icon className="w-6 h-6 text-white" />
