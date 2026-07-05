@@ -14,6 +14,7 @@ import {
   StarIcon,
   EyeIcon,
   SparklesIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 
@@ -27,6 +28,18 @@ function getToken() {
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Subscriber {
+  id: string;
+  email: string;
+  full_name: string;
+  phone: string;
+  adresse: string;
+  subscription_status: string;
+  subscription_start: string | null;
+  subscription_end: string | null;
+  user_created_at: string;
+}
 
 interface AdminStats {
   total_properties: number;
@@ -111,7 +124,11 @@ function fmtPrice(amount: number, currency = "USD") {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function AdminReservations() {
-  const [tab, setTab] = useState<"properties" | "bookings">("properties");
+  const [tab, setTab] = useState<"subscribers" | "properties" | "bookings">("subscribers");
+
+  // Subscribers
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [subsLoading, setSubsLoading] = useState(false);
 
   // Stats
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -140,6 +157,17 @@ export default function AdminReservations() {
   const [error, setError] = useState<string | null>(null);
 
   // ─── Fetch ──────────────────────────────────────────────────────────────────
+
+  const fetchSubscribers = useCallback(async () => {
+    setSubsLoading(true);
+    try {
+      const res = await fetch(`${API}/admin/service-subscribers?service=reservation`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (res.ok) setSubscribers(await res.json());
+    } catch { /* ignore */ }
+    setSubsLoading(false);
+  }, []);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -193,6 +221,7 @@ export default function AdminReservations() {
   }, [bookPage, bookFilter, bookSearch]);
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
+  useEffect(() => { fetchSubscribers(); }, [fetchSubscribers]);
   useEffect(() => { fetchProperties(); }, [fetchProperties]);
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
@@ -269,7 +298,7 @@ export default function AdminReservations() {
           </div>
         </div>
         <button
-          onClick={() => { fetchProperties(); fetchBookings(); fetchStats(); }}
+          onClick={() => { fetchProperties(); fetchBookings(); fetchStats(); fetchSubscribers(); }}
           className="flex items-center gap-2 px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
         >
           <ArrowPathIcon className="w-4 h-4" /> Actualiser
@@ -305,7 +334,11 @@ export default function AdminReservations() {
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg w-fit">
-        {(["properties", "bookings"] as const).map((t) => (
+        {([
+          ["subscribers", `Abonnés`, subscribers.length],
+          ["properties", `Biens`, propTotal],
+          ["bookings", `Réservations`, bookTotal],
+        ] as ["subscribers" | "properties" | "bookings", string, number][]).map(([t, label, count]) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -315,10 +348,76 @@ export default function AdminReservations() {
                 : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
-            {t === "properties" ? `Biens (${propTotal})` : `Réservations (${bookTotal})`}
+            {label}
+            <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+              {count}
+            </span>
           </button>
         ))}
       </div>
+
+      {/* ═══ SUBSCRIBERS TAB ═══ */}
+      {tab === "subscribers" && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-x-auto">
+          {subsLoading ? (
+            <div className="flex items-center justify-center py-20 gap-2 text-gray-400">
+              <ArrowPathIcon className="w-5 h-5 animate-spin" /> Chargement...
+            </div>
+          ) : subscribers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+              <UsersIcon className="w-12 h-12 mb-3 opacity-30" />
+              <p className="text-sm">Aucun abonné à ce service</p>
+            </div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700 text-sm">
+              <thead>
+                <tr className="bg-gray-50 dark:bg-gray-900 text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  <th className="px-4 py-3 text-left">Abonné</th>
+                  <th className="px-4 py-3 text-left">Contact</th>
+                  <th className="px-4 py-3 text-left">Statut</th>
+                  <th className="px-4 py-3 text-left">Début</th>
+                  <th className="px-4 py-3 text-left">Fin</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                {subscribers.map((s) => {
+                  const isActive = s.subscription_status === "active" || s.subscription_status === "approved";
+                  const isPending = s.subscription_status === "pending";
+                  return (
+                    <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900 dark:text-white">{s.full_name || "—"}</div>
+                        <div className="text-xs text-gray-400">{s.email}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-xs text-gray-600 dark:text-gray-300">{s.phone || "—"}</div>
+                        <div className="text-xs text-gray-400">{s.adresse || "—"}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          isActive
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                            : isPending
+                            ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+                            : "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+                        }`}>
+                          {isActive ? "Actif" : isPending ? "En attente" : "Inactif"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">
+                        {s.subscription_start ? new Date(s.subscription_start).toLocaleDateString("fr-FR") : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">
+                        {s.subscription_end ? new Date(s.subscription_end).toLocaleDateString("fr-FR") : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
 
       {/* ═══ PROPERTIES TAB ═══ */}
       {tab === "properties" && (

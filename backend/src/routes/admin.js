@@ -953,7 +953,7 @@ router.patch("/subscription-requests/:id/reject", async (req, res) => {
 router.get("/service-subscribers", async (req, res) => {
   try {
     const { service } = req.query;
-    const validServices = ['auto', 'real_estate', 'nettoyage', 'repassage', 'demenagement', 'trash'];
+    const validServices = ['auto', 'real_estate', 'nettoyage', 'repassage', 'demenagement', 'trash', 'reservation'];
     if (!service || !validServices.includes(service)) {
       return res.status(400).json({ error: 'Service invalide' });
     }
@@ -963,7 +963,9 @@ router.get("/service-subscribers", async (req, res) => {
       ? `sr.service_type IN ('immobilier', 'immo-auto')`
       : service === 'auto'
         ? `sr.service_type IN ('automobile', 'immo-auto')`
-        : `sr.service_type = '${service}'`;
+        : service === 'reservation'
+          ? `sr.service_type IN ('reservation', 'reservation_pro')`
+          : `sr.service_type = '${service}'`;
 
     await db.query(
       `UPDATE user_services us
