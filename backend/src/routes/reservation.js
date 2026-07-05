@@ -3,7 +3,7 @@ const multer  = require("multer");
 const path    = require("path");
 const fs      = require("fs");
 const db      = require("../db");
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, requireRole } = require("../middleware/auth");
 
 const router = express.Router();
 const UPLOADS_DIR = path.join(__dirname, "../../uploads/reservation");
@@ -629,6 +629,186 @@ router.get("/stats", authenticateToken, async (req, res) => {
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
+
+// ─── ADMIN ROUTES ─────────────────────────────────────────────────────────────
+
+// GET /api/reservation/admin/stats — global stats for admin
+router.get("/admin/stats", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const [totalProps, pendingProps, totalBookings, pendingBookings, revenueRow] = await Promise.all([
+      db.query("SELECT COUNT(*) FROM reservation_properties"),
+      db.query("SELECT COUNT(*) FROM reservation_properties WHERE status = 'pending'"),
+      db.query("SELECT COUNT(*) FROM reservation_bookings"),
+      db.query("SELECT COUNT(*) FROM reservation_bookings WHERE status = 'pending'"),
+      db.query("SELECT COALESCE(SUM(total_price), 0) AS total FROM reservation_bookings WHERE status = 'completed'"),
+    ]);
+    res.json({
+      total_properties: parseInt(totalProps.rows[0].count),
+      pending_properties: parseInt(pendingProps.rows[0].count),
+      total_bookings: parseInt(totalBookings.rows[0].count),
+      pending_bookings: parseInt(pendingBookings.rows[0].count),
+      total_revenue: parseFloat(revenueRow.rows[0].total),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// GET /api/reservation/admin/properties — all properties (any status)
+router.get("/admin/properties", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const { status, search, page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const offset = (pageNum - 1) * limitNum;
+
+    let where = [];
+    let params = [];
+    let i = 1;
+
+    if (status && status !== "all") { where.push(`p.status = $${i}`); params.push(status); i++; }
+    if (search) { where.push(`(p.title ILIKE $${i} OR p.city ILIKE $${i} OR u.full_name ILIKE $${i})`); params.push(`%${search}%`); i++; }
+
+    const whereStr = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    const [rows, countRow] = await Promise.all([
+      db.query(
+        `SELECT p.id, p.title, p.city, p.property_type, p.listing_type, p.status, p.is_featured,
+                p.price_per_night, p.price_per_week, p.price_per_month, p.currency,
+                p.bedrooms, p.max_guests, p.rating_avg, p.review_count, p.view_count, p.created_at,
+                u.full_name AS owner_name, u.email AS owner_email,
+                (SELECT image_url FROM reservation_property_images WHERE property_id = p.id AND is_cover = TRUE LIMIT 1) AS cover_image,
+                (SELECT COUNT(*) FROM reservation_bookings WHERE property_id = p.id) AS booking_count
+         FROM reservation_properties p
+         JOIN users u ON p.user_id = u.id
+         ${whereStr}
+         ORDER BY p.created_at DESC
+         LIMIT $${i} OFFSET $${i + 1}`,
+        [...params, limitNum, offset]
+      ),
+      db.query(
+        `SELECT COUNT(*) FROM reservation_properties p JOIN users u ON p.user_id = u.id ${whereStr}`,
+        params
+      ),
+    ]);
+
+    res.json({
+      properties: rows.rows,
+      total: parseInt(countRow.rows[0].count),
+      page: pageNum,
+      pages: Math.ceil(parseInt(countRow.rows[0].count) / limitNum),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// PATCH /api/reservation/admin/properties/:id/status — approve / reject / feature
+router.patch("/admin/properties/:id/status", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const { status, is_featured } = req.body;
+    const allowed = ["active", "pending", "rejected", "inactive"];
+    if (status && !allowed.includes(status)) {
+      return res.status(400).json({ error: "Statut invalide" });
+    }
+    const fields = [];
+    const vals = [];
+    let i = 1;
+    if (status !== undefined) { fields.push(`status = $${i}`); vals.push(status); i++; }
+    if (is_featured !== undefined) { fields.push(`is_featured = $${i}`); vals.push(is_featured); i++; }
+    if (!fields.length) return res.status(400).json({ error: "Rien à mettre à jour" });
+    fields.push("updated_at = NOW()");
+    vals.push(req.params.id);
+    await db.query(`UPDATE reservation_properties SET ${fields.join(", ")} WHERE id = $${i}`, vals);
+    res.json({ message: "Propriété mise à jour" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// GET /api/reservation/admin/bookings — all bookings
+router.get("/admin/bookings", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const { status, search, page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const offset = (pageNum - 1) * limitNum;
+
+    let where = [];
+    let params = [];
+    let i = 1;
+
+    if (status && status !== "all") { where.push(`b.status = $${i}`); params.push(status); i++; }
+    if (search) {
+      where.push(`(p.title ILIKE $${i} OR g.full_name ILIKE $${i} OR g.email ILIKE $${i})`);
+      params.push(`%${search}%`); i++;
+    }
+
+    const whereStr = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    const [rows, countRow] = await Promise.all([
+      db.query(
+        `SELECT b.id, b.status, b.check_in, b.check_out, b.nights_count, b.guests_count,
+                b.total_price, b.currency, b.payment_method, b.guest_message, b.created_at,
+                p.title AS property_title, p.city AS property_city, p.property_type,
+                (SELECT image_url FROM reservation_property_images WHERE property_id = p.id AND is_cover = TRUE LIMIT 1) AS cover_image,
+                g.full_name AS guest_name, g.email AS guest_email, g.phone AS guest_phone,
+                o.full_name AS owner_name, o.email AS owner_email
+         FROM reservation_bookings b
+         JOIN reservation_properties p ON b.property_id = p.id
+         JOIN users g ON b.guest_id = g.id
+         JOIN users o ON p.user_id = o.id
+         ${whereStr}
+         ORDER BY b.created_at DESC
+         LIMIT $${i} OFFSET $${i + 1}`,
+        [...params, limitNum, offset]
+      ),
+      db.query(
+        `SELECT COUNT(*) FROM reservation_bookings b
+         JOIN reservation_properties p ON b.property_id = p.id
+         JOIN users g ON b.guest_id = g.id
+         JOIN users o ON p.user_id = o.id
+         ${whereStr}`,
+        params
+      ),
+    ]);
+
+    res.json({
+      bookings: rows.rows,
+      total: parseInt(countRow.rows[0].count),
+      page: pageNum,
+      pages: Math.ceil(parseInt(countRow.rows[0].count) / limitNum),
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// PATCH /api/reservation/admin/bookings/:id/status — force update booking status
+router.patch("/admin/bookings/:id/status", authenticateToken, requireRole("admin", "super_admin"), async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ["pending", "confirmed", "rejected", "cancelled", "completed"];
+    if (!allowed.includes(status)) return res.status(400).json({ error: "Statut invalide" });
+
+    await db.query("UPDATE reservation_bookings SET status=$1, updated_at=NOW() WHERE id=$2", [status, req.params.id]);
+
+    if (["cancelled", "rejected"].includes(status)) {
+      await db.query("DELETE FROM reservation_availability WHERE booking_id = $1", [req.params.id]);
+    }
+
+    res.json({ message: "Réservation mise à jour" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// ─── END ADMIN ROUTES ──────────────────────────────────────────────────────────
 
 // PUT /api/reservation/properties/:id/availability — block/unblock dates
 router.put("/properties/:id/availability", authenticateToken, async (req, res) => {

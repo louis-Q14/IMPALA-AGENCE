@@ -19,6 +19,7 @@ import {
   SparklesIcon,
   ScissorsIcon,
   ArchiveBoxIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import ThemeToggle from "@/components/ThemeToggle";
 
@@ -61,6 +62,7 @@ const sidebarItems = [
   { name: "Utilisateurs", href: "/admin/utilisateurs", icon: UsersIcon },
   { name: "Immobilier", href: "/admin/immobilier", icon: HomeIcon },
   { name: "Automobile", href: "/admin/automobile", icon: TruckIcon },
+  { name: "Réservations", href: "/admin/reservations", icon: CalendarDaysIcon },
 ];
 
 const multiImpalaItems = [
