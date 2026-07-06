@@ -55,7 +55,8 @@ export default function BookingCalendar({ blockedDates,checkIn,checkOut,onCheckI
   const [phase,setPhase] = useState<"in"|"out">("in");
   const [hover,setHover] = useState("");
   const ref = useRef<HTMLDivElement>(null);
-  const blocked = new Set(blockedDates);
+  // Normalize dates: DB returns "2026-07-10T00:00:00.000Z", calendar uses "2026-07-10"
+  const blocked = new Set(blockedDates.map(d => String(d).split("T")[0]));
   useEffect(()=>{
     function out(e:MouseEvent){ if(ref.current&&!ref.current.contains(e.target as Node)) setOpen(false); }
     if(open) document.addEventListener("mousedown",out);

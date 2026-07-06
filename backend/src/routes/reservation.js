@@ -160,7 +160,11 @@ router.get("/properties/:id", async (req, res) => {
       [req.params.id]
     );
 
-    res.json({ ...prop, blocked_dates: blocked.rows.map(r => r.blocked_date) });
+    res.json({ ...prop, blocked_dates: blocked.rows.map(r => {
+      const d = r.blocked_date;
+      if (d instanceof Date) return d.toISOString().split("T")[0];
+      return String(d).split("T")[0];
+    }) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
