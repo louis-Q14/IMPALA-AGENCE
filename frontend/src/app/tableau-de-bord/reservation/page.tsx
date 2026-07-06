@@ -624,26 +624,23 @@ export default function ReservationDashboard() {
                         <p className="text-sm">Sélectionnez une conversation</p>
                       </div>
                     ) : (
-                      <>
+                      <div className="flex flex-col flex-1 h-full">
                         {/* Header */}
                         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
                           <button onClick={() => setActiveConvId(null)} className="md:hidden text-gray-400 hover:text-gray-600">
                             <ChevronLeftIcon className="w-5 h-5" />
                           </button>
-                          {(() => {
-                            const conv = conversations.find(c => c.id === activeConvId);
-                            return conv ? (
-                              <>
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
-                                  {conv.other_avatar ? <img src={conv.other_avatar} alt="" className="w-full h-full object-cover" /> : conv.other_name?.[0]}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{conv.other_name}</p>
-                                  <p className="text-xs text-gray-500">{conv.property_title}</p>
-                                </div>
-                              </>
-                            ) : null;
-                          })()}
+                          {conversations.filter(c => c.id === activeConvId).map(conv => (
+                            <div key={conv.id} className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
+                                {conv.other_avatar ? <img src={conv.other_avatar} alt="" className="w-full h-full object-cover" /> : conv.other_name?.[0]}
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{conv.other_name}</p>
+                                <p className="text-xs text-gray-500">{conv.property_title}</p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
 
                         {/* Messages */}
@@ -691,7 +688,7 @@ export default function ReservationDashboard() {
                             </button>
                           </div>
                         </div>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
