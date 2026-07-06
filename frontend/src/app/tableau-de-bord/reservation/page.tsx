@@ -314,7 +314,10 @@ export default function ReservationDashboard() {
                       <div className="w-32 h-24 rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0 overflow-hidden">
                       {cover ? <img src={cover} alt={p.title} className="w-full h-full object-cover"
                           onError={e => { (e.target as HTMLImageElement).style.display='none'; }} /> :
-                          <div className="w-full h-full flex items-center justify-center"><HomeModernIcon className="w-8 h-8 text-gray-400" /></div>}
+                          <div className="w-full h-full flex flex-col items-center justify-center gap-0.5 bg-amber-50 dark:bg-amber-900/20">
+                            <HomeModernIcon className="w-7 h-7 text-amber-400" />
+                            <span className="text-[9px] text-amber-500 font-medium">Aucune photo</span>
+                          </div>}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
@@ -332,6 +335,12 @@ export default function ReservationDashboard() {
                           <p className="text-xs flex items-center gap-0.5 mt-1">
                             <StarSolid className="w-3 h-3 text-amber-400" /> {Number(p.rating_avg).toFixed(1)} ({p.review_count} avis)
                           </p>
+                        )}
+                        {(!p.images || p.images.length === 0) && (
+                          <Link href={`/tableau-de-bord/reservation/editer/${p.id}`}
+                            className="inline-flex items-center gap-1 mt-1 text-xs text-amber-600 dark:text-amber-400 hover:underline">
+                            ⚠ Aucune photo — Cliquez pour en ajouter
+                          </Link>
                         )}
                       </div>
                       <div className="flex flex-col gap-2 shrink-0">

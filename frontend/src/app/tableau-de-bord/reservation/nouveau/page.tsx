@@ -123,11 +123,18 @@ export default function NouveauBienPage() {
       if (previews.length > 0) {
         const fd = new FormData();
         previews.forEach(p => fd.append("images", p.file));
-        await fetch(`${API}/reservation/properties/${propId}/images`, {
+        const uploadRes = await fetch(`${API}/reservation/properties/${propId}/images`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
           body: fd,
         });
+        if (!uploadRes.ok) {
+          const uploadData = await uploadRes.json().catch(() => ({}));
+          setError(`Bien créé mais photos non uploadées : ${uploadData.error || uploadRes.status}. Utilisez la page Modifier pour ajouter des photos.`);
+          setSaving(false);
+          setTimeout(() => router.push("/tableau-de-bord/reservation"), 4000);
+          return;
+        }
       }
 
       router.push("/tableau-de-bord/reservation");
