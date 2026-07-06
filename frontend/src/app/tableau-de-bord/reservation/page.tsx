@@ -575,37 +575,35 @@ export default function ReservationDashboard() {
             )}
             {/* MESSAGES */}
             {tab === "messages" && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden" style={{ height: "70vh", minHeight: 480 }}>
+              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden" style={{ height: "600px" }}>
                 <div className="flex h-full">
-
                   {/* Conversations list */}
                   <div className={`flex flex-col border-r border-gray-100 dark:border-gray-800 ${activeConvId ? "hidden md:flex w-72" : "flex w-full md:w-72"}`}>
                     <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
                       <h2 className="font-bold text-sm text-gray-900 dark:text-white">Conversations</h2>
-                      <button onClick={fetchConversations} className="text-gray-400 hover:text-gray-600 text-xs">↻ Actualiser</button>
+                      <button onClick={fetchConversations} className="text-gray-400 hover:text-gray-600 text-xs">↻</button>
                     </div>
                     <div className="flex-1 overflow-y-auto">
-                      {convLoading ? (
+                      {convLoading && (
                         <div className="flex items-center justify-center py-10 text-gray-400 text-sm">Chargement…</div>
-                      ) : conversations.length === 0 ? (
+                      )}
+                      {!convLoading && conversations.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 px-4 text-center text-gray-400">
                           <ChatBubbleLeftRightIcon className="w-10 h-10 mb-2 opacity-30" />
                           <p className="text-sm font-medium">Aucun message</p>
-                          <p className="text-xs mt-1">Les conversations avec les propriétaires ou voyageurs apparaîtront ici.</p>
                         </div>
-                      ) : conversations.map(c => (
+                      )}
+                      {!convLoading && conversations.map(c => (
                         <button key={c.id} onClick={() => openConversation(c.id)}
                           className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left border-b border-gray-50 dark:border-gray-800 ${activeConvId === c.id ? "bg-rose-50 dark:bg-rose-900/10" : ""}`}>
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
-                            {c.other_avatar
-                              ? <img src={c.other_avatar} alt="" className="w-full h-full object-cover" />
-                              : (c.other_name?.[0] || "?")}
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                            {String(c.other_name?.[0] || "?")}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-1">
                               <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{c.other_name}</p>
                               {c.unread_count > 0 && (
-                                <span className="bg-rose-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center shrink-0">{c.unread_count}</span>
+                                <span className="bg-rose-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{c.unread_count}</span>
                               )}
                             </div>
                             <p className="text-xs text-gray-500 truncate">{c.property_title || "Réservation"}</p>
@@ -615,25 +613,24 @@ export default function ReservationDashboard() {
                       ))}
                     </div>
                   </div>
-
                   {/* Chat panel */}
                   <div className={`flex flex-col flex-1 ${!activeConvId ? "hidden md:flex" : "flex"}`}>
-                    {!activeConvId ? (
+                    {!activeConvId && (
                       <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
                         <ChatBubbleLeftRightIcon className="w-14 h-14 mb-3 opacity-20" />
                         <p className="text-sm">Sélectionnez une conversation</p>
                       </div>
-                    ) : (
-                      <div className="flex flex-col flex-1 h-full">
-                        {/* Header */}
+                    )}
+                    {activeConvId && (
+                      <div className="flex flex-col h-full">
                         <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
                           <button onClick={() => setActiveConvId(null)} className="md:hidden text-gray-400 hover:text-gray-600">
                             <ChevronLeftIcon className="w-5 h-5" />
                           </button>
                           {conversations.filter(c => c.id === activeConvId).map(conv => (
                             <div key={conv.id} className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs overflow-hidden">
-                                {conv.other_avatar ? <img src={conv.other_avatar} alt="" className="w-full h-full object-cover" /> : conv.other_name?.[0]}
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
+                                {String(conv.other_name?.[0] || "?")}
                               </div>
                               <div>
                                 <p className="text-sm font-semibold text-gray-900 dark:text-white">{conv.other_name}</p>
@@ -642,48 +639,40 @@ export default function ReservationDashboard() {
                             </div>
                           ))}
                         </div>
-
-                        {/* Messages */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                          {msgsLoading ? (
+                          {msgsLoading && (
                             <div className="flex items-center justify-center py-10 text-gray-400 text-sm">Chargement…</div>
-                          ) : convMessages.length === 0 ? (
+                          )}
+                          {!msgsLoading && convMessages.length === 0 && (
                             <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                              <p className="text-sm">Aucun message pour l'instant</p>
-                              <p className="text-xs mt-1">Envoyez le premier message !</p>
+                              <p className="text-sm">Aucun message pour l&apos;instant</p>
                             </div>
-                          ) : convMessages.map(m => {
-                            const isMine = m.sender_id === myId;
-                            return (
-                              <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${isMine ? "bg-rose-500 text-white rounded-br-sm" : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-sm"}`}>
-                                  {!isMine && <p className="text-[10px] font-semibold mb-0.5 text-gray-500 dark:text-gray-400">{m.sender_name}</p>}
-                                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.content}</p>
-                                  <p className={`text-[10px] mt-1 ${isMine ? "text-rose-200" : "text-gray-400"}`}>
-                                    {new Date(m.created_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                                    {" · "}
-                                    {new Date(m.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
-                                  </p>
-                                </div>
+                          )}
+                          {!msgsLoading && convMessages.map(m => (
+                            <div key={m.id} className={`flex ${m.sender_id === myId ? "justify-end" : "justify-start"}`}>
+                              <div className={`max-w-xs rounded-2xl px-4 py-2 ${m.sender_id === myId ? "bg-rose-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"}`}>
+                                {m.sender_id !== myId && <p className="text-xs font-semibold mb-0.5 opacity-70">{m.sender_name}</p>}
+                                <p className="text-sm whitespace-pre-wrap">{m.content}</p>
+                                <p className={`text-xs mt-1 ${m.sender_id === myId ? "text-rose-200" : "text-gray-400"}`}>
+                                  {new Date(m.created_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
+                                </p>
                               </div>
-                            );
-                          })}
+                            </div>
+                          ))}
                           <div ref={messagesEndRef} />
                         </div>
-
-                        {/* Input */}
                         <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
                           <div className="flex items-end gap-2 bg-gray-50 dark:bg-gray-800 rounded-2xl px-4 py-2">
                             <textarea
                               value={msgInput}
                               onChange={e => setMsgInput(e.target.value)}
                               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                              placeholder="Tapez votre message… (Entrée pour envoyer)"
+                              placeholder="Tapez votre message…"
                               rows={1}
                               className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white outline-none resize-none max-h-32 overflow-y-auto placeholder-gray-400"
                             />
                             <button onClick={sendMessage} disabled={!msgInput.trim() || msgSending}
-                              className="shrink-0 w-8 h-8 bg-rose-500 hover:bg-rose-600 disabled:opacity-40 text-white rounded-full flex items-center justify-center transition-colors">
+                              className="w-8 h-8 bg-rose-500 hover:bg-rose-600 disabled:opacity-40 text-white rounded-full flex items-center justify-center">
                               <PaperAirplaneIcon className="w-4 h-4" />
                             </button>
                           </div>
