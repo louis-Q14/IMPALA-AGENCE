@@ -585,7 +585,52 @@ router.put("/bookings/:id", authenticateToken, async (req, res) => {
       await db.query("DELETE FROM reservation_availability WHERE booking_id = $1", [req.params.id]);
     }
 
+    // Auto-pause property when booking is confirmed
+    if (status === "confirmed") {
+      await db.query(
+        "UPDATE reservation_properties SET status='inactive', updated_at=NOW() WHERE id=$1",
+        [booking.property_id]
+      );
+    }
+
     res.json({ message: "Statut mis à jour" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// GET /api/reservation/bookings/approved — confirmed bookings for the owner's agenda
+router.get("/bookings/approved", authenticateToken, async (req, res) => {
+  try {
+    const rows = await db.query(
+      `SELECT b.id, b.status, b.check_in, b.check_out, b.nights_count, b.guests_count,
+              b.total_price, b.currency, b.payment_method, b.guest_message, b.created_at, b.updated_at,
+              p.id AS property_id, p.title, p.city, p.property_type, p.status AS property_status,
+              (SELECT image_url FROM reservation_property_images WHERE property_id = p.id AND is_cover = TRUE LIMIT 1) AS cover_image,
+              u.full_name AS guest_name, u.email AS guest_email, u.phone AS guest_phone
+       FROM reservation_bookings b
+       JOIN reservation_properties p ON b.property_id = p.id
+       JOIN users u ON b.guest_id = u.id
+       WHERE p.user_id = $1 AND b.status = 'confirmed'
+       ORDER BY b.check_in ASC`,
+      [req.user.userId]
+    );
+    res.json(rows.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// PATCH /api/reservation/properties/:id/reactivate — owner reactivates paused property
+router.patch("/properties/:id/reactivate", authenticateToken, async (req, res) => {
+  try {
+    const check = await db.query("SELECT user_id FROM reservation_properties WHERE id = $1", [req.params.id]);
+    if (!check.rows[0]) return res.status(404).json({ error: "Bien non trouvé" });
+    if (check.rows[0].user_id !== req.user.userId) return res.status(403).json({ error: "Accès refusé" });
+    await db.query("UPDATE reservation_properties SET status='active', updated_at=NOW() WHERE id=$1", [req.params.id]);
+    res.json({ message: "Bien réactivé avec succès" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });

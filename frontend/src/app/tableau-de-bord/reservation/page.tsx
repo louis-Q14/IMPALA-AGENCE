@@ -34,7 +34,7 @@ const BOOKING_STATUS: Record<string, { label: string; color: string; icon: React
   rejected:  { label: "Refusée",     color: "bg-red-100 text-red-700",        icon: <XCircleIcon className="w-4 h-4" /> },
 };
 
-type TabType = "overview" | "properties" | "bookings" | "mes-voyages" | "messages";
+type TabType = "overview" | "properties" | "bookings" | "agenda" | "mes-voyages" | "messages";
 
 function ReservationDashboard() {
   const router = useRouter();
@@ -44,7 +44,7 @@ function ReservationDashboard() {
   // Sync URL ?tab= param → active tab (handles navigation from external pages)
   useEffect(() => {
     const t = searchParams.get("tab") as TabType;
-    if (t && ["overview","properties","bookings","mes-voyages","messages"].includes(t)) {
+    if (t && ["overview","properties","bookings","agenda","mes-voyages","messages"].includes(t)) {
       setTab(t);
     }
   }, [searchParams]);
@@ -54,6 +54,9 @@ function ReservationDashboard() {
   const [guestBookings, setGuestBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [myId, setMyId] = useState<string | null>(null);
+  const [approvedBookings, setApprovedBookings] = useState<any[]>([]);
+  const [agendaLoading, setAgendaLoading] = useState(false);
+  const [reactivating, setReactivating] = useState<string | null>(null);
   const [subStatus, setSubStatus] = useState<SubStatus>("none");
 
   const getToken = () => {
@@ -120,6 +123,47 @@ function ReservationDashboard() {
     setStats(prev => ({ ...prev, properties: prev.properties - 1 }));
   };
 
+  // ─── Agenda ────────────────────────────────────────────────────────────────
+
+  const fetchApprovedBookings = useCallback(async () => {
+    const token = getToken();
+    if (!token) return;
+    setAgendaLoading(true);
+    try {
+      const res = await fetch(`${API}/reservation/bookings/approved`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setApprovedBookings(await res.json());
+    } catch { /* ignore */ }
+    setAgendaLoading(false);
+  }, []);
+
+  const reactivateProperty = async (propertyId: string) => {
+    const token = getToken();
+    if (!token) return;
+    setReactivating(propertyId);
+    try {
+      const res = await fetch(`${API}/reservation/properties/${propertyId}/reactivate`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setApprovedBookings(prev => prev.map(b =>
+          b.property_id === propertyId ? { ...b, property_status: "active" } : b
+        ));
+        // Also refresh properties list
+        setProperties(prev => prev.map(p =>
+          p.id === propertyId ? { ...p, status: "active" } : p
+        ));
+      }
+    } catch { /* ignore */ }
+    setReactivating(null);
+  };
+
+  useEffect(() => {
+    if (tab === "agenda") fetchApprovedBookings();
+  }, [tab, fetchApprovedBookings]);
+
   // ─── Messages ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -161,11 +205,12 @@ function ReservationDashboard() {
         {/* Tabs */}
         <div className="flex bg-gray-100 dark:bg-gray-800 rounded-xl p-1 mb-8 overflow-x-auto no-scrollbar">
           {([
-            { key: "overview",    label: "Vue d'ensemble",  icon: <ChartBarIcon className="w-4 h-4" /> },
-            { key: "properties",  label: "Mes biens",        icon: <HomeModernIcon className="w-4 h-4" /> },
-            { key: "bookings",    label: "Demandes reçues",  icon: <CalendarDaysIcon className="w-4 h-4" /> },
-            { key: "mes-voyages", label: "Mes voyages",       icon: <UserGroupIcon className="w-4 h-4" /> },
-            { key: "messages",    label: "Messages",          icon: <ChatBubbleLeftRightIcon className="w-4 h-4" /> },
+            { key: "overview",    label: "Vue d'ensemble",     icon: <ChartBarIcon className="w-4 h-4" /> },
+            { key: "properties",  label: "Mes biens",           icon: <HomeModernIcon className="w-4 h-4" /> },
+            { key: "bookings",    label: "Demandes reçues",     icon: <CalendarDaysIcon className="w-4 h-4" /> },
+            { key: "agenda",      label: "Demandes approuvées", icon: <CheckCircleIcon className="w-4 h-4" /> },
+            { key: "mes-voyages", label: "Mes voyages",          icon: <UserGroupIcon className="w-4 h-4" /> },
+            { key: "messages",    label: "Messages",             icon: <ChatBubbleLeftRightIcon className="w-4 h-4" /> },
           ] as { key: TabType; label: string; icon: React.ReactNode }[]).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex-1 justify-center ${
@@ -178,6 +223,11 @@ function ReservationDashboard() {
               {t.key === "bookings" && bookings.filter(b => b.status === "pending").length > 0 && (
                 <span className="bg-rose-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                   {bookings.filter(b => b.status === "pending").length}
+                </span>
+              )}
+              {t.key === "agenda" && approvedBookings.length > 0 && (
+                <span className="bg-emerald-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                  {approvedBookings.length}
                 </span>
               )}
             </button>
@@ -442,6 +492,120 @@ function ReservationDashboard() {
                 ))}
               </div>
             )}
+            {/* AGENDA — DEMANDES APPROUVÉES */}
+            {tab === "agenda" && (
+              <div className="space-y-4">
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-start gap-3">
+                  <CheckCircleIcon className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="text-sm text-amber-800 dark:text-amber-300">
+                    <p className="font-semibold mb-0.5">Biens en pause automatique</p>
+                    <p>Lorsqu'une réservation est approuvée, votre bien est automatiquement mis en pause et n'est plus visible sur l'application. Réactivez-le manuellement une fois la période de réservation terminée.</p>
+                  </div>
+                </div>
+
+                {agendaLoading ? (
+                  <div className="flex justify-center py-20"><div className="animate-spin w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full" /></div>
+                ) : approvedBookings.length === 0 ? (
+                  <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
+                    <CheckCircleIcon className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Aucune réservation approuvée</h3>
+                    <p className="text-gray-500 mt-2">Les réservations confirmées apparaîtront ici.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {approvedBookings.map(b => {
+                      const isPaused = b.property_status === "inactive";
+                      const checkIn = new Date(b.check_in);
+                      const checkOut = new Date(b.check_out);
+                      const today = new Date();
+                      const isOngoing = checkIn <= today && today <= checkOut;
+                      const isUpcoming = checkIn > today;
+                      const isPast = checkOut < today;
+                      return (
+                        <div key={b.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+                          {/* Status bar */}
+                          <div className={`h-1.5 ${isOngoing ? "bg-emerald-500" : isUpcoming ? "bg-blue-500" : "bg-gray-300"}`} />
+                          <div className="p-6">
+                            <div className="flex items-start gap-4 flex-wrap">
+                              {/* Property image */}
+                              <div className="w-20 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0">
+                                {b.cover_image
+                                  ? <img src={b.cover_image} alt="" className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display="none"; }} />
+                                  : <div className="w-full h-full flex items-center justify-center"><HomeModernIcon className="w-7 h-7 text-gray-400" /></div>}
+                              </div>
+                              {/* Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                  <h3 className="font-bold text-gray-900 dark:text-white">{b.title}</h3>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${isOngoing ? "bg-emerald-100 text-emerald-700" : isUpcoming ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
+                                    {isOngoing ? "En cours" : isUpcoming ? "À venir" : "Terminé"}
+                                  </span>
+                                  {isPaused && (
+                                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-amber-100 text-amber-700 flex items-center gap-1">
+                                      ⏸ Bien en pause
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-500 flex items-center gap-1"><MapPinIcon className="w-3.5 h-3.5" />{b.city}</p>
+                                <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+                                    <p className="text-gray-400 font-medium">Arrivée</p>
+                                    <p className="text-gray-800 dark:text-white font-semibold">{checkIn.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</p>
+                                  </div>
+                                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+                                    <p className="text-gray-400 font-medium">Départ</p>
+                                    <p className="text-gray-800 dark:text-white font-semibold">{checkOut.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</p>
+                                  </div>
+                                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+                                    <p className="text-gray-400 font-medium">Durée</p>
+                                    <p className="text-gray-800 dark:text-white font-semibold">{b.nights_count} nuit{b.nights_count > 1 ? "s" : ""}</p>
+                                  </div>
+                                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+                                    <p className="text-gray-400 font-medium">Montant</p>
+                                    <p className="text-emerald-600 font-semibold">{b.total_price} {b.currency}</p>
+                                  </div>
+                                </div>
+                                <div className="mt-2 text-xs text-gray-500">
+                                  <span className="font-medium text-gray-700 dark:text-gray-300">{b.guest_name}</span>
+                                  {b.guest_email && <> · {b.guest_email}</>}
+                                  {b.guest_phone && <> · {b.guest_phone}</>}
+                                  {b.guests_count && <> · {b.guests_count} pers.</>}
+                                </div>
+                                {b.guest_message && (
+                                  <p className="mt-1 text-xs italic text-gray-400">"{b.guest_message}"</p>
+                                )}
+                              </div>
+                            </div>
+                            {/* Actions */}
+                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between flex-wrap gap-2">
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <CalendarDaysIcon className="w-4 h-4" />
+                                Approuvé le {new Date(b.updated_at).toLocaleDateString("fr-FR")}
+                              </div>
+                              {isPaused ? (
+                                <button
+                                  onClick={() => reactivateProperty(b.property_id)}
+                                  disabled={reactivating === b.property_id}
+                                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors"
+                                >
+                                  <CheckCircleIcon className="w-4 h-4" />
+                                  {reactivating === b.property_id ? "Réactivation…" : "Réactiver le bien"}
+                                </button>
+                              ) : (
+                                <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                                  <CheckCircleIcon className="w-4 h-4" /> Bien actif — visible sur l'app
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* MES VOYAGES */}
             {tab === "mes-voyages" && (
               <div className="space-y-4">
