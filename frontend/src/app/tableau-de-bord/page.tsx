@@ -316,7 +316,6 @@ export default function TableauDeBord() {
   const [trashSub, setTrashSub] = useState<TrashSub | null>(null);
   const [stats, setStats] = useState<ServiceStats | null>(null);
   const [reservationStats, setReservationStats] = useState<ReservationStats | null>(null);
-  const [calendarTab, setCalendarTab] = useState<string>("");
   const [bookings, setBookings] = useState<Record<string, string[]>>({});
 
   const loadUser = async () => {
@@ -661,27 +660,11 @@ export default function TableauDeBord() {
               startDate: new Date(trashSub.startDate), endDate: getSubEndDate(trashSub.startDate, trashSub.plan) });
           }
           if (calSvcs.length === 0) return null;
-          const activeTab = calendarTab || calSvcs[0].id;
           return (
             <div>
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Duree de l&apos;abonnement</h2>
-              {calSvcs.length > 1 && (
-                <div className="flex gap-2 mb-5 flex-wrap">
-                  {calSvcs.map(svc => (
-                    <button key={svc.id} onClick={() => setCalendarTab(svc.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                        activeTab === svc.id
-                          ? `bg-gradient-to-r ${svc.gradient} text-white shadow-md`
-                          : "bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-hover)]"
-                      }`}
-                    >
-                      <span>{svc.emoji}</span><span>{svc.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {calSvcs.filter(svc => svc.id === activeTab).map(svc => (
+                {calSvcs.map(svc => (
                   <SubscriptionCalendar key={svc.id} startDate={svc.startDate} endDate={svc.endDate}
                     label={svc.label} gradient={svc.gradient} emoji={svc.emoji}
                     bookedDates={["nettoyage", "repassage", "demenagement"].includes(svc.id) ? bookings[svc.id] : undefined} />
