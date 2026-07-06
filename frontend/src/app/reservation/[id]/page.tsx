@@ -99,6 +99,20 @@ export default function PropertyDetailPage() {
 
   const isBlocked = (date: string) => property?.blocked_dates?.includes(date);
 
+  // Check if selected range overlaps any blocked date
+  const hasConflict = (() => {
+    if (!checkIn || !checkOut || !property?.blocked_dates?.length) return false;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const cursor = new Date(start);
+    while (cursor < end) {
+      const d = cursor.toISOString().split("T")[0];
+      if (property.blocked_dates.includes(d)) return true;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return false;
+  })();
+
   const calcPrice = () => {
     if (!property || !checkIn || !checkOut) return null;
     const d1 = new Date(checkIn), d2 = new Date(checkOut);
@@ -114,6 +128,7 @@ export default function PropertyDetailPage() {
     const token = localStorage.getItem("token");
     if (!token) { router.push("/connexion"); return; }
     if (!checkIn || !checkOut) { setBookingResult({ success: false, message: "Veuillez sélectionner les dates" }); return; }
+    if (hasConflict) { setBookingResult({ success: false, message: "Ces dates ne sont pas disponibles. Veuillez choisir d'autres dates." }); return; }
 
     setBooking(true);
     try {
@@ -395,16 +410,61 @@ export default function PropertyDetailPage() {
               ) : null}
 
               <div className="space-y-3 mb-4">
+                {/* Unavailability calendar strip */}
+                {property.blocked_dates?.length > 0 && (
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-xs">
+                    <p className="font-semibold text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> Jours non disponibles
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {(() => {
+                        const sorted = [...property.blocked_dates].sort();
+                        const groups: { start: string; end: string }[] = [];
+                        let gStart = sorted[0], gEnd = sorted[0];
+                        for (let i = 1; i < sorted.length; i++) {
+                          const prev = new Date(gEnd);
+                          prev.setDate(prev.getDate() + 1);
+                          if (prev.toISOString().split("T")[0] === sorted[i]) {
+                            gEnd = sorted[i];
+                          } else {
+                            groups.push({ start: gStart, end: gEnd });
+                            gStart = sorted[i]; gEnd = sorted[i];
+                          }
+                        }
+                        groups.push({ start: gStart, end: gEnd });
+                        return groups.map((g, i) => {
+                          const s = new Date(g.start);
+                          const e = new Date(g.end);
+                          const fmt = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+                          return (
+                            <span key={i} className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full font-medium">
+                              {g.start === g.end ? fmt(s) : `${fmt(s)} – ${fmt(e)}`}
+                            </span>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* Conflict alert */}
+                {hasConflict && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
+                    <span className="text-lg leading-none">⚠</span>
+                    <p><strong>Dates non disponibles.</strong> Une ou plusieurs journées de votre sélection sont déjà réservées. Choisissez d'autres dates.</p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Arrivée</label>
-                    <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} min={new Date().toISOString().split("T")[0]}
-                      className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none" />
+                    <input type="date" value={checkIn} onChange={e => { setCheckIn(e.target.value); setBookingResult(null); }} min={new Date().toISOString().split("T")[0]}
+                      className={`w-full border rounded-xl px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none ${hasConflict && checkIn ? "border-red-400 dark:border-red-600" : "border-gray-200 dark:border-gray-700"}`} />
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Départ</label>
-                    <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split("T")[0]}
-                      className="w-full border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none" />
+                    <input type="date" value={checkOut} onChange={e => { setCheckOut(e.target.value); setBookingResult(null); }} min={checkIn || new Date().toISOString().split("T")[0]}
+                      className={`w-full border rounded-xl px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none ${hasConflict && checkOut ? "border-red-400 dark:border-red-600" : "border-gray-200 dark:border-gray-700"}`} />
                   </div>
                 </div>
                 <div>
@@ -442,9 +502,9 @@ export default function PropertyDetailPage() {
                 </div>
               )}
 
-              <button onClick={handleBook} disabled={booking || !!bookingResult?.success}
-                className="w-full bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl py-3 font-bold transition-colors">
-                {booking ? "Envoi en cours..." : property.instant_booking ? "Réserver maintenant" : "Demander une réservation"}
+              <button onClick={handleBook} disabled={booking || !!bookingResult?.success || hasConflict}
+                className={`w-full rounded-xl py-3 font-bold transition-colors ${hasConflict ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed" : "bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white"}`}>
+                {booking ? "Envoi en cours..." : hasConflict ? "Dates non disponibles" : property.instant_booking ? "Réserver maintenant" : "Demander une réservation"}
               </button>
 
               {property.instant_booking && (
