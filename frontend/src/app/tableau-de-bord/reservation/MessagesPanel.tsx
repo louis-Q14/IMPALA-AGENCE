@@ -149,7 +149,8 @@ export default function MessagesPanel({ myId, autoOpenConvId }: Props) {
         method: "POST", headers: { Authorization: `Bearer ${token}` }, body: fd,
       });
       if (res.ok) {
-        setMessages(prev => [...prev, await res.json()]);
+        const newMsg = await res.json();
+        setMessages(prev => [...prev, newMsg]);
         setInput(""); setPreviewFile(null);
         fetchConversations();
         setTimeout(() => endRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
