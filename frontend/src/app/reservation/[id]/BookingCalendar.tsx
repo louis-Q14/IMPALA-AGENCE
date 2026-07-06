@@ -21,15 +21,20 @@ interface Props {
 
 export default function BookingCalendar({ blockedDates, checkIn, checkOut, onCheckInChange, onCheckOutChange, minDate }: Props) {
   const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
+  const initYear = today.getFullYear();
+  const initMonth = today.getMonth();
+  const [year, setYear] = useState(initYear);
+  const [month, setMonth] = useState(initMonth);
   const [selecting, setSelecting] = useState<"in" | "out">("in");
   const [hoverDate, setHoverDate] = useState("");
 
   const blocked = new Set(blockedDates);
-  const todayStr = minDate || today.toISOString().split("T")[0];
+  // Use local date (not UTC) to avoid timezone issues
+  const todayStr = minDate || `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+  const canGoPrev = !(year === initYear && month === initMonth);
 
   const prevMonth = () => {
+    if (!canGoPrev) return;
     if (month === 0) { setMonth(11); setYear(y => y - 1); }
     else setMonth(m => m - 1);
   };
@@ -171,18 +176,18 @@ export default function BookingCalendar({ blockedDates, checkIn, checkOut, onChe
       </div>
 
       {/* Month navigation */}
-      <div className="flex items-center justify-between mb-3">
-        <button type="button" onClick={prevMonth} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+      <div className="flex items-start justify-between mb-3">
+        <button type="button" onClick={prevMonth} disabled={!canGoPrev} className="mt-6 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 disabled:opacity-20 disabled:cursor-not-allowed shrink-0">
           <ChevronLeftIcon className="w-4 h-4" />
         </button>
-        <div className="flex gap-6 flex-1 px-2">
+        <div className="flex gap-4 flex-1 px-1">
           {renderMonth(year, month)}
-          <div className="hidden sm:block w-px bg-gray-100 dark:bg-gray-800 mx-1" />
+          <div className="hidden sm:block w-px bg-gray-100 dark:bg-gray-800" />
           <div className="hidden sm:flex flex-1">
             {renderMonth(year2, month2)}
           </div>
         </div>
-        <button type="button" onClick={nextMonth} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500">
+        <button type="button" onClick={nextMonth} className="mt-6 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 shrink-0">
           <ChevronRightIcon className="w-4 h-4" />
         </button>
       </div>
