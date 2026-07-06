@@ -203,7 +203,8 @@ export default function PropertyDetailPage() {
           ) : (
             <>
               <div className="col-span-2 row-span-2 relative">
-                <img src={mainImages[0].url} alt="" className="w-full h-full object-cover hover:brightness-90 transition" />
+                <img src={mainImages[0].url} alt="" className="w-full h-full object-cover hover:brightness-90 transition"
+                  onError={e => { (e.target as HTMLImageElement).parentElement!.innerHTML = ''; }} />
               </div>
               {mainImages.slice(1, 5).map((img, idx) => (
                 <div key={idx} className="relative">

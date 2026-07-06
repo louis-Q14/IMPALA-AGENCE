@@ -49,7 +49,8 @@ function PropertyCard({ p }: { p: Property }) {
     <Link href={`/reservation/${p.id}`} className="group block">
       <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 mb-3">
         {cover ? (
-          <img src={cover} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={cover} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200">
             <HomeModernIcon className="w-12 h-12 text-blue-400" />

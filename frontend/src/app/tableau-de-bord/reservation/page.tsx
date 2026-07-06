@@ -32,7 +32,7 @@ const BOOKING_STATUS: Record<string, { label: string; color: string; icon: React
   rejected:  { label: "Refusée",     color: "bg-red-100 text-red-700",        icon: <XCircleIcon className="w-4 h-4" /> },
 };
 
-type TabType = "overview" | "properties" | "bookings";
+type TabType = "overview" | "properties" | "bookings" | "mes-voyages";
 
 export default function ReservationDashboard() {
   const router = useRouter();
@@ -40,6 +40,7 @@ export default function ReservationDashboard() {
   const [stats, setStats] = useState({ properties: 0, active_bookings: 0, total_revenue: 0 });
   const [properties, setProperties] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
+  const [guestBookings, setGuestBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [subStatus, setSubStatus] = useState<SubStatus>("none");
 
@@ -73,11 +74,13 @@ export default function ReservationDashboard() {
       fetch(`${API}/reservation/stats`, { headers }).then(r => r.json()),
       fetch(`${API}/reservation/my-properties`, { headers }).then(r => r.json()),
       fetch(`${API}/reservation/bookings/owner`, { headers }).then(r => r.json()),
+      fetch(`${API}/reservation/bookings/guest`, { headers }).then(r => r.json()),
     ])
-      .then(([s, p, b]) => {
+      .then(([s, p, b, gb]) => {
         if (s.properties !== undefined) setStats(s);
         if (Array.isArray(p)) setProperties(p);
         if (Array.isArray(b)) setBookings(b);
+        if (Array.isArray(gb)) setGuestBookings(gb);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -137,9 +140,10 @@ export default function ReservationDashboard() {
         {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl mb-8 w-fit">
           {([
-            { key: "overview", label: "Vue d'ensemble", icon: <ChartBarIcon className="w-4 h-4" /> },
-            { key: "properties", label: "Mes biens", icon: <HomeModernIcon className="w-4 h-4" /> },
-            { key: "bookings", label: "Réservations", icon: <CalendarDaysIcon className="w-4 h-4" /> },
+            { key: "overview",    label: "Vue d'ensemble",  icon: <ChartBarIcon className="w-4 h-4" /> },
+            { key: "properties",  label: "Mes biens",        icon: <HomeModernIcon className="w-4 h-4" /> },
+            { key: "bookings",    label: "Demandes reçues",  icon: <CalendarDaysIcon className="w-4 h-4" /> },
+            { key: "mes-voyages", label: "Mes voyages",       icon: <UserGroupIcon className="w-4 h-4" /> },
           ] as { key: TabType; label: string; icon: React.ReactNode }[]).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -238,8 +242,9 @@ export default function ReservationDashboard() {
                         return (
                           <div key={p.id} className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm">
                             <div className="aspect-video bg-gray-100 dark:bg-gray-800 relative">
-                              {cover ? <img src={cover} alt={p.title} className="w-full h-full object-cover" /> :
-                                <div className="w-full h-full flex items-center justify-center"><HomeModernIcon className="w-10 h-10 text-gray-400" /></div>}
+              {cover ? <img src={cover} alt={p.title} className="w-full h-full object-cover"
+                        onError={e => { (e.target as HTMLImageElement).style.display='none'; }} /> :
+                        <div className="w-full h-full flex items-center justify-center"><HomeModernIcon className="w-10 h-10 text-gray-400" /></div>}
                               <span className={`absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full font-semibold ${STATUS_LABELS[p.status]?.color}`}>
                                 {STATUS_LABELS[p.status]?.label}
                               </span>
@@ -307,7 +312,8 @@ export default function ReservationDashboard() {
                   return (
                     <div key={p.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex gap-4 p-4">
                       <div className="w-32 h-24 rounded-xl bg-gray-100 dark:bg-gray-800 shrink-0 overflow-hidden">
-                        {cover ? <img src={cover} alt={p.title} className="w-full h-full object-cover" /> :
+                      {cover ? <img src={cover} alt={p.title} className="w-full h-full object-cover"
+                          onError={e => { (e.target as HTMLImageElement).style.display='none'; }} /> :
                           <div className="w-full h-full flex items-center justify-center"><HomeModernIcon className="w-8 h-8 text-gray-400" /></div>}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -332,7 +338,7 @@ export default function ReservationDashboard() {
                         <Link href={`/reservation/${p.id}`} className="flex items-center gap-1 text-xs text-gray-500 hover:text-rose-500 transition-colors">
                           <EyeIcon className="w-4 h-4" /> Voir
                         </Link>
-                        <Link href={`/tableau-de-bord/reservation/editer/${p.id}`} className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-500 transition-colors">
+                <Link href={`/tableau-de-bord/reservation/editer/${p.id}`} className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-500 transition-colors">
                           <PencilIcon className="w-4 h-4" /> Modifier
                         </Link>
                         <button onClick={() => handleDeleteProperty(p.id)} className="flex items-center gap-1 text-xs text-gray-500 hover:text-red-500 transition-colors">
@@ -398,6 +404,57 @@ export default function ReservationDashboard() {
                           className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-xl text-sm font-semibold transition-colors">
                           Marquer terminé
                         </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {/* MES VOYAGES */}
+            {tab === "mes-voyages" && (
+              <div className="space-y-4">
+                {guestBookings.length === 0 ? (
+                  <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
+                    <CalendarDaysIcon className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Aucun voyage réservé</h3>
+                    <p className="text-gray-500 mt-2 mb-6">Explorez les biens disponibles et faites votre première réservation !</p>
+                    <Link href="/reservation" className="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center gap-2">
+                      Explorer les biens
+                    </Link>
+                  </div>
+                ) : guestBookings.map(b => (
+                  <div key={b.id} className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-6">
+                    <div className="flex items-start gap-4 flex-wrap">
+                      <div className="w-20 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0">
+                        {b.cover_image
+                          ? <img src={b.cover_image} alt="" className="w-full h-full object-cover"
+                              onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
+                          : <div className="w-full h-full flex items-center justify-center"><HomeModernIcon className="w-6 h-6 text-gray-400" /></div>}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h3 className="font-bold text-gray-900 dark:text-white">{b.title}</h3>
+                            <p className="text-sm text-gray-500 flex items-center gap-1"><MapPinIcon className="w-3.5 h-3.5" />{b.city}</p>
+                          </div>
+                          <span className={`shrink-0 inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full font-semibold ${BOOKING_STATUS[b.status]?.color}`}>
+                            {BOOKING_STATUS[b.status]?.icon} {BOOKING_STATUS[b.status]?.label}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                          {new Date(b.check_in).toLocaleDateString("fr-FR")} → {new Date(b.check_out).toLocaleDateString("fr-FR")}
+                          {b.nights_count ? ` · ${b.nights_count} nuit${b.nights_count > 1 ? 's' : ''}` : ""}
+                          {b.guests_count ? ` · ${b.guests_count} pers.` : ""}
+                        </p>
+                        <p className="text-sm font-bold text-gray-900 dark:text-white mt-1">{b.total_price} {b.currency}</p>
+                        {b.owner_message && <p className="text-xs italic text-gray-500 mt-1">“{b.owner_message}”</p>}
+                      </div>
+                    </div>
+                    {b.status === "confirmed" && (
+                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                        <Link href={`/reservation/${b.property_id}`} className="text-sm text-rose-500 hover:underline flex items-center gap-1">
+                          <EyeIcon className="w-4 h-4" /> Voir le bien
+                        </Link>
                       </div>
                     )}
                   </div>
