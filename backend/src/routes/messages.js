@@ -269,4 +269,82 @@ router.get("/users/search", authenticateToken, async (req, res) => {
   }
 });
 
+// POST /api/messages/contact-host
+// body: { bookingId?, propertyId, content }
+// Creates or finds a conversation between a guest and the property owner
+router.post("/contact-host", authenticateToken, async (req, res) => {
+  try {
+    const me = req.user.userId;
+    const { propertyId, bookingId, content } = req.body;
+
+    if (!propertyId || !content || !content.trim()) {
+      return res.status(400).json({ error: "propertyId et content requis" });
+    }
+    if (content.length > 5000) return res.status(400).json({ error: "Message trop long" });
+
+    // Get property owner
+    const propRow = await db.query(
+      `SELECT user_id, title FROM reservation_properties WHERE id = $1`,
+      [propertyId]
+    );
+    if (!propRow.rows[0]) return res.status(404).json({ error: "Bien introuvable" });
+
+    const ownerId = propRow.rows[0].user_id;
+    if (ownerId === me) {
+      return res.status(400).json({ error: "Vous ne pouvez pas vous contacter vous-même" });
+    }
+
+    const conv = await findOrCreateConversation({
+      userA: me,
+      userB: ownerId,
+      adId: propertyId,
+      adType: "reservation",
+    });
+
+    const ins = await db.query(
+      `INSERT INTO messages (conversation_id, sender_id, content) VALUES ($1, $2, $3)
+       RETURNING id, conversation_id, sender_id, content, read, created_at`,
+      [conv.id, me, content.trim()]
+    );
+
+    res.status(201).json({
+      conversation_id: conv.id,
+      message: { ...ins.rows[0], sender_name: req.user.full_name },
+      property_title: propRow.rows[0].title,
+    });
+  } catch (err) {
+    console.error("Contact host error:", err);
+    res.status(500).json({ error: "Erreur lors de l'envoi du message" });
+  }
+});
+
+// GET /api/messages/reservation-conversations
+// Returns all conversations of type 'reservation' for the current user
+router.get("/reservation-conversations", authenticateToken, async (req, res) => {
+  try {
+    const me = req.user.userId;
+    const r = await db.query(
+      `SELECT c.id, c.ad_id AS property_id, c.ad_type, c.created_at,
+              CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END AS other_id,
+              u.full_name AS other_name, u.email AS other_email, u.avatar_url AS other_avatar,
+              rp.title AS property_title, rp.city AS property_city,
+              (SELECT image_url FROM reservation_property_images WHERE property_id = rp.id AND is_cover = TRUE LIMIT 1) AS property_cover,
+              (SELECT content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message,
+              (SELECT created_at FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_time,
+              (SELECT COUNT(*)::int FROM messages m WHERE m.conversation_id = c.id AND m.sender_id <> $1 AND m.read = FALSE) AS unread_count
+       FROM conversations c
+       JOIN users u ON u.id = (CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END)
+       LEFT JOIN reservation_properties rp ON rp.id::text = c.ad_id
+       WHERE (c.participant_1 = $1 OR c.participant_2 = $1)
+         AND c.ad_type = 'reservation'
+       ORDER BY last_message_time DESC NULLS LAST, c.created_at DESC`,
+      [me]
+    );
+    res.json(r.rows);
+  } catch (err) {
+    console.error("Reservation conversations error:", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 module.exports = router;
