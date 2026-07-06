@@ -8,7 +8,7 @@ import Link from "next/link";
 import {
   MapPinIcon, StarIcon, UserGroupIcon, HomeModernIcon, CalendarDaysIcon,
   ShieldCheckIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon,
-  WifiIcon, TvIcon, FireIcon, TruckIcon,
+  WifiIcon, TvIcon, FireIcon, TruckIcon, ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 
@@ -80,6 +80,8 @@ export default function PropertyDetailPage() {
   const [message, setMessage] = useState("");
   const [booking, setBooking] = useState(false);
   const [bookingResult, setBookingResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [msgSending, setMsgSending] = useState(false);
+  const [msgSent, setMsgSent] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -121,10 +123,44 @@ export default function PropertyDetailPage() {
         body: JSON.stringify({ property_id: id, check_in: checkIn, check_out: checkOut, guests_count: guestsCount, payment_method: paymentMethod, guest_message: message }),
       });
       const d = await r.json();
-      if (r.ok) setBookingResult({ success: true, message: d.message });
-      else setBookingResult({ success: false, message: d.error || "Erreur" });
+      if (r.ok) {
+        setBookingResult({ success: true, message: d.message });
+        // Sync message to conversation channel if there was a message
+        if (message.trim() && property) {
+          fetch(`${API}/messages/contact-host`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              propertyId: id,
+              content: `[Demande de r\u00e9servation ${checkIn} \u2192 ${checkOut}]\n${message.trim()}`,
+            }),
+          }).catch(() => {});
+        }
+      } else {
+        setBookingResult({ success: false, message: d.error || "Erreur" });
+      }
     } finally {
       setBooking(false);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) { router.push("/connexion"); return; }
+    if (!property) return;
+    setMsgSending(true);
+    try {
+      const r = await fetch(`${API}/messages/contact-host`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ propertyId: id, content: `Bonjour, je suis int\u00e9ress\u00e9(e) par votre bien \u00ab\u00a0${property.title}\u00a0\u00bb. Pourriez-vous me donner plus d'informations ?` }),
+      });
+      if (r.ok) {
+        setMsgSent(true);
+        router.push("/tableau-de-bord/reservation?tab=messages");
+      }
+    } finally {
+      setMsgSending(false);
     }
   };
 
@@ -224,17 +260,27 @@ export default function PropertyDetailPage() {
           {/* Left — Details */}
           <div className="lg:col-span-2 space-y-8">
             {/* Owner */}
-            <div className="flex items-center gap-4 pb-6 border-b border-gray-100 dark:border-gray-800">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
-                {property.owner_avatar ? <img src={property.owner_avatar} className="w-full h-full object-cover" /> : property.owner_name.charAt(0)}
+            <div className="flex items-center justify-between gap-4 pb-6 border-b border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
+                  {property.owner_avatar ? <img src={property.owner_avatar} className="w-full h-full object-cover" /> : property.owner_name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Propos\u00e9 par {property.owner_name}</h3>
+                  <p className="text-sm text-gray-500">
+                    {property.bedrooms} chambre{property.bedrooms > 1 ? "s" : ""} \u00b7 {property.bathrooms} sdb \u00b7 {property.max_guests} voyageurs max
+                    {property.surface ? ` \u00b7 ${property.surface} m\u00b2` : ""}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Proposé par {property.owner_name}</h3>
-                <p className="text-sm text-gray-500">
-                  {property.bedrooms} chambre{property.bedrooms > 1 ? "s" : ""} · {property.bathrooms} sdb · {property.max_guests} voyageurs max
-                  {property.surface ? ` · ${property.surface} m²` : ""}
-                </p>
-              </div>
+              <button
+                onClick={handleSendMessage}
+                disabled={msgSending || msgSent}
+                className="flex items-center gap-2 px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors shrink-0"
+              >
+                <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                {msgSent ? "Message envoy\u00e9 \u2713" : msgSending ? "Envoi..." : "Envoyer un message"}
+              </button>
             </div>
 
             {/* Info badges */}

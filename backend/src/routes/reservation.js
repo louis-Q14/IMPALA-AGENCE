@@ -473,6 +473,36 @@ router.post("/bookings", authenticateToken, async (req, res) => {
       nights,
       message: p.instant_booking ? "Réservation confirmée !" : "Demande envoyée au propriétaire",
     });
+
+    // ─── Auto-sync guest_message to messaging channel ────────────────────────
+    if (guest_message && guest_message.trim()) {
+      try {
+        // Find or create conversation between guest and owner
+        const existingConv = await db.query(
+          `SELECT id FROM conversations
+           WHERE ((participant_1 = $1 AND participant_2 = $2) OR (participant_1 = $2 AND participant_2 = $1))
+             AND ad_id = $3 AND ad_type = 'reservation' LIMIT 1`,
+          [req.user.userId, p.user_id, property_id]
+        );
+        let convId;
+        if (existingConv.rows.length > 0) {
+          convId = existingConv.rows[0].id;
+        } else {
+          const newConv = await db.query(
+            `INSERT INTO conversations (ad_id, ad_type, participant_1, participant_2) VALUES ($1, $2, $3, $4) RETURNING id`,
+            [property_id, "reservation", req.user.userId, p.user_id]
+          );
+          convId = newConv.rows[0].id;
+        }
+        const dateRange = `${check_in} → ${check_out}`;
+        await db.query(
+          `INSERT INTO messages (conversation_id, sender_id, content) VALUES ($1, $2, $3)`,
+          [convId, req.user.userId, `[Demande de réservation ${dateRange}]\n${guest_message.trim()}`]
+        );
+      } catch (msgErr) {
+        console.error("Message sync error (non-blocking):", msgErr.message);
+      }
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
