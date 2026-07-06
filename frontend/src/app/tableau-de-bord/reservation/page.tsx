@@ -10,8 +10,9 @@ import {
   BanknotesIcon, ChartBarIcon, EyeIcon, PencilIcon, TrashIcon,
   ClockIcon, CheckCircleIcon, XCircleIcon, MapPinIcon,
   ArrowRightIcon, UserGroupIcon, ChatBubbleLeftRightIcon,
-  PaperAirplaneIcon, ChevronLeftIcon,
+  ChevronLeftIcon,
 } from "@heroicons/react/24/outline";
+import MessagesPanel from "./MessagesPanel";
 
 type SubStatus = "none" | "pending" | "active";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
@@ -43,16 +44,6 @@ export default function ReservationDashboard() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [guestBookings, setGuestBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Messages
-  const [conversations, setConversations] = useState<any[]>([]);
-  const [activeConvId, setActiveConvId] = useState<string | null>(null);
-  const [convMessages, setConvMessages] = useState<any[]>([]);
-  const [msgInput, setMsgInput] = useState("");
-  const [msgSending, setMsgSending] = useState(false);
-  const [convLoading, setConvLoading] = useState(false);
-  const [msgsLoading, setMsgsLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [myId, setMyId] = useState<string | null>(null);
   const [subStatus, setSubStatus] = useState<SubStatus>("none");
 
@@ -122,68 +113,6 @@ export default function ReservationDashboard() {
 
   // ─── Messages ──────────────────────────────────────────────────────────────
 
-  const fetchConversations = useCallback(async () => {
-    const token = getToken();
-    if (!token) return;
-    setConvLoading(true);
-    try {
-      const res = await fetch(`${API}/messages/reservation-conversations`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) setConversations(await res.json());
-    } catch { /* ignore */ }
-    setConvLoading(false);
-  }, []);
-
-  const fetchMessages = useCallback(async (convId: string) => {
-    const token = getToken();
-    if (!token) return;
-    setMsgsLoading(true);
-    try {
-      const res = await fetch(`${API}/messages/conversations/${convId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setConvMessages(await res.json());
-        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-      }
-    } catch { /* ignore */ }
-    setMsgsLoading(false);
-  }, []);
-
-  const sendMessage = async () => {
-    if (!msgInput.trim() || !activeConvId || msgSending) return;
-    const token = getToken();
-    if (!token) return;
-    setMsgSending(true);
-    try {
-      const res = await fetch(`${API}/messages/conversations/${activeConvId}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content: msgInput.trim() }),
-      });
-      if (res.ok) {
-        const msg = await res.json();
-        setConvMessages(prev => [...prev, msg]);
-        setMsgInput("");
-        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
-        fetchConversations();
-      }
-    } catch { /* ignore */ }
-    setMsgSending(false);
-  };
-
-  const openConversation = (convId: string) => {
-    setActiveConvId(convId);
-    fetchMessages(convId);
-    setConversations(prev => prev.map(c => c.id === convId ? { ...c, unread_count: 0 } : c));
-  };
-
-  useEffect(() => {
-    if (tab === "messages") fetchConversations();
-  }, [tab, fetchConversations]);
-
-  // Get my user id from localStorage
   useEffect(() => {
     try {
       const u = localStorage.getItem("user");
@@ -241,10 +170,8 @@ export default function ReservationDashboard() {
                   {bookings.filter(b => b.status === "pending").length}
                 </span>
               )}
-              {t.key === "messages" && conversations.reduce((s, c) => s + (c.unread_count || 0), 0) > 0 && (
-                <span className="bg-rose-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                  {conversations.reduce((s, c) => s + (c.unread_count || 0), 0)}
-                </span>
+              {t.key === "messages" && false && (
+                <span className="bg-rose-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">0</span>
               )}
             </button>
           ))}
@@ -562,7 +489,7 @@ export default function ReservationDashboard() {
                               headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                               body: JSON.stringify({ propertyId: b.property_id, content: "Bonjour, j'ai une question concernant ma réservation." }),
                             });
-                            if (res.ok) { setTab("messages"); fetchConversations(); }
+                            if (res.ok) { setTab("messages"); }
                           }}
                           className="text-sm text-indigo-500 hover:underline flex items-center gap-1">
                           <ChatBubbleLeftRightIcon className="w-4 h-4" /> Contacter le propriétaire
@@ -575,113 +502,7 @@ export default function ReservationDashboard() {
             )}
             {/* MESSAGES */}
             {tab === "messages" && (
-              <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden" style={{ height: "600px" }}>
-                <div className="flex h-full">
-                  {/* Conversations list */}
-                  <div className={`flex flex-col border-r border-gray-100 dark:border-gray-800 ${activeConvId ? "hidden md:flex w-72" : "flex w-full md:w-72"}`}>
-                    <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                      <h2 className="font-bold text-sm text-gray-900 dark:text-white">Conversations</h2>
-                      <button onClick={fetchConversations} className="text-gray-400 hover:text-gray-600 text-xs">↻</button>
-                    </div>
-                    <div className="flex-1 overflow-y-auto">
-                      {convLoading && (
-                        <div className="flex items-center justify-center py-10 text-gray-400 text-sm">Chargement…</div>
-                      )}
-                      {!convLoading && conversations.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12 px-4 text-center text-gray-400">
-                          <ChatBubbleLeftRightIcon className="w-10 h-10 mb-2 opacity-30" />
-                          <p className="text-sm font-medium">Aucun message</p>
-                        </div>
-                      )}
-                      {!convLoading && conversations.map(c => (
-                        <button key={c.id} onClick={() => openConversation(c.id)}
-                          className={`w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left border-b border-gray-50 dark:border-gray-800 ${activeConvId === c.id ? "bg-rose-50 dark:bg-rose-900/10" : ""}`}>
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                            {String(c.other_name?.[0] || "?")}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1">
-                              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{c.other_name}</p>
-                              {c.unread_count > 0 && (
-                                <span className="bg-rose-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">{c.unread_count}</span>
-                              )}
-                            </div>
-                            <p className="text-xs text-gray-500 truncate">{c.property_title || "Réservation"}</p>
-                            {c.last_message && <p className="text-xs text-gray-400 truncate mt-0.5">{c.last_message}</p>}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Chat panel */}
-                  <div className={`flex flex-col flex-1 ${!activeConvId ? "hidden md:flex" : "flex"}`}>
-                    {!activeConvId && (
-                      <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-                        <ChatBubbleLeftRightIcon className="w-14 h-14 mb-3 opacity-20" />
-                        <p className="text-sm">Sélectionnez une conversation</p>
-                      </div>
-                    )}
-                    {activeConvId && (
-                      <div className="flex flex-col h-full">
-                        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                          <button onClick={() => setActiveConvId(null)} className="md:hidden text-gray-400 hover:text-gray-600">
-                            <ChevronLeftIcon className="w-5 h-5" />
-                          </button>
-                          {conversations.filter(c => c.id === activeConvId).map(conv => (
-                            <div key={conv.id} className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
-                                {String(conv.other_name?.[0] || "?")}
-                              </div>
-                              <div>
-                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{conv.other_name}</p>
-                                <p className="text-xs text-gray-500">{conv.property_title}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                          {msgsLoading && (
-                            <div className="flex items-center justify-center py-10 text-gray-400 text-sm">Chargement…</div>
-                          )}
-                          {!msgsLoading && convMessages.length === 0 && (
-                            <div className="flex flex-col items-center justify-center h-full text-gray-400">
-                              <p className="text-sm">Aucun message pour l&apos;instant</p>
-                            </div>
-                          )}
-                          {!msgsLoading && convMessages.map(m => (
-                            <div key={m.id} className={`flex ${m.sender_id === myId ? "justify-end" : "justify-start"}`}>
-                              <div className={`max-w-xs rounded-2xl px-4 py-2 ${m.sender_id === myId ? "bg-rose-500 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"}`}>
-                                {m.sender_id !== myId && <p className="text-xs font-semibold mb-0.5 opacity-70">{m.sender_name}</p>}
-                                <p className="text-sm whitespace-pre-wrap">{m.content}</p>
-                                <p className={`text-xs mt-1 ${m.sender_id === myId ? "text-rose-200" : "text-gray-400"}`}>
-                                  {new Date(m.created_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                          <div ref={messagesEndRef} />
-                        </div>
-                        <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800">
-                          <div className="flex items-end gap-2 bg-gray-50 dark:bg-gray-800 rounded-2xl px-4 py-2">
-                            <textarea
-                              value={msgInput}
-                              onChange={e => setMsgInput(e.target.value)}
-                              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                              placeholder="Tapez votre message…"
-                              rows={1}
-                              className="flex-1 bg-transparent text-sm text-gray-900 dark:text-white outline-none resize-none max-h-32 overflow-y-auto placeholder-gray-400"
-                            />
-                            <button onClick={sendMessage} disabled={!msgInput.trim() || msgSending}
-                              className="w-8 h-8 bg-rose-500 hover:bg-rose-600 disabled:opacity-40 text-white rounded-full flex items-center justify-center">
-                              <PaperAirplaneIcon className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <MessagesPanel myId={myId} />
             )}
           </>
         )}
