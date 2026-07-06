@@ -2,8 +2,8 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   HomeModernIcon, PlusIcon, CalendarDaysIcon, StarIcon,
@@ -36,9 +36,18 @@ const BOOKING_STATUS: Record<string, { label: string; color: string; icon: React
 
 type TabType = "overview" | "properties" | "bookings" | "mes-voyages" | "messages";
 
-export default function ReservationDashboard() {
+function ReservationDashboard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<TabType>("overview");
+
+  // Sync URL ?tab= param → active tab (handles navigation from external pages)
+  useEffect(() => {
+    const t = searchParams.get("tab") as TabType;
+    if (t && ["overview","properties","bookings","mes-voyages","messages"].includes(t)) {
+      setTab(t);
+    }
+  }, [searchParams]);
   const [stats, setStats] = useState({ properties: 0, active_bookings: 0, total_revenue: 0 });
   const [properties, setProperties] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -506,5 +515,13 @@ export default function ReservationDashboard() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ReservationPage() {
+  return (
+    <Suspense fallback={null}>
+      <ReservationDashboard />
+    </Suspense>
   );
 }
