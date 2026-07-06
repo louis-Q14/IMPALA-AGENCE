@@ -20,12 +20,60 @@ interface Props {
   minDate?: string;
 }
 
+interface CalGridProps {
+  y: number; m: number; blocked: Set<string>; todayStr: string;
+  checkIn: string; checkOut: string; phase: "in"|"out"; hover: string;
+  onDay: (d: string) => void; onEnter: (d: string) => void; onLeave: () => void;
+}
+
+function CalGrid({ y, m, blocked, todayStr, checkIn, checkOut, phase, hover, onDay, onEnter, onLeave }: CalGridProps) {
+  const first = firstWeekday(y, m);
+  const total = new Date(y, m+1, 0).getDate();
+  const cells: (number|null)[] = [...Array(first).fill(null)];
+  for (let i = 1; i <= total; i++) cells.push(i);
+  while (cells.length % 7) cells.push(null);
+
+  function cls(d: string) {
+    if (blocked.has(d)) return "text-gray-300 dark:text-gray-600 line-through cursor-not-allowed pointer-events-none";
+    if (d < todayStr) return "text-gray-300 dark:text-gray-600 cursor-not-allowed pointer-events-none";
+    if (d === checkIn || d === checkOut) return "bg-rose-500 text-white font-bold";
+    const end = phase === "out" && hover > checkIn ? hover : checkOut;
+    if (checkIn && end && d > checkIn && d < end) return "bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300";
+    return "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700";
+  }
+
+  return (
+    <div className="min-w-[17rem]">
+      <p className="text-sm font-bold text-center text-gray-900 dark:text-white mb-3">{MONTHS_FR[m]} {y}</p>
+      <div className="grid grid-cols-7 text-xs text-center mb-1">
+        {DAYS_FR.map(d => <span key={d} className="py-1 font-semibold text-gray-500">{d}</span>)}
+      </div>
+      <div className="grid grid-cols-7 text-sm text-center gap-y-0.5">
+        {cells.map((day, i) => {
+          if (!day) return <span key={i} />;
+          const ds = iso(y, m, day);
+          return (
+            <button key={i} type="button"
+              disabled={blocked.has(ds) || ds < todayStr}
+              onClick={() => onDay(ds)}
+              onMouseEnter={() => onEnter(ds)}
+              onMouseLeave={onLeave}
+              title={blocked.has(ds) ? "Non disponible" : undefined}
+              className={`h-9 w-9 mx-auto rounded-full flex items-center justify-center transition-colors text-sm ${cls(ds)}`}>
+              {day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function BookingCalendar({ blockedDates, checkIn, checkOut, onCheckInChange, onCheckOutChange, minDate }: Props) {
   const now = new Date();
   const todayStr = minDate || `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
   const initYear = now.getFullYear();
   const initMonth = now.getMonth();
-
   const [open, setOpen] = useState(false);
   const [year, setYear] = useState(initYear);
   const [month, setMonth] = useState(initMonth);
@@ -154,8 +202,8 @@ export default function BookingCalendar({ blockedDates, checkIn, checkOut, onChe
               className="mt-1 w-7 h-7 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-20 disabled:cursor-not-allowed shrink-0">
               <ChevronLeftIcon className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
             </button>
-            <MonthGrid y={year} m={month} />
-            <MonthGrid y={y2} m={m2} />
+            <CalGrid y={year} m={month} blocked={blocked} todayStr={todayStr} checkIn={checkIn} checkOut={checkOut} phase={phase} hover={hover} onDay={clickDay} onEnter={d => phase === "out" && checkIn && !blocked.has(d) && d >= todayStr && setHover(d)} onLeave={() => setHover("")} />
+            <CalGrid y={y2} m={m2} blocked={blocked} todayStr={todayStr} checkIn={checkIn} checkOut={checkOut} phase={phase} hover={hover} onDay={clickDay} onEnter={d => phase === "out" && checkIn && !blocked.has(d) && d >= todayStr && setHover(d)} onLeave={() => setHover("")} />
             <button type="button" onClick={() => { if (month === 11) { setMonth(0); setYear(y => y+1); } else setMonth(m => m+1); }}
               className="mt-1 w-7 h-7 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 shrink-0">
               <ChevronRightIcon className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
@@ -164,15 +212,13 @@ export default function BookingCalendar({ blockedDates, checkIn, checkOut, onChe
           <div className="flex items-center justify-center gap-4 text-xs text-gray-400 mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-rose-500 inline-block" /> Sélection</span>
             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-rose-100 inline-block" /> Période</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-100 dark:bg-gray-800 inline-block line-through text-gray-300 text-[9px] text-center">8</span> Indispo</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-gray-50 inline-block line-through text-gray-300 text-[9px] text-center">8</span> Indispo</span>
           </div>
         </div>
       )}
     </div>
   );
 }
-
-import { useState } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 const DAYS_FR = ["Lu", "Ma", "Me", "Je", "Ve", "Sa", "Di"];
