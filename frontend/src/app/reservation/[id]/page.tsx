@@ -11,6 +11,7 @@ import {
   WifiIcon, TvIcon, FireIcon, TruckIcon, ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
+import BookingCalendar from "./BookingCalendar";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -410,63 +411,23 @@ export default function PropertyDetailPage() {
               ) : null}
 
               <div className="space-y-3 mb-4">
-                {/* Unavailability calendar strip */}
-                {property.blocked_dates?.length > 0 && (
-                  <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-xs">
-                    <p className="font-semibold text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-red-500 inline-block" /> Jours non disponibles
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {(() => {
-                        const sorted = [...property.blocked_dates].sort();
-                        const groups: { start: string; end: string }[] = [];
-                        let gStart = sorted[0], gEnd = sorted[0];
-                        for (let i = 1; i < sorted.length; i++) {
-                          const prev = new Date(gEnd);
-                          prev.setDate(prev.getDate() + 1);
-                          if (prev.toISOString().split("T")[0] === sorted[i]) {
-                            gEnd = sorted[i];
-                          } else {
-                            groups.push({ start: gStart, end: gEnd });
-                            gStart = sorted[i]; gEnd = sorted[i];
-                          }
-                        }
-                        groups.push({ start: gStart, end: gEnd });
-                        return groups.map((g, i) => {
-                          const s = new Date(g.start);
-                          const e = new Date(g.end);
-                          const fmt = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
-                          return (
-                            <span key={i} className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full font-medium">
-                              {g.start === g.end ? fmt(s) : `${fmt(s)} – ${fmt(e)}`}
-                            </span>
-                          );
-                        });
-                      })()}
-                    </div>
-                  </div>
-                )}
+                {/* Interactive calendar with blocked dates greyed out */}
+                <BookingCalendar
+                  blockedDates={property.blocked_dates || []}
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  onCheckInChange={d => { setCheckIn(d); setBookingResult(null); }}
+                  onCheckOutChange={d => { setCheckOut(d); setBookingResult(null); }}
+                  minDate={new Date().toISOString().split("T")[0]}
+                />
 
                 {/* Conflict alert */}
                 {hasConflict && (
                   <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-400 flex items-start gap-2">
                     <span className="text-lg leading-none">⚠</span>
-                    <p><strong>Dates non disponibles.</strong> Une ou plusieurs journées de votre sélection sont déjà réservées. Choisissez d'autres dates.</p>
+                    <p><strong>Dates non disponibles.</strong> Votre sélection inclut des jours déjà réservés.</p>
                   </div>
                 )}
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Arrivée</label>
-                    <input type="date" value={checkIn} onChange={e => { setCheckIn(e.target.value); setBookingResult(null); }} min={new Date().toISOString().split("T")[0]}
-                      className={`w-full border rounded-xl px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none ${hasConflict && checkIn ? "border-red-400 dark:border-red-600" : "border-gray-200 dark:border-gray-700"}`} />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Départ</label>
-                    <input type="date" value={checkOut} onChange={e => { setCheckOut(e.target.value); setBookingResult(null); }} min={checkIn || new Date().toISOString().split("T")[0]}
-                      className={`w-full border rounded-xl px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white outline-none ${hasConflict && checkOut ? "border-red-400 dark:border-red-600" : "border-gray-200 dark:border-gray-700"}`} />
-                  </div>
-                </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500 uppercase block mb-1">Voyageurs</label>
                   <input type="number" min="1" max={property.max_guests} value={guestsCount} onChange={e => setGuestsCount(parseInt(e.target.value) || 1)}
