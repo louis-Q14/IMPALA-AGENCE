@@ -154,9 +154,13 @@ router.get("/properties/:id", async (req, res) => {
     // Increment view count
     db.query("UPDATE reservation_properties SET view_count = view_count + 1 WHERE id = $1", [req.params.id]);
 
-    // Blocked dates for calendar
+    // Blocked dates — only from CONFIRMED bookings (pending = not yet approved, don't grey out)
     const blocked = await db.query(
-      "SELECT blocked_date FROM reservation_availability WHERE property_id = $1 ORDER BY blocked_date",
+      `SELECT DISTINCT ra.blocked_date
+       FROM reservation_availability ra
+       JOIN reservation_bookings rb ON rb.id = ra.booking_id
+       WHERE ra.property_id = $1 AND rb.status = 'confirmed'
+       ORDER BY ra.blocked_date`,
       [req.params.id]
     );
 
