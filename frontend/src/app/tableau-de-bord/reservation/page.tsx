@@ -35,7 +35,7 @@ const BOOKING_STATUS: Record<string, { label: string; color: string; icon: React
   rejected:  { label: "Refusée",     color: "bg-red-100 text-red-700",        icon: <XCircleIcon className="w-4 h-4" /> },
 };
 
-type TabType = "overview" | "properties" | "bookings" | "agenda" | "mes-voyages" | "messages";
+type TabType = "overview" | "properties" | "bookings" | "agenda" | "mes-reservations" | "messages";
 
 function ReservationDashboard() {
   const router = useRouter();
@@ -45,7 +45,7 @@ function ReservationDashboard() {
   // Sync URL ?tab= param → active tab (handles navigation from external pages)
   useEffect(() => {
     const t = searchParams.get("tab") as TabType;
-    if (t && ["overview","properties","bookings","agenda","mes-voyages","messages"].includes(t)) {
+    if (t && ["overview","properties","bookings","agenda","mes-reservations","messages"].includes(t)) {
       setTab(t);
     }
   }, [searchParams]);
@@ -187,7 +187,7 @@ function ReservationDashboard() {
             { key: "properties",  label: "Mes biens",           icon: <HomeModernIcon className="w-4 h-4" /> },
             { key: "bookings",    label: "Demandes reçues",     icon: <CalendarDaysIcon className="w-4 h-4" /> },
             { key: "agenda",      label: "Demandes approuvées", icon: <CheckCircleIcon className="w-4 h-4" /> },
-            { key: "mes-voyages", label: "Mes voyages",          icon: <UserGroupIcon className="w-4 h-4" /> },
+            { key: "mes-reservations", label: "Mes réservations",    icon: <UserGroupIcon className="w-4 h-4" /> },
             { key: "messages",    label: "Messages",             icon: <ChatBubbleLeftRightIcon className="w-4 h-4" /> },
           ] as { key: TabType; label: string; icon: React.ReactNode }[]).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
@@ -487,13 +487,20 @@ function ReservationDashboard() {
               </div>
             )}
 
-            {/* MES VOYAGES */}
-            {tab === "mes-voyages" && (
+            {/* MES RÉSERVATIONS */}
+            {tab === "mes-reservations" && (
               <div className="space-y-4">
+                {/* Back button */}
+                <button
+                  onClick={() => router.back()}
+                  className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-rose-500 transition-colors"
+                >
+                  <ChevronLeftIcon className="w-4 h-4" /> Retour
+                </button>
                 {guestBookings.length === 0 ? (
                   <div className="text-center py-16 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800">
                     <CalendarDaysIcon className="w-16 h-16 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Aucun voyage réservé</h3>
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Aucune réservation</h3>
                     <p className="text-gray-500 mt-2 mb-6">Explorez les biens disponibles et faites votre première réservation !</p>
                     <Link href="/reservation" className="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors inline-flex items-center gap-2">
                       Explorer les biens
