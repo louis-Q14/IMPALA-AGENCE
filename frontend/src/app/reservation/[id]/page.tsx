@@ -156,7 +156,10 @@ export default function PropertyDetailPage() {
         body: JSON.stringify({ propertyId: id, content: `Bonjour, je suis int\u00e9ress\u00e9(e) par votre bien \u00ab\u00a0${property.title}\u00a0\u00bb. Pourriez-vous me donner plus d'informations ?` }),
       });
       if (r.ok) {
+        const data = await r.json();
         setMsgSent(true);
+        // Store conversation ID so MessagesPanel can auto-open it
+        try { sessionStorage.setItem("open_conv_id", data.conversation_id); } catch { /* ignore */ }
         router.push("/tableau-de-bord/reservation?tab=messages");
       }
     } finally {

@@ -334,7 +334,7 @@ router.get("/reservation-conversations", authenticateToken, async (req, res) => 
               (SELECT COUNT(*)::int FROM messages m WHERE m.conversation_id = c.id AND m.sender_id <> $1 AND m.read = FALSE) AS unread_count
        FROM conversations c
        JOIN users u ON u.id = (CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END)
-       LEFT JOIN reservation_properties rp ON rp.id::text = c.ad_id
+       LEFT JOIN reservation_properties rp ON rp.id = c.ad_id
        WHERE (c.participant_1 = $1 OR c.participant_2 = $1)
          AND c.ad_type = 'reservation'
        ORDER BY last_message_time DESC NULLS LAST, c.created_at DESC`,

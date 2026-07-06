@@ -15,9 +15,10 @@ function getToken() {
 
 interface Props {
   myId: string | null;
+  autoOpenConvId?: string | null;
 }
 
-export default function MessagesPanel({ myId }: Props) {
+export default function MessagesPanel({ myId, autoOpenConvId }: Props) {
   const [conversations, setConversations] = useState<any[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -27,7 +28,7 @@ export default function MessagesPanel({ myId }: Props) {
   const [msgsLoading, setMsgsLoading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
-  const fetchConversations = useCallback(async () => {
+  const fetchConversations = useCallback(async (autoOpen?: string) => {
     const token = getToken();
     if (!token) return;
     setConvLoading(true);
@@ -35,12 +36,39 @@ export default function MessagesPanel({ myId }: Props) {
       const res = await fetch(`${API}/messages/reservation-conversations`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) setConversations(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setConversations(data);
+        // Auto-open specific conversation if provided
+        const targetId = autoOpen || autoOpenConvId;
+        if (targetId && data.find((c: any) => c.id === targetId)) {
+          openConv(targetId);
+        } else if (targetId && data.length > 0) {
+          // Fallback: open most recent conversation
+          openConv(data[0].id);
+        }
+      }
     } catch { /* ignore */ }
     setConvLoading(false);
-  }, []);
+  }, [autoOpenConvId]);
 
   useEffect(() => { fetchConversations(); }, [fetchConversations]);
+
+  // Read pending auto-open from sessionStorage (set by contact-host flow)
+  useEffect(() => {
+    try {
+      const pending = sessionStorage.getItem("open_conv_id");
+      if (pending) {
+        sessionStorage.removeItem("open_conv_id");
+        fetchConversations(pending);
+      } else {
+        fetchConversations();
+      }
+    } catch {
+      fetchConversations();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openConv = async (id: string) => {
     setActiveConvId(id);
