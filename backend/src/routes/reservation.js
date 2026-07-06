@@ -585,14 +585,6 @@ router.put("/bookings/:id", authenticateToken, async (req, res) => {
       await db.query("DELETE FROM reservation_availability WHERE booking_id = $1", [req.params.id]);
     }
 
-    // Auto-pause property when booking is confirmed
-    if (status === "confirmed") {
-      await db.query(
-        "UPDATE reservation_properties SET status='inactive', updated_at=NOW() WHERE id=$1",
-        [booking.property_id]
-      );
-    }
-
     res.json({ message: "Statut mis à jour" });
   } catch (err) {
     console.error(err);
