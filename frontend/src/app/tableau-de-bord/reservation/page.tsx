@@ -221,7 +221,7 @@ export default function ReservationDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 dark:bg-gray-900 p-1 rounded-xl mb-8 overflow-x-auto max-w-full no-scrollbar">
+        <div className="flex flex-wrap gap-1 mb-8">
           {([
             { key: "overview",    label: "Vue d'ensemble",  icon: <ChartBarIcon className="w-4 h-4" /> },
             { key: "properties",  label: "Mes biens",        icon: <HomeModernIcon className="w-4 h-4" /> },
@@ -230,10 +230,10 @@ export default function ReservationDashboard() {
             { key: "messages",    label: "Messages",          icon: <ChatBubbleLeftRightIcon className="w-4 h-4" /> },
           ] as { key: TabType; label: string; icon: React.ReactNode }[]).map(t => (
             <button key={t.key} onClick={() => setTab(t.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all whitespace-nowrap border ${
                 tab === t.key
-                  ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                  ? "bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm border-gray-200 dark:border-gray-700"
+                  : "bg-gray-100 dark:bg-gray-900 border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800"
               }`}>
               {t.icon} {t.label}
               {t.key === "bookings" && bookings.filter(b => b.status === "pending").length > 0 && (
