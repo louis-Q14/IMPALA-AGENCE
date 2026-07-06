@@ -269,10 +269,10 @@ export default function PropertyDetailPage() {
                   {property.owner_avatar ? <img src={property.owner_avatar} className="w-full h-full object-cover" /> : property.owner_name.charAt(0)}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Propos\u00e9 par {property.owner_name}</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Proposé par {property.owner_name}</h3>
                   <p className="text-sm text-gray-500">
-                    {property.bedrooms} chambre{property.bedrooms > 1 ? "s" : ""} \u00b7 {property.bathrooms} sdb \u00b7 {property.max_guests} voyageurs max
-                    {property.surface ? ` \u00b7 ${property.surface} m\u00b2` : ""}
+                    {property.bedrooms} chambre{property.bedrooms > 1 ? "s" : ""} · {property.bathrooms} sdb · {property.max_guests} voyageurs max
+                    {property.surface ? ` · ${property.surface} m²` : ""}
                   </p>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function PropertyDetailPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white rounded-xl text-sm font-semibold transition-colors shrink-0"
               >
                 <ChatBubbleLeftRightIcon className="w-4 h-4" />
-                {msgSent ? "Message envoy\u00e9 \u2713" : msgSending ? "Envoi..." : "Envoyer un message"}
+                {msgSent ? "Message envoyé ✓" : msgSending ? "Envoi..." : "Envoyer un message"}
               </button>
             </div>
 
