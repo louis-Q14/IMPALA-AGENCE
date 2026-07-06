@@ -22,8 +22,7 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5000/api";
 
 function getToken() {
   try {
-    const u = localStorage.getItem("user");
-    return u ? JSON.parse(u).token : null;
+    return localStorage.getItem("token") || sessionStorage.getItem("token") || null;
   } catch { return null; }
 }
 
