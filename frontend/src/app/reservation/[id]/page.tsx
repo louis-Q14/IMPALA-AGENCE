@@ -429,59 +429,6 @@ export default function PropertyDetailPage() {
                   <p className="text-sm text-gray-500 mt-2">{property.review_count || reviews.length} avis</p>
                 </div>
 
-                {/* Ratings breakdown */}
-                {reviews.length > 0 && (
-                  <div className="mb-8">
-                    {/* Star distribution bar */}
-                    <div className="mb-6">
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Note globale</p>
-                      <div className="space-y-1.5">
-                        {[5,4,3,2,1].map(star => {
-                          const count = reviews.filter(r => Math.round(r.rating) === star).length;
-                          const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
-                          return (
-                            <div key={star} className="flex items-center gap-2 text-xs">
-                              <span className="text-gray-500 w-3 text-right">{star}</span>
-                              <StarSolid className="w-3 h-3 text-amber-400 shrink-0" />
-                              <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div className="h-full bg-gray-700 dark:bg-gray-300 rounded-full transition-all" style={{ width: `${pct}%` }} />
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Category ratings grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {[
-                        { label: "Propreté", key: "cleanliness_rating" as const, icon: "🧹" },
-                        { label: "Emplacement", key: "location_rating" as const, icon: "📍" },
-                        { label: "Valeur", key: "value_rating" as const, icon: "💰" },
-                        { label: "Communication", key: "communication_rating" as const, icon: "💬" },
-                      ].map(cat => {
-                        const vals = reviews.filter(r => r[cat.key]).map(r => r[cat.key] as number);
-                        const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
-                        if (!avg) return null;
-                        return (
-                          <div key={cat.key} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">{cat.label}</span>
-                              <span className="text-lg">{cat.icon}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <div className="h-full bg-gray-900 dark:bg-white rounded-full" style={{ width: `${(avg / 5) * 100}%` }} />
-                              </div>
-                              <span className="text-sm font-bold text-gray-900 dark:text-white w-6 text-right">{avg.toFixed(1)}</span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
                 {/* Reviews grid */}
                 {reviews.length > 0 && (
                   <div>
