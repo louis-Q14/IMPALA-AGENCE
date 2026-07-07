@@ -19,9 +19,6 @@ import {
   ChartBarIcon,
   ChatBubbleLeftRightIcon,
   BuildingStorefrontIcon,
-  ShoppingCartIcon,
-  ShoppingBagIcon,
-  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 
 const navigation = [
@@ -46,25 +43,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [boutiqueOpen, setBoutiqueOpen] = useState(false);
-  const [mesAchatsOpen, setMesAchatsOpen] = useState(false);
-  const [mobileBoutiqueOpen, setMobileBoutiqueOpen] = useState(false);
-  const [mobileMesAchatsOpen, setMobileMesAchatsOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const boutiqueRef = useRef<HTMLDivElement>(null);
-
-  const refreshCartCount = () => {
-    try {
-      const raw = localStorage.getItem("impala_boutique_cart");
-      if (raw) {
-        const items: { quantite: number }[] = JSON.parse(raw);
-        setCartCount(items.reduce((sum, i) => sum + i.quantite, 0));
-      } else {
-        setCartCount(0);
-      }
-    } catch { setCartCount(0); }
-  };
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -85,23 +64,9 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    refreshCartCount();
-    window.addEventListener("storage", refreshCartCount);
-    window.addEventListener("cart-change", refreshCartCount);
-    return () => {
-      window.removeEventListener("storage", refreshCartCount);
-      window.removeEventListener("cart-change", refreshCartCount);
-    };
-  }, []);
-
-  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
-      }
-      if (boutiqueRef.current && !boutiqueRef.current.contains(e.target as Node)) {
-        setBoutiqueOpen(false);
-        setMesAchatsOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -147,41 +112,6 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* Boutique Dropdown */}
-            <div className="relative" ref={boutiqueRef}>
-              <button
-                onClick={() => { setBoutiqueOpen(!boutiqueOpen); setMesAchatsOpen(false); }}
-                className="flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
-              >
-                Boutique
-                <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-200 ${boutiqueOpen ? "rotate-180" : ""}`} />
-              </button>
-              {boutiqueOpen && (
-                <div className="absolute top-full left-0 mt-1 w-56 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] shadow-xl py-1 z-50">
-                  <Link href="/boutique" onClick={() => setBoutiqueOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                    <BuildingStorefrontIcon className="w-4 h-4" /> Accueil boutique
-                  </Link>
-                  <Link href="/boutique/panier" onClick={() => setBoutiqueOpen(false)}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                    <ShoppingCartIcon className="w-4 h-4" />
-                    <span>Panier</span>
-                    {cartCount > 0 && (
-                      <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full bg-orange-500 text-white text-xs font-bold px-1.5">
-                        {cartCount > 99 ? "99+" : cartCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div className="border-t border-[var(--border-color)] mt-1">
-                    <Link href="/boutique/mes-achats" onClick={() => setBoutiqueOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                      <ShoppingBagIcon className="w-4 h-4" />
-                      <span>Mes achats</span>
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Right Side */}
@@ -337,41 +267,6 @@ export default function Navbar() {
               </Link>
             ))}
 
-            {/* Boutique mobile accordion */}
-            <div>
-              <button
-                onClick={() => { setMobileBoutiqueOpen(!mobileBoutiqueOpen); setMobileMesAchatsOpen(false); }}
-                className="w-full flex items-center justify-between px-3 py-3 rounded-xl transition-all text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]"
-              >
-                <span className="flex items-center gap-3"><BuildingStorefrontIcon className="w-5 h-5" /><span className="font-medium">Boutique</span></span>
-                <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${mobileBoutiqueOpen ? "rotate-180" : ""}`} />
-              </button>
-              {mobileBoutiqueOpen && (
-                <div className="ml-4 border-l-2 border-[var(--border-color)] pl-3 space-y-0.5">
-                  <Link href="/boutique" onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                    <BuildingStorefrontIcon className="w-4 h-4" /> Accueil boutique
-                  </Link>
-                  <Link href="/boutique/panier" onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                    <ShoppingCartIcon className="w-4 h-4" />
-                    <span>Panier</span>
-                    {cartCount > 0 && (
-                      <span className="ml-auto min-w-[20px] h-5 flex items-center justify-center rounded-full bg-orange-500 text-white text-xs font-bold px-1.5">
-                        {cartCount > 99 ? "99+" : cartCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div>
-                    <Link href="/boutique/mes-achats" onClick={() => setMobileOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all">
-                      <ShoppingBagIcon className="w-4 h-4" />
-                      <span>Mes achats</span>
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
 
             <div className="pt-3 border-t border-[var(--border-color)]">
               {user ? (
