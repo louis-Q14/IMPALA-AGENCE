@@ -55,6 +55,7 @@ function ReservationDashboard() {
   const [guestBookings, setGuestBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [myId, setMyId] = useState<string | null>(null);
+  const [unreadMsgCount, setUnreadMsgCount] = useState(0);
   const [reviewForms, setReviewForms] = useState<Record<string, { open: boolean; stars: number; comment: string; submitting: boolean; submitted: boolean; cleanliness: number; accuracy: number; checkin: number; communication: number; location: number; value: number }>>({});
   const [approvedBookings, setApprovedBookings] = useState<any[]>([]);
   const [agendaLoading, setAgendaLoading] = useState(false);
@@ -91,12 +92,17 @@ function ReservationDashboard() {
       fetch(`${API}/reservation/my-properties`, { headers }).then(r => r.json()),
       fetch(`${API}/reservation/bookings/owner`, { headers }).then(r => r.json()),
       fetch(`${API}/reservation/bookings/guest`, { headers }).then(r => r.json()),
+      fetch(`${API}/messages/reservation-conversations`, { headers }).then(r => r.ok ? r.json() : []),
     ])
-      .then(([s, p, b, gb]) => {
+      .then(([s, p, b, gb, convs]) => {
         if (s.properties !== undefined) setStats(s);
         if (Array.isArray(p)) setProperties(p);
         if (Array.isArray(b)) setBookings(b);
         if (Array.isArray(gb)) setGuestBookings(gb);
+        if (Array.isArray(convs)) {
+          const total = convs.reduce((sum: number, c: any) => sum + (c.unread_count || 0), 0);
+          setUnreadMsgCount(total);
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -207,6 +213,11 @@ function ReservationDashboard() {
               {t.key === "agenda" && approvedBookings.length > 0 && (
                 <span className="bg-emerald-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
                   {approvedBookings.length}
+                </span>
+              )}
+              {t.key === "messages" && unreadMsgCount > 0 && (
+                <span className="bg-rose-500 text-white text-xs min-w-[16px] h-4 px-0.5 rounded-full flex items-center justify-center">
+                  {unreadMsgCount > 99 ? "99+" : unreadMsgCount}
                 </span>
               )}
             </button>
@@ -767,7 +778,7 @@ function ReservationDashboard() {
             )}
             {/* MESSAGES */}
             {tab === "messages" && (
-              <MessagesPanel myId={myId} />
+              <MessagesPanel myId={myId} onUnreadCount={n => setUnreadMsgCount(n)} />
             )}
           </>
         )}

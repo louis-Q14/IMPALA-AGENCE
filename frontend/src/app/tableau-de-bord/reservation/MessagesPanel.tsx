@@ -27,7 +27,7 @@ interface Conv {
   unread_count: number; archived_by_1: boolean; archived_by_2: boolean;
 }
 
-interface Props { myId: string | null; autoOpenConvId?: string | null; }
+interface Props { myId: string | null; autoOpenConvId?: string | null; onUnreadCount?: (n: number) => void; }
 
 function MediaPreview({ url, type, name }: { url: string; type?: string; name?: string }) {
   const full = url;
@@ -42,7 +42,7 @@ function MediaPreview({ url, type, name }: { url: string; type?: string; name?: 
   );
 }
 
-export default function MessagesPanel({ myId, autoOpenConvId }: Props) {
+export default function MessagesPanel({ myId, autoOpenConvId, onUnreadCount }: Props) {
   const [conversations, setConversations] = useState<Conv[]>([]);
   const [showArchived, setShowArchived] = useState(false);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
@@ -68,6 +68,8 @@ export default function MessagesPanel({ myId, autoOpenConvId }: Props) {
       if (res.ok) {
         const data: Conv[] = await res.json();
         setConversations(data);
+        const total = data.reduce((s, c) => s + (c.unread_count || 0), 0);
+        onUnreadCount?.(total);
         const targetId = autoOpen || autoOpenConvId;
         if (targetId) openConvById(data, targetId);
       }
@@ -253,9 +255,15 @@ export default function MessagesPanel({ myId, autoOpenConvId }: Props) {
                 </div>
                 {convMenu === c.id && (
                   <div className="absolute right-2 top-8 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl py-1 w-44">
-                    <button onClick={() => archiveConv(c.id, true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
-                      <ArchiveBoxIcon className="w-4 h-4" /> Archiver
-                    </button>
+                    {showArchived ? (
+                      <button onClick={() => archiveConv(c.id, false)} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        <ArchiveBoxIcon className="w-4 h-4" /> Désarchiver
+                      </button>
+                    ) : (
+                      <button onClick={() => archiveConv(c.id, true)} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300">
+                        <ArchiveBoxIcon className="w-4 h-4" /> Archiver
+                      </button>
+                    )}
                     <button onClick={() => deleteConv(c.id)} className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 text-red-600">
                       <TrashIcon className="w-4 h-4" /> Supprimer
                     </button>
