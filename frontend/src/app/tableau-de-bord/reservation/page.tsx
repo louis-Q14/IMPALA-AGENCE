@@ -55,6 +55,7 @@ function ReservationDashboard() {
   const [guestBookings, setGuestBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [myId, setMyId] = useState<string | null>(null);
+  const [reviewForms, setReviewForms] = useState<Record<string, { open: boolean; stars: number; comment: string; submitting: boolean; submitted: boolean }>>({});
   const [approvedBookings, setApprovedBookings] = useState<any[]>([]);
   const [agendaLoading, setAgendaLoading] = useState(false);
   const [subStatus, setSubStatus] = useState<SubStatus>("none");
@@ -538,24 +539,121 @@ function ReservationDashboard() {
                       </div>
                     </div>
                     {b.status === "confirmed" && (
-                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex gap-3">
-                        <Link href={`/reservation/${b.property_id}`} className="text-sm text-rose-500 hover:underline flex items-center gap-1">
-                          <EyeIcon className="w-4 h-4" /> Voir le bien
-                        </Link>
-                        <button
-                          onClick={async () => {
-                            const token = getToken();
-                            if (!token) return;
-                            const res = await fetch(`${API}/messages/contact-host`, {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                              body: JSON.stringify({ propertyId: b.property_id, content: "Bonjour, j'ai une question concernant ma réservation." }),
-                            });
-                            if (res.ok) { setTab("messages"); }
-                          }}
-                          className="text-sm text-indigo-500 hover:underline flex items-center gap-1">
-                          <ChatBubbleLeftRightIcon className="w-4 h-4" /> Contacter le propriétaire
-                        </button>
+                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                        <div className="flex flex-wrap gap-3">
+                          <Link href={`/reservation/${b.property_id}`} className="text-sm text-rose-500 hover:underline flex items-center gap-1">
+                            <EyeIcon className="w-4 h-4" /> Voir le bien
+                          </Link>
+                          <button
+                            onClick={async () => {
+                              const token = getToken();
+                              if (!token) return;
+                              const res = await fetch(`${API}/messages/contact-host`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                body: JSON.stringify({ propertyId: b.property_id, content: "Bonjour, j'ai une question concernant ma réservation." }),
+                              });
+                              if (res.ok) { setTab("messages"); }
+                            }}
+                            className="text-sm text-indigo-500 hover:underline flex items-center gap-1">
+                            <ChatBubbleLeftRightIcon className="w-4 h-4" /> Contacter le propriétaire
+                          </button>
+                          {!reviewForms[b.id]?.submitted && (
+                            <button
+                              onClick={() => setReviewForms(prev => ({
+                                ...prev,
+                                [b.id]: prev[b.id]?.open
+                                  ? { ...prev[b.id], open: false }
+                                  : { open: true, stars: prev[b.id]?.stars || 5, comment: prev[b.id]?.comment || "", submitting: false, submitted: false }
+                              }))}
+                              className="text-sm text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+                            >
+                              <div className="flex gap-0.5">
+                                {[1,2,3,4,5].map(s => <StarSolid key={s} className="w-3.5 h-3.5 text-amber-400" />)}
+                              </div>
+                              Laisser un avis
+                            </button>
+                          )}
+                          {reviewForms[b.id]?.submitted && (
+                            <span className="text-sm text-emerald-600 flex items-center gap-1">
+                              <CheckCircleIcon className="w-4 h-4" /> Avis envoyé
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Inline review form */}
+                        {reviewForms[b.id]?.open && !reviewForms[b.id]?.submitted && (
+                          <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4 space-y-3">
+                            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Votre avis sur {b.title}</p>
+                            {/* Stars */}
+                            <div className="flex items-center gap-1">
+                              {[1,2,3,4,5].map(s => (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  onClick={() => setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], stars: s } }))}
+                                  className="transition-transform hover:scale-110"
+                                >
+                                  <StarSolid className={`w-7 h-7 ${s <= (reviewForms[b.id]?.stars || 5) ? "text-amber-400" : "text-gray-300 dark:text-gray-600"}`} />
+                                </button>
+                              ))}
+                              <span className="ml-2 text-sm font-medium text-gray-600 dark:text-gray-400">
+                                {["", "Mauvais", "Passable", "Bien", "Très bien", "Excellent"][reviewForms[b.id]?.stars || 5]}
+                              </span>
+                            </div>
+                            {/* Comment */}
+                            <textarea
+                              rows={3}
+                              placeholder="Partagez votre expérience..."
+                              value={reviewForms[b.id]?.comment || ""}
+                              onChange={e => setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], comment: e.target.value } }))}
+                              className="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={async () => {
+                                  const token = getToken();
+                                  if (!token) return;
+                                  const form = reviewForms[b.id];
+                                  if (!form) return;
+                                  setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], submitting: true } }));
+                                  try {
+                                    const res = await fetch(`${API}/reservation/properties/${b.property_id}/reviews`, {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                      body: JSON.stringify({
+                                        booking_id: b.id,
+                                        rating: form.stars,
+                                        comment: form.comment.trim(),
+                                        cleanliness_rating: form.stars,
+                                        location_rating: form.stars,
+                                        value_rating: form.stars,
+                                        communication_rating: form.stars,
+                                      }),
+                                    });
+                                    if (res.ok) {
+                                      setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], submitting: false, submitted: true, open: false } }));
+                                    } else {
+                                      setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], submitting: false } }));
+                                    }
+                                  } catch {
+                                    setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], submitting: false } }));
+                                  }
+                                }}
+                                disabled={reviewForms[b.id]?.submitting}
+                                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
+                              >
+                                {reviewForms[b.id]?.submitting ? "Envoi..." : "Publier l'avis"}
+                              </button>
+                              <button
+                                onClick={() => setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], open: false } }))}
+                                className="px-4 py-2 text-gray-500 hover:text-gray-700 text-sm"
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
