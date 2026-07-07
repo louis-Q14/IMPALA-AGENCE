@@ -405,28 +405,48 @@ export default function PropertyDetailPage() {
             {(reviews.length > 0 || property.rating_avg > 0) && (
               <div className="border-t border-gray-100 dark:border-gray-800 pt-8">
 
-                {/* Hero rating */}
-                <div className="flex flex-col items-center text-center mb-8 py-6 bg-gray-50 dark:bg-gray-900 rounded-2xl">
-                  {property.rating_avg >= 4.5 && (
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="text-3xl">🏆</span>
-                      <span className="text-4xl font-black text-gray-900 dark:text-white">{Number(property.rating_avg).toFixed(2)}</span>
-                      <span className="text-3xl">🏆</span>
+                {/* Hero rating — Airbnb "Guest favourite" style */}
+                <div className="flex items-center gap-4 border border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 mb-8">
+                  {/* Left: badge */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-2xl">🏅</span>
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-sm font-bold text-gray-900 dark:text-white">
+                        {property.rating_avg >= 4.5 ? "Favori des voyageurs" : "Bien noté"}
+                      </span>
                     </div>
-                  )}
-                  {property.rating_avg > 0 && property.rating_avg < 4.5 && (
-                    <div className="flex items-center gap-1 mb-2">
-                      {[1,2,3,4,5].map(s => <StarSolid key={s} className={`w-6 h-6 ${s <= Math.round(property.rating_avg) ? "text-amber-400" : "text-gray-300"}`} />)}
-                      <span className="ml-2 text-2xl font-black text-gray-900 dark:text-white">{Number(property.rating_avg).toFixed(1)}</span>
+                    <span className="text-2xl">🏅</span>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-10 w-px bg-gray-200 dark:bg-gray-700 shrink-0" />
+
+                  {/* Middle: description */}
+                  <p className="flex-1 text-sm text-gray-600 dark:text-gray-400 leading-snug">
+                    {property.rating_avg >= 4.5
+                      ? "L'un des logements les plus appréciés sur IMPALA, selon les voyageurs"
+                      : "Ce logement bénéficie d'excellents retours de la part des voyageurs"}
+                  </p>
+
+                  {/* Divider */}
+                  <div className="h-10 w-px bg-gray-200 dark:bg-gray-700 shrink-0" />
+
+                  {/* Right: score + reviews */}
+                  <div className="flex items-center gap-4 shrink-0 text-center">
+                    <div>
+                      <p className="text-lg font-black text-gray-900 dark:text-white">{Number(property.rating_avg).toFixed(2)}</p>
+                      <div className="flex gap-0.5 justify-center mt-0.5">
+                        {[1,2,3,4,5].map(s => (
+                          <StarSolid key={s} className={`w-3 h-3 ${s <= Math.round(property.rating_avg) ? "text-amber-400" : "text-gray-300 dark:text-gray-600"}`} />
+                        ))}
+                      </div>
                     </div>
-                  )}
-                  {property.rating_avg >= 4.5 && (
-                    <>
-                      <p className="font-bold text-gray-900 dark:text-white text-lg">Favori des voyageurs</p>
-                      <p className="text-sm text-gray-500 mt-1 max-w-xs">Ce logement figure parmi les 5 % des annonces les mieux notées</p>
-                    </>
-                  )}
-                  <p className="text-sm text-gray-500 mt-2">{property.review_count || reviews.length} avis</p>
+                    <div className="h-8 w-px bg-gray-200 dark:bg-gray-700" />
+                    <div>
+                      <p className="text-lg font-black text-gray-900 dark:text-white">{property.review_count || reviews.length}</p>
+                      <p className="text-xs text-gray-500">Avis</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Reviews grid */}
