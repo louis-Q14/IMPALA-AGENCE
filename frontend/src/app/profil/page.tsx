@@ -23,8 +23,12 @@ import {
   BellIcon,
   DocumentTextIcon,
   ArrowRightOnRectangleIcon,
+  BuildingOffice2Icon,
 } from "@heroicons/react/24/outline";
 import { ShieldCheckIcon as ShieldSolid, StarIcon as StarSolid } from "@heroicons/react/24/solid";
+
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+function getToken() { try { return localStorage.getItem("token") || sessionStorage.getItem("token") || null; } catch { return null; } }
 
 interface User {
   id: number;
@@ -64,6 +68,7 @@ const serviceIcons: Record<string, { icon: typeof HomeIcon; label: string; color
   real_estate: { icon: HomeIcon, label: "Immobilier", color: "bg-blue-500" },
   auto: { icon: TruckIcon, label: "Automobile", color: "bg-amber-500" },
   trash: { icon: TrashIcon, label: "Poubelles", color: "bg-emerald-500" },
+  reservation: { icon: BuildingOffice2Icon, label: "Réservation", color: "bg-rose-500" },
 };
 
 const tabs = [
@@ -79,6 +84,12 @@ export default function ProfilPage() {
   const [activeTab, setActiveTab] = useState("info");
   const [isEditing, setIsEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [apiStats, setApiStats] = useState<any>(null);
+  const [userServices, setUserServices] = useState<any[]>([]);
+  const [recentBookings, setRecentBookings] = useState<any[]>([]);
+  const [pwError, setPwError] = useState("");
+  const [pwSuccess, setPwSuccess] = useState(false);
 
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
@@ -126,50 +137,66 @@ export default function ProfilPage() {
   });
 
   useEffect(() => {
+    const token = getToken();
     const stored = localStorage.getItem("user");
-    if (stored) {
-      try {
-        const u = JSON.parse(stored);
-        setUser(u);
-
-        // Try to find full registration data from pending_users as fallback
-        const pendingUsers = JSON.parse(localStorage.getItem("pending_users") || "[]");
-        const fullData = pendingUsers.find((pu: Record<string, unknown>) => pu.email === u.email);
-
-        // Merge: user object takes priority, then pending_users fallback
-        const src = { ...fullData, ...u };
-
-        setProfile({
-          full_name: src.full_name || "",
-          nom: src.nom || "",
-          post_nom: src.post_nom || "",
-          prenom: src.prenom || "",
-          date_naissance: src.date_naissance || "",
-          lieu_naissance: src.lieu_naissance || "",
-          sexe: src.sexe || "",
-          nationalite: src.nationalite || "",
-          etat_civil: src.etat_civil || "",
-          profession: src.profession || "",
-          numero_piece: src.numero_piece || "",
-          piece_identite: src.piece_identite || "",
-          email: src.email || "",
-          phone: src.phone || "",
-          phone_fixe: src.phone_fixe || "",
-          adresse: src.adresse || "",
-          role: src.role || "",
-          services: src.services || [],
-          bio: src.bio || "",
-          company_name: src.company_name || "",
-          siret: src.siret || "",
-          website: src.website || "",
-          avatar_url: src.avatar_url || "",
-          created_at: src.created_at || "",
-        });
-      } catch { /* ignore */ }
-    }
+    if (stored) { try { setUser(JSON.parse(stored)); } catch { /* ignore */ } }
+    if (!token) return;
+    const headers = { Authorization: `Bearer ${token}` };
+    // Fetch real profile
+    fetch(`${API}/auth/me`, { headers })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        setUser(data);
+        setUserServices(Array.isArray(data.services) ? data.services : []);
+        setProfile(prev => ({
+          ...prev,
+          full_name: data.full_name || "",
+          nom: data.nom || "",
+          post_nom: data.post_nom || "",
+          prenom: data.prenom || "",
+          date_naissance: data.date_naissance ? String(data.date_naissance).split("T")[0] : "",
+          lieu_naissance: data.lieu_naissance || "",
+          sexe: data.sexe || "",
+          nationalite: data.nationalite || "",
+          etat_civil: data.etat_civil || "",
+          profession: data.profession || "",
+          numero_piece: data.numero_piece || "",
+          piece_identite: data.piece_identite || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          phone_fixe: data.phone_fixe || "",
+          adresse: data.adresse || "",
+          role: data.role || "",
+          services: Array.isArray(data.services) ? data.services.map((s: any) => s.service) : [],
+          avatar_url: data.avatar_url || "",
+          created_at: data.created_at || "",
+        }));
+      })
+      .catch(() => {});
+    // Fetch stats
+    fetch(`${API}/auth/stats`, { headers })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setApiStats(data); })
+      .catch(() => {});
+    // Fetch recent guest bookings for activity
+    fetch(`${API}/reservation/bookings/guest`, { headers })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data)) setRecentBookings(data.slice(0, 5)); })
+      .catch(() => {});
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    const token = getToken();
+    setSaveError("");
+    if (token) {
+      const r = await fetch(`${API}/auth/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(profile),
+      });
+      if (!r.ok) { const e = await r.json().catch(() => ({})); setSaveError(e.error || "Erreur serveur"); return; }
+    }
     if (user) {
       const updated = { ...user, full_name: profile.full_name, email: profile.email };
       localStorage.setItem("user", JSON.stringify(updated));
@@ -180,32 +207,44 @@ export default function ProfilPage() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const handlePasswordChange = () => {
-    if (passwords.newPass.length < 8) {
-      alert("Le nouveau mot de passe doit contenir au moins 8 caractères");
-      return;
-    }
-    if (passwords.newPass !== passwords.confirm) {
-      alert("Les mots de passe ne correspondent pas");
-      return;
-    }
+  const handlePasswordChange = async () => {
+    setPwError(""); setPwSuccess(false);
+    if (passwords.newPass.length < 8) { setPwError("Le nouveau mot de passe doit contenir au moins 8 caractères"); return; }
+    if (passwords.newPass !== passwords.confirm) { setPwError("Les mots de passe ne correspondent pas"); return; }
+    const token = getToken();
+    if (!token) { setPwError("Non connecté"); return; }
+    const r = await fetch(`${API}/auth/change-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ current_password: passwords.current, new_password: passwords.newPass }),
+    });
+    if (!r.ok) { const e = await r.json().catch(() => ({})); setPwError(e.error || "Erreur serveur"); return; }
     setPasswords({ current: "", newPass: "", confirm: "" });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    setPwSuccess(true);
+    setTimeout(() => setPwSuccess(false), 3000);
   };
 
-  const memberSince = "Avril 2026";
+  const memberSince = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
+    : "–";
 
-  // Mock activity data
-  const activities: { type: string; title: string; date: string; status: string; views: number | null }[] = [];
+  // Real activity from recent bookings
+  const activities = recentBookings.map(b => ({
+    type: "reservation",
+    title: b.title || "Réservation",
+    date: new Date(b.created_at).toLocaleDateString("fr-FR"),
+    status: b.status,
+    views: null,
+  }));
 
   const stats = {
-    ads_count: 0,
-    favorites: 0,
-    messages: 0,
-    reviews_avg: 0,
-    reviews_count: 0,
-    views_total: 0,
+    ads_count: apiStats?.totals?.ads ?? 0,
+    favorites: apiStats?.totals?.favorites ?? 0,
+    messages: apiStats?.totals?.messages ?? 0,
+    reviews_avg: apiStats?.reviews_given?.avg ?? 0,
+    reviews_count: apiStats?.reviews_given?.count ?? 0,
+    views_total: apiStats?.totals?.views ?? 0,
+    reservations: (apiStats?.reservation?.properties ?? 0) + (apiStats?.reservation?.guest_bookings ?? 0),
   };
 
   if (!user) {
@@ -273,9 +312,9 @@ export default function ProfilPage() {
             { label: "Annonces", value: stats.ads_count, icon: DocumentTextIcon, color: "text-blue-500" },
             { label: "Favoris", value: stats.favorites, icon: HeartIcon, color: "text-red-500" },
             { label: "Messages", value: stats.messages, icon: ChatBubbleLeftRightIcon, color: "text-indigo-500" },
-            { label: "Avis", value: `${stats.reviews_avg}/5`, icon: StarIcon, color: "text-amber-500" },
+            { label: "Réservations", value: stats.reservations, icon: BuildingOffice2Icon, color: "text-rose-500" },
             { label: "Vues totales", value: stats.views_total.toLocaleString(), icon: EyeIcon, color: "text-emerald-500" },
-            { label: "Avis reçus", value: stats.reviews_count, icon: StarSolid, color: "text-orange-500" },
+            { label: "Avis donnés", value: `${stats.reviews_avg > 0 ? Number(stats.reviews_avg).toFixed(1) : 0}/5`, icon: StarSolid, color: "text-orange-500" },
           ].map((s) => (
             <div key={s.label} className="p-4 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-md)] text-center">
               <s.icon className={`w-5 h-5 mx-auto mb-1 ${s.color}`} />
@@ -293,6 +332,9 @@ export default function ProfilPage() {
           <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 text-sm flex items-center gap-2">
             <CheckIcon className="w-5 h-5" /> Modifications enregistrées avec succès
           </div>
+        )}
+        {saveError && (
+          <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 text-red-700 text-sm">{saveError}</div>
         )}
 
         <div className="flex flex-col lg:flex-row gap-6">
@@ -523,6 +565,8 @@ export default function ProfilPage() {
                         <p className="mt-1 text-xs text-red-500">Les mots de passe ne correspondent pas</p>
                       )}
                     </div>
+                    {pwError && <p className="text-sm text-red-500">{pwError}</p>}
+                    {pwSuccess && <p className="text-sm text-emerald-600">✓ Mot de passe mis à jour avec succès</p>}
                     <button onClick={handlePasswordChange}
                       disabled={!passwords.current || !passwords.newPass || passwords.newPass !== passwords.confirm}
                       className="px-6 py-3 rounded-xl bg-primary text-white font-semibold
@@ -571,22 +615,38 @@ export default function ProfilPage() {
                     <h2 className="text-lg font-semibold text-[var(--text-primary)]">Mes services actifs</h2>
                   </div>
                   <div className="p-6 space-y-4">
-                    {Object.entries(serviceIcons).map(([key, svc]) => (
-                      <div key={key} className="flex items-center justify-between p-4 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-11 h-11 rounded-xl ${svc.color} flex items-center justify-center`}>
-                            <svc.icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-[var(--text-primary)]">{svc.label}</p>
-                            <p className="text-xs text-[var(--text-muted)]">Abonnement actif</p>
-                          </div>
-                        </div>
-                        <span className="px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                          Actif
-                        </span>
+                    {userServices.length === 0 ? (
+                      <div className="text-center py-8 text-[var(--text-muted)]">
+                        <p className="text-sm">Aucun service souscrit</p>
+                        <Link href="/abonnement" className="mt-3 inline-block px-4 py-2 bg-primary text-white text-sm rounded-xl hover:bg-primary-hover transition-all">Voir les abonnements</Link>
                       </div>
-                    ))}
+                    ) : userServices.map((svc: any, i: number) => {
+                      const key = svc.service || svc.service_type || "";
+                      const meta = serviceIcons[key] || { icon: DocumentTextIcon, label: key, color: "bg-gray-500" };
+                      const isActive = svc.status === "active" || svc.status === "approved";
+                      const endDate = svc.endDate || svc.subscription_end;
+                      return (
+                        <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
+                          <div className="flex items-center gap-4">
+                            <div className={`w-11 h-11 rounded-xl ${meta.color} flex items-center justify-center`}>
+                              <meta.icon className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-[var(--text-primary)]">{meta.label}</p>
+                              <p className="text-xs text-[var(--text-muted)]">
+                                {endDate ? `Expire le ${new Date(endDate).toLocaleDateString("fr-FR")}` : "Abonnement actif"}
+                              </p>
+                            </div>
+                          </div>
+                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                            isActive ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" :
+                            "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                          }`}>
+                            {isActive ? "Actif" : "En attente"}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -612,41 +672,37 @@ export default function ProfilPage() {
             {/* --- TAB: Activité --- */}
             {activeTab === "activity" && (
               <div className="rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-sm)]">
-                <div className="px-6 py-4 border-b border-[var(--border-color)]">
+                <div className="px-6 py-4 border-b border-[var(--border-color)] flex items-center justify-between">
                   <h2 className="text-lg font-semibold text-[var(--text-primary)]">Activité récente</h2>
+                  <Link href="/tableau-de-bord/reservation?tab=mes-reservations" className="text-sm text-primary hover:underline">Voir tout</Link>
                 </div>
                 <div className="divide-y divide-[var(--border-color)]">
+                  {activities.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-12 text-[var(--text-muted)]">
+                      <CalendarDaysIcon className="w-10 h-10 mb-2 opacity-30" />
+                      <p className="text-sm">Aucune activité récente</p>
+                      <Link href="/reservation" className="mt-3 text-sm text-primary hover:underline">Explorer les biens</Link>
+                    </div>
+                  )}
                   {activities.map((act, idx) => (
                     <div key={idx} className="flex items-center justify-between px-6 py-4 hover:bg-[var(--bg-hover)] transition-all">
                       <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          act.type === "ad" ? "bg-blue-100 dark:bg-blue-900/30" :
-                          act.type === "rental" ? "bg-amber-100 dark:bg-amber-900/30" :
-                          "bg-emerald-100 dark:bg-emerald-900/30"
-                        }`}>
-                          {act.type === "ad" ? <DocumentTextIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" /> :
-                           act.type === "rental" ? <TruckIcon className="w-5 h-5 text-amber-600 dark:text-amber-400" /> :
-                           <TrashIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-rose-100 dark:bg-rose-900/30">
+                          <BuildingOffice2Icon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
                         </div>
                         <div>
                           <p className="text-sm font-medium text-[var(--text-primary)]">{act.title}</p>
                           <p className="text-xs text-[var(--text-muted)]">{act.date}</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        {act.views !== null && (
-                          <span className="text-xs text-[var(--text-muted)] flex items-center gap-1">
-                            <EyeIcon className="w-3.5 h-3.5" /> {act.views}
-                          </span>
-                        )}
-                        <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                          act.status === "active" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" :
-                          act.status === "pending" ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" :
-                          "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                        }`}>
-                          {act.status === "active" ? "Actif" : act.status === "pending" ? "En attente" : "Terminé"}
-                        </span>
-                      </div>
+                      <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
+                        act.status === "confirmed" ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" :
+                        act.status === "pending" ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400" :
+                        act.status === "cancelled" ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400" :
+                        "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
+                      }`}>
+                        {act.status === "confirmed" ? "Confirmée" : act.status === "pending" ? "En attente" : act.status === "cancelled" ? "Annulée" : act.status}
+                      </span>
                     </div>
                   ))}
                 </div>

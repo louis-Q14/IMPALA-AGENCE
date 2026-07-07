@@ -675,33 +675,82 @@ router.get("/me", authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /api/auth/profile — update user profile
+router.put("/profile", authenticateToken, async (req, res) => {
+  try {
+    const { full_name, phone, phone_fixe, adresse, bio, nom, post_nom, prenom,
+            date_naissance, lieu_naissance, sexe, nationalite, etat_civil, profession,
+            company_name, website } = req.body;
+    await db.query(
+      `UPDATE users SET
+        full_name = COALESCE($1, full_name),
+        phone = COALESCE($2, phone),
+        phone_fixe = COALESCE($3, phone_fixe),
+        adresse = COALESCE($4, adresse),
+        nom = COALESCE($5, nom),
+        post_nom = COALESCE($6, post_nom),
+        prenom = COALESCE($7, prenom),
+        date_naissance = COALESCE($8, date_naissance),
+        lieu_naissance = COALESCE($9, lieu_naissance),
+        sexe = COALESCE($10, sexe),
+        nationalite = COALESCE($11, nationalite),
+        etat_civil = COALESCE($12, etat_civil),
+        profession = COALESCE($13, profession),
+        updated_at = NOW()
+       WHERE id = $14`,
+      [full_name||null, phone||null, phone_fixe||null, adresse||null,
+       nom||null, post_nom||null, prenom||null, date_naissance||null,
+       lieu_naissance||null, sexe||null, nationalite||null, etat_civil||null,
+       profession||null, req.user.userId]
+    );
+    res.json({ message: "Profil mis à jour" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// POST /api/auth/change-password — change password (authenticated)
+router.post("/change-password", authenticateToken, async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+    if (!current_password || !new_password) return res.status(400).json({ error: "Mots de passe requis" });
+    if (new_password.length < 8) return res.status(400).json({ error: "Le nouveau mot de passe doit contenir au moins 8 caractères" });
+
+    const r = await db.query("SELECT password_hash FROM users WHERE id=$1", [req.user.userId]);
+    if (!r.rows[0]) return res.status(404).json({ error: "Utilisateur introuvable" });
+
+    const bcrypt = require("bcryptjs");
+    const valid = await bcrypt.compare(current_password, r.rows[0].password_hash);
+    if (!valid) return res.status(400).json({ error: "Mot de passe actuel incorrect" });
+
+    const hash = await bcrypt.hash(new_password, 12);
+    await db.query("UPDATE users SET password_hash=$1 WHERE id=$2", [hash, req.user.userId]);
+    res.json({ message: "Mot de passe mis à jour" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 // GET /api/auth/stats
 router.get("/stats", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
     const email = req.user.email;
 
-    const [reRow, autoRow, rentalsRow, nettRow, repRow, demRow, msgRow, favRow] = await Promise.all([
-      db.query(
-        `SELECT COUNT(*) FILTER (WHERE status='active') AS active_ads, COALESCE(SUM(views),0) AS total_views FROM real_estate_ads WHERE user_id=$1`,
-        [userId]
-      ),
-      db.query(
-        `SELECT COUNT(*) FILTER (WHERE status='active') AS active_ads, COALESCE(SUM(views),0) AS total_views FROM auto_ads WHERE user_id=$1`,
-        [userId]
-      ),
-      db.query(
-        `SELECT COUNT(*) AS count FROM auto_rentals ar JOIN auto_ads a ON ar.auto_ad_id=a.id WHERE a.user_id=$1 AND ar.status IN ('pending','confirmed')`,
-        [userId]
-      ),
+    const [reRow, autoRow, rentalsRow, nettRow, repRow, demRow, msgRow, favRow, resRow, guestRow, reviewRow] = await Promise.all([
+      db.query(`SELECT COUNT(*) FILTER (WHERE status='active') AS active_ads, COALESCE(SUM(views),0) AS total_views FROM real_estate_ads WHERE user_id=$1`, [userId]),
+      db.query(`SELECT COUNT(*) FILTER (WHERE status='active') AS active_ads, COALESCE(SUM(views),0) AS total_views FROM auto_ads WHERE user_id=$1`, [userId]),
+      db.query(`SELECT COUNT(*) AS count FROM auto_rentals ar JOIN auto_ads a ON ar.auto_ad_id=a.id WHERE a.user_id=$1 AND ar.status IN ('pending','confirmed')`, [userId]),
       db.query(`SELECT status, date FROM nettoyage_client_bookings WHERE LOWER(email)=LOWER($1) LIMIT 1`, [email]),
       db.query(`SELECT status, date FROM repassage_client_bookings WHERE LOWER(email)=LOWER($1) LIMIT 1`, [email]),
       db.query(`SELECT status, date FROM demenagement_client_bookings WHERE LOWER(email)=LOWER($1) LIMIT 1`, [email]),
-      db.query(
-        `SELECT COUNT(*) AS count FROM messages m JOIN conversations c ON m.conversation_id=c.id WHERE (c.participant_1=$1 OR c.participant_2=$1) AND m.sender_id!=$1 AND m.read=false`,
-        [userId]
-      ).catch(() => ({ rows: [{ count: 0 }] })),
+      db.query(`SELECT COUNT(*) AS count FROM messages m JOIN conversations c ON m.conversation_id=c.id WHERE (c.participant_1=$1 OR c.participant_2=$1) AND m.sender_id!=$1 AND m.read=false`, [userId]).catch(() => ({ rows: [{ count: 0 }] })),
       db.query(`SELECT COUNT(*) AS count FROM favorites WHERE user_id=$1`, [userId]).catch(() => ({ rows: [{ count: 0 }] })),
+      db.query(`SELECT COUNT(*) FILTER (WHERE status='active') AS props, COALESCE(SUM(view_count),0) AS views, COALESCE(AVG(NULLIF(rating_avg,0)),0) AS avg_rating, SUM(review_count) AS review_count FROM reservation_properties WHERE user_id=$1`, [userId]).catch(() => ({ rows: [{ props: 0, views: 0, avg_rating: 0, review_count: 0 }] })),
+      db.query(`SELECT COUNT(*) AS count FROM reservation_bookings WHERE guest_id=$1 AND status='confirmed'`, [userId]).catch(() => ({ rows: [{ count: 0 }] })),
+      db.query(`SELECT ROUND(AVG(rating)::numeric,2) AS avg, COUNT(*) AS cnt FROM reservation_reviews WHERE reviewer_id=$1`, [userId]).catch(() => ({ rows: [{ avg: 0, cnt: 0 }] })),
     ]);
 
     const re = reRow.rows[0];
@@ -709,15 +758,18 @@ router.get("/stats", authenticateToken, async (req, res) => {
     const nett = nettRow.rows[0] || null;
     const rep = repRow.rows[0] || null;
     const dem = demRow.rows[0] || null;
-    const totalAds = (parseInt(re.active_ads)||0) + (parseInt(auto.active_ads)||0);
-    const totalViews = (parseInt(re.total_views)||0) + (parseInt(auto.total_views)||0);
+    const res2 = resRow.rows[0] || {};
+    const totalAds = (parseInt(re.active_ads)||0) + (parseInt(auto.active_ads)||0) + (parseInt(res2.props)||0);
+    const totalViews = (parseInt(re.total_views)||0) + (parseInt(auto.total_views)||0) + (parseInt(res2.views)||0);
 
     res.json({
       real_estate: { active_ads: parseInt(re.active_ads)||0, total_views: parseInt(re.total_views)||0 },
       auto: { active_ads: parseInt(auto.active_ads)||0, total_views: parseInt(auto.total_views)||0, rentals: parseInt(rentalsRow.rows[0].count)||0 },
+      reservation: { properties: parseInt(res2.props)||0, views: parseInt(res2.views)||0, rating_avg: parseFloat(res2.avg_rating)||0, review_count: parseInt(res2.review_count)||0, guest_bookings: parseInt(guestRow.rows[0].count)||0 },
       nettoyage: { date: nett?.date||null, status: nett?.status||null },
       repassage: { date: rep?.date||null, status: rep?.status||null },
       demenagement: { date: dem?.date||null, status: dem?.status||null },
+      reviews_given: { avg: parseFloat(reviewRow.rows[0]?.avg)||0, count: parseInt(reviewRow.rows[0]?.cnt)||0 },
       totals: { ads: totalAds, views: totalViews, messages: parseInt(msgRow.rows[0].count)||0, favorites: parseInt(favRow.rows[0].count)||0 },
     });
   } catch (err) {
