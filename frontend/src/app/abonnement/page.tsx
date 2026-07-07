@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 export const dynamic = 'force-dynamic';
 
@@ -182,7 +182,7 @@ function AbonnementContent() {
   const [paymentMethod, setPaymentMethod] = useState<"mobile" | "card" | "cash">("mobile");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [processing, setProcessing] = useState(false);
-  const [annual, setAnnual] = useState(false);
+  const [months, setMonths] = useState(1);
   const [subData, setSubData] = useState<{ startDate: string; annual: boolean } | null>(null);
   const [calOffset, setCalOffset] = useState(0);
   const [notifStatus, setNotifStatus] = useState<"default" | "granted" | "denied">("default");
@@ -291,7 +291,16 @@ function AbonnementContent() {
   const currSymbol = selectedFormula?.unite === "USD" ? "USD" : "FC";
   const basePrice = selectedFormula?.price ?? 0;
   const annualBasePrice = Math.round(basePrice * 10);
-  const rawPrice = annual ? annualBasePrice : basePrice;
+  const DURATIONS = [
+    { months: 1,  label: "1 mois",   discount: 0  },
+    { months: 2,  label: "2 mois",   discount: 5  },
+    { months: 3,  label: "3 mois",   discount: 10 },
+    { months: 6,  label: "6 mois",   discount: 15 },
+    { months: 12, label: "1 an",     discount: 20 },
+  ];
+  const annual = months === 12;
+  const selectedDuration = DURATIONS.find(d => d.months === months) || DURATIONS[0];
+  const rawPrice = Math.round(basePrice * months * (1 - selectedDuration.discount / 100));
   const discountAmt = appliedPromo ? Math.round(rawPrice * appliedPromo.discount / 100) : 0;
   const price = rawPrice - discountAmt;
 
@@ -308,7 +317,7 @@ function AbonnementContent() {
       const res = await fetch(`${API}/subscriptions/manual`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ service_type: serviceKey, payment_method: paymentMethod, amount: price, formula, annual, unite: currSymbol }),
+              body: JSON.stringify({ service_type: serviceKey, payment_method: paymentMethod, amount: price, formula, annual, unite: currSymbol, months }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -395,15 +404,24 @@ function AbonnementContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Période de facturation</h2>
-              <div className="flex gap-3">
-                <button onClick={() => setAnnual(false)} className={`flex-1 py-3 rounded-xl text-sm font-medium border-2 transition-all ${!annual ? "border-primary bg-primary/5 text-primary" : "border-[var(--border-color)] text-[var(--text-secondary)]"}`}>
-                  Mensuel  {basePrice} {currSymbol}/mois
-                </button>
-                <button onClick={() => setAnnual(true)} className={`flex-1 py-3 rounded-xl text-sm font-medium border-2 transition-all relative ${annual ? "border-primary bg-primary/5 text-primary" : "border-[var(--border-color)] text-[var(--text-secondary)]"}`}>
-                  Annuel  {annualBasePrice} {currSymbol}/an
-                  <span className="ml-2 px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold">-17%</span>
-                </button>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Periode de facturation</h2>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {DURATIONS.map(d => (
+                  <button key={d.months} onClick={() => setMonths(d.months)}
+                    className={`relative pt-5 pb-3 px-2 rounded-xl text-sm font-medium border-2 transition-all text-center ${
+                      months === d.months
+                        ? "border-primary bg-primary/5 text-primary"
+                        : "border-[var(--border-color)] text-[var(--text-secondary)] hover:border-primary/40"
+                    }`}>
+                    {d.discount > 0 && (
+                      <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-bold whitespace-nowrap">
+                        -{d.discount}%
+                      </span>
+                    )}
+                    <p className="font-bold">{d.label}</p>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">{Math.round(basePrice * d.months * (1 - d.discount / 100))} {currSymbol}</p>
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -425,7 +443,7 @@ function AbonnementContent() {
                       <h3 className="font-bold text-[var(--text-primary)] text-lg">{f.label}</h3>
                       <p className="text-2xl font-extrabold text-primary mt-1">
                         {annual ? Math.round(f.price * 10) : f.price}{" "}{f.unite === "USD" ? "USD" : "FC"}
-                        <span className="text-sm font-normal text-[var(--text-muted)]">/{annual ? "an" : "mois"}</span>
+                        <span className="text-sm font-normal text-[var(--text-muted)]">/mois</span>
                       </p>
                       {f.features.length > 0 && (
                         <ul className="mt-3 space-y-1.5">
@@ -483,9 +501,9 @@ function AbonnementContent() {
             <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
               <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4">Résumé de facturation</h2>
               <div className="space-y-2.5">
-                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">{selectedFormula.label}</span><span className="font-medium text-[var(--text-primary)]">{rawPrice} {currSymbol}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Période</span><span className="font-medium text-[var(--text-primary)]">{annual ? "Annuelle" : "Mensuelle"}</span></div>
-                {annual && <div className="flex justify-between text-sm"><span className="text-emerald-500">Économie annuelle (-17%)</span><span className="font-medium text-emerald-500">-{Math.round(selectedFormula.price * 12 - annualBasePrice)} {currSymbol}</span></div>}
+                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">{selectedFormula.label}</span><span className="font-medium text-[var(--text-primary)]">{basePrice} {currSymbol} x {months}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Durée</span><span className="font-medium text-[var(--text-primary)]">{selectedDuration.label}</span></div>
+                {selectedDuration.discount > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-500">Remise ({selectedDuration.discount}%)</span><span className="font-medium text-emerald-500">-{Math.round(basePrice * months * selectedDuration.discount / 100)} {currSymbol}</span></div>}
                 {appliedPromo && <div className="flex justify-between text-sm"><span className="text-emerald-500">Code promo ({appliedPromo.code})</span><span className="font-medium text-emerald-500">-{discountAmt} {currSymbol}</span></div>}
                 <div className="border-t border-[var(--border-color)] pt-2.5 flex justify-between items-center">
                   <span className="font-semibold text-[var(--text-primary)]">Total</span>
@@ -500,9 +518,9 @@ function AbonnementContent() {
               <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-color)]">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${plan.gradient} flex items-center justify-center`}><Icon className="w-5 h-5 text-white" /></div>
-                  <div><p className="font-medium text-[var(--text-primary)]">{plan.label}</p><p className="text-xs text-[var(--text-muted)]">{annual ? "Facturation annuelle" : "Facturation mensuelle"}</p></div>
+                  <div><p className="font-medium text-[var(--text-primary)]">{plan.label}</p><p className="text-xs text-[var(--text-muted)]">{selectedDuration.label}</p></div>
                 </div>
-                <p className="text-lg font-bold text-primary">{price} {currSymbol}/{annual ? "an" : "mois"}</p>
+                <p className="text-lg font-bold text-primary">{price} {currSymbol}</p>
               </div>
               <ul className="mt-4 space-y-2">
                 {plan.features.map((f) => (
@@ -575,9 +593,9 @@ function AbonnementContent() {
             <div className="sticky top-24 p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-[var(--shadow-lg)]">
               <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-6">Total à payer</h3>
               <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">{plan.label}</span><span className="font-medium text-[var(--text-primary)]">{price} {currSymbol}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Période</span><span className="font-medium text-[var(--text-primary)]">1 {annual ? "an" : "mois"}</span></div>
-                {annual && <div className="flex justify-between text-sm"><span className="text-emerald-500">Économie (-17%)</span><span className="font-medium text-emerald-500">-{basePrice * 12 - annualBasePrice} FC</span></div>}
+                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">{plan.label}</span><span className="font-medium text-[var(--text-primary)]">{basePrice} {currSymbol}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-[var(--text-secondary)]">Durée</span><span className="font-medium text-[var(--text-primary)]">{selectedDuration.label}</span></div>
+                {selectedDuration.discount > 0 && <div className="flex justify-between text-sm"><span className="text-emerald-500">Remise (-{selectedDuration.discount}%)</span><span className="font-medium text-emerald-500">-{Math.round(basePrice * months * selectedDuration.discount / 100)} {currSymbol}</span></div>}
                 <div className="border-t border-[var(--border-color)] pt-3">
                   <div className="flex justify-between items-center"><span className="font-semibold text-[var(--text-primary)]">Total</span><span className="text-2xl font-bold text-primary">{price} {currSymbol}</span></div>
                 </div>
