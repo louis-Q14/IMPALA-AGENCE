@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, UserGroupIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, UserGroupIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+
+function getToken() {
+  try { return localStorage.getItem("token") || sessionStorage.getItem("token") || null; } catch { return null; }
+}
 
 interface Booking {
   id: string;
@@ -17,6 +23,11 @@ interface Booking {
   cover_image?: string;
   property_id: string;
   updated_at: string;
+}
+
+interface Props {
+  bookings: Booking[];
+  onOpenMessages?: (convId: string) => void;
 }
 
 const COLORS = [
@@ -56,9 +67,11 @@ function dateInRange(date: string, checkIn: string, checkOut: string) {
 
 interface Props {
   bookings: Booking[];
+  onOpenMessages?: (convId: string) => void;
 }
 
-export default function AgendaCalendar({ bookings }: Props) {
+export default function AgendaCalendar({ bookings, onOpenMessages }: Props) {
+  const [sending, setSending] = useState<string | null>(null);
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -225,8 +238,36 @@ export default function AgendaCalendar({ bookings }: Props) {
                     <span>🌙 {b.nights_count} nuit{b.nights_count > 1 ? "s" : ""}</span>
                     <span className="flex items-center gap-1"><UserGroupIcon className="w-3 h-3" />{b.guest_name}</span>
                     <span className="text-emerald-600 font-semibold">{b.total_price} {b.currency}</span>
-                  </div>
-                </div>
+                  </div>                  <div className="mt-2">
+                    <button
+                      onClick={async () => {
+                        const token = getToken();
+                        if (!token) return;
+                        setSending(b.id);
+                        try {
+                          const res = await fetch(`${API}/messages/contact-guest`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                            body: JSON.stringify({
+                              bookingId: b.id,
+                              content: `Bonjour ${b.guest_name}, je vous contacte concernant votre r\u00e9servation du ${checkIn.toLocaleDateString("fr-FR")} au ${checkOut.toLocaleDateString("fr-FR")} pour ${b.title}.`,
+                            }),
+                          });
+                          if (res.ok) {
+                            const data = await res.json();
+                            try { sessionStorage.setItem("open_conv_id", data.conversation_id); } catch { /* ignore */ }
+                            if (onOpenMessages) onOpenMessages(data.conversation_id);
+                          }
+                        } catch { /* ignore */ }
+                        setSending(null);
+                      }}
+                      disabled={sending === b.id}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-xs font-semibold rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
+                      {sending === b.id ? "Envoi..." : "Envoyer un message"}
+                    </button>
+                  </div>                </div>
               </div>
             );
           })}

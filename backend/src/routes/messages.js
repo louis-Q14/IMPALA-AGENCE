@@ -278,6 +278,48 @@ router.post("/contact-seller", authenticateToken, async (req, res) => {
   }
 });
 
+// POST /api/messages/contact-guest — owner contacts a guest about their booking
+router.post("/contact-guest", authenticateToken, async (req, res) => {
+  try {
+    const me = req.user.userId;
+    const { bookingId, content } = req.body;
+    if (!bookingId || !content?.trim()) return res.status(400).json({ error: "bookingId et content requis" });
+
+    const bookRow = await db.query(
+      `SELECT b.guest_id, b.property_id, p.user_id AS owner_id, p.title
+       FROM reservation_bookings b
+       JOIN reservation_properties p ON p.id = b.property_id
+       WHERE b.id = $1`,
+      [bookingId]
+    );
+    if (!bookRow.rows[0]) return res.status(404).json({ error: "Réservation introuvable" });
+    const booking = bookRow.rows[0];
+
+    if (booking.owner_id !== me) return res.status(403).json({ error: "Accès refusé" });
+    if (booking.guest_id === me) return res.status(400).json({ error: "Vous ne pouvez pas vous contacter vous-même" });
+
+    const conv = await findOrCreateConversation({
+      userA: me, userB: booking.guest_id,
+      adId: booking.property_id, adType: "reservation",
+    });
+
+    const ins = await db.query(
+      `INSERT INTO messages (conversation_id, sender_id, content) VALUES ($1,$2,$3)
+       RETURNING id, conversation_id, sender_id, content, read, created_at`,
+      [conv.id, me, content.trim()]
+    );
+
+    res.status(201).json({
+      conversation_id: conv.id,
+      message: { ...ins.rows[0], sender_name: req.user.full_name },
+      property_title: booking.title,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
 // POST /api/messages/contact-host
 router.post("/contact-host", authenticateToken, async (req, res) => {
   try {

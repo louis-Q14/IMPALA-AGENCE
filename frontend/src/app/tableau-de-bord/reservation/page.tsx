@@ -482,7 +482,10 @@ function ReservationDashboard() {
                     <p className="text-gray-500 mt-2">Les réservations confirmées apparaîtront ici.</p>
                   </div>
                 ) : (
-                  <AgendaCalendar bookings={approvedBookings} />
+                  <AgendaCalendar bookings={approvedBookings} onOpenMessages={(convId) => {
+                    try { sessionStorage.setItem("open_conv_id", convId); } catch { /* ignore */ }
+                    setTab("messages");
+                  }} />
                 )}
               </div>
             )}
