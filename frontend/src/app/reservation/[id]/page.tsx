@@ -361,16 +361,16 @@ export default function PropertyDetailPage() {
                 <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
                   <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-700">
                     {/* Left — overall distribution */}
-                    <div className="p-6 flex flex-col justify-center min-w-[200px]">
-                      <p className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-4">Note globale</p>
-                      <div className="space-y-2">
+                    <div className="p-4 flex flex-col justify-center" style={{ minWidth: 160 }}>
+                      <p className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Note globale</p>
+                      <div className="space-y-1">
                         {[5,4,3,2,1].map(star => {
                           const count = reviews.filter(r => Math.round(r.rating) === star).length;
                           const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
                           return (
-                            <div key={star} className="flex items-center gap-2 text-xs text-gray-500">
-                              <span className="w-2 text-right">{star}</span>
-                              <div className="w-28 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div key={star} className="flex items-center gap-1.5 text-xs text-gray-400">
+                              <span className="w-2 text-right shrink-0">{star}</span>
+                              <div className="w-20 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                                 <div className="h-full bg-gray-800 dark:bg-gray-200 rounded-full transition-all" style={{ width: `${pct}%` }} />
                               </div>
                             </div>
@@ -385,26 +385,13 @@ export default function PropertyDetailPage() {
                         const avg = catAvg(cat.key);
                         const score = avg != null ? avg : (property.rating_avg > 0 ? Number(property.rating_avg) : null);
                         return (
-                          <div key={cat.key} className="flex flex-col items-center justify-between gap-2 p-4">
-                            {/* Icon on top */}
-                            <img
-                              src={cat.icon}
-                              alt={cat.label}
-                              className="w-10 h-10 object-contain"
-                            />
-                            {/* Score */}
-                            <span className="text-base font-bold text-gray-900 dark:text-white">
+                          <div key={cat.key} className="flex flex-col items-center justify-center gap-1 py-3 px-1">
+                            <img src={cat.icon} alt={cat.label} className="w-8 h-8 object-contain" />
+                            <span className="text-sm font-bold text-gray-900 dark:text-white leading-none">
                               {score != null ? score.toFixed(1) : "—"}
                             </span>
-                            {/* Bar */}
-                            <div className="w-full h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-gray-900 dark:bg-white rounded-full"
-                                style={{ width: `${((score ?? 0) / 5) * 100}%` }}
-                              />
-                            </div>
-                            {/* Label */}
-                            <span className="text-xs text-gray-500 dark:text-gray-400 text-center leading-tight">{cat.label}</span>
+                            <div className="w-10 h-px bg-gray-800 dark:bg-white rounded-full" />
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-tight break-words w-full text-center">{cat.label}</span>
                           </div>
                         );
                       })}
