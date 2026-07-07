@@ -483,10 +483,21 @@ function ReservationDashboard() {
                     <p className="text-gray-500 mt-2">Les réservations confirmées apparaîtront ici.</p>
                   </div>
                 ) : (
-                  <AgendaCalendar bookings={approvedBookings} onOpenMessages={(convId) => {
-                    try { sessionStorage.setItem("open_conv_id", convId); } catch { /* ignore */ }
-                    setTab("messages");
-                  }} />
+                  <AgendaCalendar
+                    bookings={approvedBookings}
+                    onOpenMessages={(convId) => {
+                      try { sessionStorage.setItem("open_conv_id", convId); } catch { /* ignore */ }
+                      setTab("messages");
+                    }}
+                    onRefresh={() => {
+                      const token = getToken();
+                      if (!token) return;
+                      setAgendaLoading(true);
+                      fetch(`${API}/reservation/bookings/approved`, { headers: { Authorization: `Bearer ${token}` } })
+                        .then(r => r.json()).then(d => { if (Array.isArray(d)) setApprovedBookings(d); })
+                        .catch(() => {}).finally(() => setAgendaLoading(false));
+                    }}
+                  />
                 )}
               </div>
             )}
@@ -578,6 +589,51 @@ function ReservationDashboard() {
                             <span className="text-sm text-emerald-600 flex items-center gap-1">
                               <CheckCircleIcon className="w-4 h-4" /> Avis envoyé
                             </span>
+                          )}
+                        </div>
+
+                        {/* Cancel request / withdraw buttons */}
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {!b.cancellation_requested ? (
+                            <button
+                              onClick={async () => {
+                                const token = getToken();
+                                if (!token) return;
+                                if (!confirm("Envoyer une demande d'annulation au propriétaire ?")) return;
+                                const r = await fetch(`${API}/reservation/bookings/${b.id}/cancel-request`, {
+                                  method: "POST",
+                                  headers: { Authorization: `Bearer ${token}` },
+                                });
+                                if (r.ok) {
+                                  setGuestBookings(prev => prev.map(x => x.id === b.id ? { ...x, cancellation_requested: true } : x));
+                                }
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-xs font-semibold rounded-lg border border-orange-200 dark:border-orange-800 transition-colors"
+                            >
+                              <XCircleIcon className="w-3.5 h-3.5" /> Demande d&apos;annulation
+                            </button>
+                          ) : (
+                            <>
+                              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-semibold rounded-lg border border-orange-300 dark:border-orange-700">
+                                <ClockIcon className="w-3.5 h-3.5" /> Annulation demandée
+                              </span>
+                              <button
+                                onClick={async () => {
+                                  const token = getToken();
+                                  if (!token) return;
+                                  const r = await fetch(`${API}/reservation/bookings/${b.id}/cancel-request`, {
+                                    method: "DELETE",
+                                    headers: { Authorization: `Bearer ${token}` },
+                                  });
+                                  if (r.ok) {
+                                    setGuestBookings(prev => prev.map(x => x.id === b.id ? { ...x, cancellation_requested: false } : x));
+                                  }
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 text-xs font-semibold rounded-lg transition-colors"
+                              >
+                                Supprimer la demande
+                              </button>
+                            </>
                           )}
                         </div>
 
@@ -683,6 +739,26 @@ function ReservationDashboard() {
                             </div>
                           </div>
                         )}
+                      </div>
+                    )}
+                    {/* Delete button for cancelled/rejected bookings */}
+                    {(b.status === "cancelled" || b.status === "rejected") && (
+                      <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                        <button
+                          onClick={async () => {
+                            const token = getToken();
+                            if (!token) return;
+                            if (!confirm("Supprimer définitivement cette réservation ?")) return;
+                            const r = await fetch(`${API}/reservation/bookings/${b.id}`, {
+                              method: "DELETE",
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
+                            if (r.ok) setGuestBookings(prev => prev.filter(x => x.id !== b.id));
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 text-xs font-semibold rounded-lg border border-red-200 dark:border-red-800 transition-colors"
+                        >
+                          <TrashIcon className="w-3.5 h-3.5" /> Supprimer
+                        </button>
                       </div>
                     )}
                   </div>

@@ -517,6 +517,91 @@ router.post("/bookings", authenticateToken, async (req, res) => {
   }
 });
 
+// ─── CANCEL REQUEST & BOOKING DELETION ────────────────────────────────────────
+
+// POST /api/reservation/bookings/:id/cancel-request — client requests cancellation
+router.post("/bookings/:id/cancel-request", authenticateToken, async (req, res) => {
+  try {
+    const b = await db.query(
+      `SELECT rb.*, rp.user_id AS owner_id, rp.title AS property_title,
+              u.full_name AS guest_name
+       FROM reservation_bookings rb
+       JOIN reservation_properties rp ON rb.property_id = rp.id
+       JOIN users u ON rb.guest_id = u.id
+       WHERE rb.id = $1 AND rb.guest_id = $2`,
+      [req.params.id, req.user.userId]
+    );
+    if (!b.rows[0]) return res.status(403).json({ error: "Réservation introuvable" });
+    const booking = b.rows[0];
+    if (booking.status !== "confirmed") return res.status(400).json({ error: "Seules les réservations confirmées peuvent être annulées" });
+
+    await db.query("UPDATE reservation_bookings SET cancellation_requested=TRUE, updated_at=NOW() WHERE id=$1", [req.params.id]);
+
+    // Notify owner via messaging (find or create conversation)
+    try {
+      const checkIn  = new Date(booking.check_in ).toLocaleDateString("fr-FR");
+      const checkOut = new Date(booking.check_out).toLocaleDateString("fr-FR");
+      const msg = `⚠️ Demande d'annulation : ${booking.guest_name} demande l'annulation de sa réservation du ${checkIn} au ${checkOut} pour "${booking.property_title}".`;
+
+      const ex = await db.query(
+        `SELECT id FROM conversations WHERE ((participant_1=$1 AND participant_2=$2) OR (participant_1=$2 AND participant_2=$1)) AND ad_id=$3 LIMIT 1`,
+        [req.user.userId, booking.owner_id, booking.property_id]
+      );
+      let convId;
+      if (ex.rows[0]) {
+        convId = ex.rows[0].id;
+      } else {
+        const ins = await db.query(
+          `INSERT INTO conversations (ad_id, ad_type, participant_1, participant_2) VALUES ($1,$2,$3,$4) RETURNING id`,
+          [booking.property_id, "reservation", req.user.userId, booking.owner_id]
+        );
+        convId = ins.rows[0].id;
+      }
+      await db.query(`INSERT INTO messages (conversation_id, sender_id, content) VALUES ($1,$2,$3)`, [convId, req.user.userId, msg]);
+    } catch (msgErr) { console.error("Notification msg error:", msgErr.message); }
+
+    res.json({ message: "Demande d'annulation envoyée" });
+  } catch (err) { console.error(err); res.status(500).json({ error: "Erreur serveur" }); }
+});
+
+// DELETE /api/reservation/bookings/:id/cancel-request — withdraw cancellation request
+router.delete("/bookings/:id/cancel-request", authenticateToken, async (req, res) => {
+  try {
+    const b = await db.query("SELECT id FROM reservation_bookings WHERE id=$1 AND guest_id=$2", [req.params.id, req.user.userId]);
+    if (!b.rows[0]) return res.status(403).json({ error: "Réservation introuvable" });
+    await db.query("UPDATE reservation_bookings SET cancellation_requested=FALSE, updated_at=NOW() WHERE id=$1", [req.params.id]);
+    res.json({ message: "Demande retirée" });
+  } catch (err) { console.error(err); res.status(500).json({ error: "Erreur serveur" }); }
+});
+
+// PATCH /api/reservation/bookings/:id/cancel — owner cancels a booking
+router.patch("/bookings/:id/cancel", authenticateToken, async (req, res) => {
+  try {
+    const b = await db.query(
+      `SELECT rb.* FROM reservation_bookings rb JOIN reservation_properties rp ON rb.property_id=rp.id WHERE rb.id=$1 AND rp.user_id=$2`,
+      [req.params.id, req.user.userId]
+    );
+    if (!b.rows[0]) return res.status(403).json({ error: "Réservation introuvable" });
+    await db.query("UPDATE reservation_bookings SET status='cancelled', cancellation_requested=FALSE, updated_at=NOW() WHERE id=$1", [req.params.id]);
+    await db.query("DELETE FROM reservation_availability WHERE booking_id=$1", [req.params.id]);
+    res.json({ message: "Réservation annulée" });
+  } catch (err) { console.error(err); res.status(500).json({ error: "Erreur serveur" }); }
+});
+
+// DELETE /api/reservation/bookings/:id — owner or guest deletes a booking
+router.delete("/bookings/:id", authenticateToken, async (req, res) => {
+  try {
+    const b = await db.query(
+      `SELECT rb.* FROM reservation_bookings rb JOIN reservation_properties rp ON rb.property_id=rp.id WHERE rb.id=$1 AND (rb.guest_id=$2 OR rp.user_id=$2)`,
+      [req.params.id, req.user.userId]
+    );
+    if (!b.rows[0]) return res.status(403).json({ error: "Réservation introuvable" });
+    await db.query("DELETE FROM reservation_availability WHERE booking_id=$1", [req.params.id]);
+    await db.query("DELETE FROM reservation_bookings WHERE id=$1", [req.params.id]);
+    res.json({ message: "Réservation supprimée" });
+  } catch (err) { console.error(err); res.status(500).json({ error: "Erreur serveur" }); }
+});
+
 // GET /api/reservation/bookings/guest — guest's bookings
 router.get("/bookings/guest", authenticateToken, async (req, res) => {
   try {
@@ -861,6 +946,94 @@ router.get("/admin/bookings", authenticateToken, requireRole("admin", "super_adm
     console.error(err);
     res.status(500).json({ error: "Erreur serveur" });
   }
+});
+
+// POST /api/reservation/bookings/:id/cancel-request — client requests cancellation
+router.post("/bookings/:id/cancel-request", authenticateToken, async (req, res) => {
+  try {
+    const b = await db.query(
+      `SELECT rb.*, rp.user_id AS owner_id, rp.title AS property_title,
+              u.full_name AS guest_name,
+              rb.check_in, rb.check_out
+       FROM reservation_bookings rb
+       JOIN reservation_properties rp ON rb.property_id = rp.id
+       JOIN users u ON rb.guest_id = u.id
+       WHERE rb.id = $1 AND rb.guest_id = $2`,
+      [req.params.id, req.user.userId]
+    );
+    if (!b.rows[0]) return res.status(403).json({ error: "R\u00e9servation introuvable" });
+    const booking = b.rows[0];
+    if (booking.status !== "confirmed") return res.status(400).json({ error: "Seules les r\u00e9servations confirm\u00e9es peuvent \u00eatre annul\u00e9es" });
+
+    await db.query("UPDATE reservation_bookings SET cancellation_requested=TRUE, updated_at=NOW() WHERE id=$1", [req.params.id]);
+
+    // Notify owner via messaging
+    const checkIn = new Date(booking.check_in).toLocaleDateString("fr-FR");
+    const checkOut = new Date(booking.check_out).toLocaleDateString("fr-FR");
+    const msg = `\u26a0\ufe0f Demande d'annulation : ${booking.guest_name} demande l'annulation de sa r\u00e9servation du ${checkIn} au ${checkOut} pour "${booking.property_title}".`;
+
+    try {
+      const { findOrCreateConversation } = require("./messages-helper");
+      // Use direct DB insert — same logic as contact-host
+      const conv = await (async () => {
+        const params = [req.user.userId, booking.owner_id, booking.property_id];
+        const ex = await db.query(
+          `SELECT id FROM conversations WHERE ((participant_1=$1 AND participant_2=$2) OR (participant_1=$2 AND participant_2=$1)) AND ad_id=$3 LIMIT 1`,
+          params
+        );
+        if (ex.rows[0]) return ex.rows[0];
+        const ins = await db.query(
+          `INSERT INTO conversations (ad_id, ad_type, participant_1, participant_2) VALUES ($1,$2,$3,$4) RETURNING id`,
+          [booking.property_id, "reservation", req.user.userId, booking.owner_id]
+        );
+        return ins.rows[0];
+      })();
+      await db.query(
+        `INSERT INTO messages (conversation_id, sender_id, content) VALUES ($1,$2,$3)`,
+        [conv.id, req.user.userId, msg]
+      );
+    } catch (msgErr) { console.error("Notification message error:", msgErr.message); }
+
+    res.json({ message: "Demande d'annulation envoy\u00e9e" });
+  } catch (err) { console.error(err); res.status(500).json({ error: "Erreur serveur" }); }
+});
+
+// DELETE /api/reservation/bookings/:id/cancel-request — withdraw cancellation request
+router.delete("/bookings/:id/cancel-request", authenticateToken, async (req, res) => {
+  try {
+    const b = await db.query("SELECT id FROM reservation_bookings WHERE id=$1 AND guest_id=$2", [req.params.id, req.user.userId]);
+    if (!b.rows[0]) return res.status(403).json({ error: "R\u00e9servation introuvable" });
+    await db.query("UPDATE reservation_bookings SET cancellation_requested=FALSE, updated_at=NOW() WHERE id=$1", [req.params.id]);
+    res.json({ message: "Demande retir\u00e9e" });
+  } catch (err) { console.error(err); res.status(500).json({ error: "Erreur serveur" }); }
+});
+
+// PATCH /api/reservation/bookings/:id/cancel — owner cancels a booking
+router.patch("/bookings/:id/cancel", authenticateToken, async (req, res) => {
+  try {
+    const b = await db.query(
+      `SELECT rb.* FROM reservation_bookings rb JOIN reservation_properties rp ON rb.property_id=rp.id WHERE rb.id=$1 AND rp.user_id=$2`,
+      [req.params.id, req.user.userId]
+    );
+    if (!b.rows[0]) return res.status(403).json({ error: "R\u00e9servation introuvable" });
+    await db.query("UPDATE reservation_bookings SET status='cancelled', cancellation_requested=FALSE, updated_at=NOW() WHERE id=$1", [req.params.id]);
+    await db.query("DELETE FROM reservation_availability WHERE booking_id=$1", [req.params.id]);
+    res.json({ message: "R\u00e9servation annul\u00e9e" });
+  } catch (err) { console.error(err); res.status(500).json({ error: "Erreur serveur" }); }
+});
+
+// DELETE /api/reservation/bookings/:id — owner or guest deletes a booking
+router.delete("/bookings/:id", authenticateToken, async (req, res) => {
+  try {
+    const b = await db.query(
+      `SELECT rb.* FROM reservation_bookings rb JOIN reservation_properties rp ON rb.property_id=rp.id WHERE rb.id=$1 AND (rb.guest_id=$2 OR rp.user_id=$2)`,
+      [req.params.id, req.user.userId]
+    );
+    if (!b.rows[0]) return res.status(403).json({ error: "R\u00e9servation introuvable" });
+    await db.query("DELETE FROM reservation_availability WHERE booking_id=$1", [req.params.id]);
+    await db.query("DELETE FROM reservation_bookings WHERE id=$1", [req.params.id]);
+    res.json({ message: "R\u00e9servation supprim\u00e9e" });
+  } catch (err) { console.error(err); res.status(500).json({ error: "Erreur serveur" }); }
 });
 
 // PATCH /api/reservation/admin/bookings/:id/status — force update booking status

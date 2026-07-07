@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, UserGroupIcon, ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import { ChevronLeftIcon, ChevronRightIcon, MapPinIcon, UserGroupIcon, ChatBubbleLeftRightIcon, XCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
@@ -68,10 +68,12 @@ function dateInRange(date: string, checkIn: string, checkOut: string) {
 interface Props {
   bookings: Booking[];
   onOpenMessages?: (convId: string) => void;
+  onRefresh?: () => void;
 }
 
-export default function AgendaCalendar({ bookings, onOpenMessages }: Props) {
+export default function AgendaCalendar({ bookings, onOpenMessages, onRefresh }: Props) {
   const [sending, setSending] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
@@ -238,7 +240,7 @@ export default function AgendaCalendar({ bookings, onOpenMessages }: Props) {
                     <span>🌙 {b.nights_count} nuit{b.nights_count > 1 ? "s" : ""}</span>
                     <span className="flex items-center gap-1"><UserGroupIcon className="w-3 h-3" />{b.guest_name}</span>
                     <span className="text-emerald-600 font-semibold">{b.total_price} {b.currency}</span>
-                  </div>                  <div className="mt-2">
+                  </div>                  <div className="mt-2 flex flex-wrap gap-2">
                     <button
                       onClick={async () => {
                         const token = getToken();
@@ -250,7 +252,7 @@ export default function AgendaCalendar({ bookings, onOpenMessages }: Props) {
                             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                             body: JSON.stringify({
                               bookingId: b.id,
-                              content: `Bonjour ${b.guest_name}, je vous contacte concernant votre r\u00e9servation du ${checkIn.toLocaleDateString("fr-FR")} au ${checkOut.toLocaleDateString("fr-FR")} pour ${b.title}.`,
+                              content: `Bonjour ${b.guest_name}, je vous contacte concernant votre réservation du ${checkIn.toLocaleDateString("fr-FR")} au ${checkOut.toLocaleDateString("fr-FR")} pour ${b.title}.`,
                             }),
                           });
                           if (res.ok) {
@@ -266,6 +268,52 @@ export default function AgendaCalendar({ bookings, onOpenMessages }: Props) {
                     >
                       <ChatBubbleLeftRightIcon className="w-3.5 h-3.5" />
                       {sending === b.id ? "Envoi..." : "Envoyer un message"}
+                    </button>
+
+                    {/* Owner: Cancel booking */}
+                    <button
+                      onClick={async () => {
+                        const token = getToken();
+                        if (!token) return;
+                        if (!confirm(`Annuler la réservation de ${b.guest_name} ?`)) return;
+                        setActionLoading(`cancel-${b.id}`);
+                        try {
+                          const res = await fetch(`${API}/reservation/bookings/${b.id}/cancel`, {
+                            method: "PATCH",
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          if (res.ok && onRefresh) onRefresh();
+                        } catch { /* ignore */ }
+                        setActionLoading(null);
+                      }}
+                      disabled={actionLoading === `cancel-${b.id}`}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-xs font-semibold rounded-lg border border-orange-200 dark:border-orange-800 transition-colors disabled:opacity-50"
+                    >
+                      <XCircleIcon className="w-3.5 h-3.5" />
+                      {actionLoading === `cancel-${b.id}` ? "..." : "Annuler la réservation"}
+                    </button>
+
+                    {/* Owner: Delete booking */}
+                    <button
+                      onClick={async () => {
+                        const token = getToken();
+                        if (!token) return;
+                        if (!confirm(`Supprimer définitivement la réservation de ${b.guest_name} ?`)) return;
+                        setActionLoading(`del-${b.id}`);
+                        try {
+                          const res = await fetch(`${API}/reservation/bookings/${b.id}`, {
+                            method: "DELETE",
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          if (res.ok && onRefresh) onRefresh();
+                        } catch { /* ignore */ }
+                        setActionLoading(null);
+                      }}
+                      disabled={actionLoading === `del-${b.id}`}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 text-xs font-semibold rounded-lg border border-red-200 dark:border-red-800 transition-colors disabled:opacity-50"
+                    >
+                      <TrashIcon className="w-3.5 h-3.5" />
+                      {actionLoading === `del-${b.id}` ? "..." : "Supprimer"}
                     </button>
                   </div>                </div>
               </div>

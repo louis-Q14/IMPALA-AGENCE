@@ -47,6 +47,7 @@ async function initDb() {
     "migrate-activate-ali-sanduku.sql",
     "migrate-reservation.sql",
     "migrate-reviews-accuracy-checkin.sql",
+    "migrate-booking-cancel-request.sql",
   ];
 
   for (const file of migrationFiles) {
