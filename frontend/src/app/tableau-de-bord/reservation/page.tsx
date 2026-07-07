@@ -598,27 +598,35 @@ function ReservationDashboard() {
                               </div>
                             </div>
 
-                            {/* Per-category stars */}
-                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-1">
-                              {([
-                                { label: "Propreté",      field: "cleanliness" as const,    icon: "🧹" },
-                                { label: "Précision",     field: "accuracy"    as const,    icon: "✅" },
-                                { label: "Arrivée",       field: "checkin"     as const,    icon: "🔑" },
-                                { label: "Communication", field: "communication" as const,  icon: "💬" },
-                                { label: "Emplacement",   field: "location"    as const,    icon: "📍" },
-                                { label: "Valeur",        field: "value"       as const,    icon: "💰" },
-                              ] as const).map(cat => (
-                                <div key={cat.field} className="space-y-0.5">
-                                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">{cat.icon} {cat.label}</p>
-                                  <div className="flex gap-0.5">
-                                    {[1,2,3,4,5].map(s => (
-                                      <button key={s} type="button" onClick={() => setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], [cat.field]: s } }))} className="transition-transform hover:scale-110">
-                                        <StarSolid className={`w-5 h-5 ${s <= ((reviewForms[b.id] as any)?.[cat.field] || 5) ? "text-amber-400" : "text-gray-300 dark:text-gray-600"}`} />
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))}
+                            {/* Per-category bar — same icons as ratings summary bar */}
+                            <div className="border border-amber-200 dark:border-amber-800/50 rounded-xl overflow-hidden">
+                              <div className="grid grid-cols-3 md:grid-cols-6 divide-x divide-amber-200 dark:divide-amber-800/50">
+                                {([
+                                  { label: "Propreté",      field: "cleanliness"   as const, icon: "/Propreté.png" },
+                                  { label: "Précision",     field: "accuracy"      as const, icon: "/Précision.png" },
+                                  { label: "Arrivée",       field: "checkin"       as const, icon: "/Arrivée.png" },
+                                  { label: "Communication", field: "communication" as const, icon: "/Communication.png" },
+                                  { label: "Emplacement",   field: "location"      as const, icon: "/Emplacement.png" },
+                                  { label: "Valeur",        field: "value"         as const, icon: "/Valeur.png" },
+                                ] as const).map(cat => {
+                                  const val = (reviewForms[b.id] as any)?.[cat.field] || 5;
+                                  return (
+                                    <div key={cat.field} className="flex flex-col items-center gap-1 py-2 px-1">
+                                      <img src={cat.icon} alt={cat.label} className="w-7 h-7 object-contain dark:invert" />
+                                      <div className="flex gap-px">
+                                        {[1,2,3,4,5].map(s => (
+                                          <button key={s} type="button"
+                                            onClick={() => setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], [cat.field]: s } }))}
+                                            className="transition-transform hover:scale-125">
+                                            <StarSolid className={`w-4 h-4 ${s <= val ? "text-amber-400" : "text-gray-300 dark:text-gray-600"}`} />
+                                          </button>
+                                        ))}
+                                      </div>
+                                      <span className="text-[9px] text-gray-500 dark:text-gray-400 text-center leading-tight">{cat.label}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
                             {/* Comment */}
                             <textarea

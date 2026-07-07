@@ -386,7 +386,7 @@ export default function PropertyDetailPage() {
                         const score = avg != null ? avg : (property.rating_avg > 0 ? Number(property.rating_avg) : null);
                         return (
                           <div key={cat.key} className="flex flex-col items-center justify-center gap-1 py-3 px-1">
-                            <img src={cat.icon} alt={cat.label} className="w-8 h-8 object-contain" />
+                            <img src={cat.icon} alt={cat.label} className="w-8 h-8 object-contain dark:invert" />
                             <span className="text-sm font-bold text-gray-900 dark:text-white leading-none">
                               {score != null ? score.toFixed(1) : "—"}
                             </span>
