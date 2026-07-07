@@ -342,40 +342,115 @@ export default function PropertyDetailPage() {
               </div>
             )}
 
-            {/* Reviews */}
-            {reviews.length > 0 && (
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <StarSolid className="w-5 h-5 text-amber-400" />
-                    {Number(property.rating_avg).toFixed(1)} · {reviews.length} avis
-                  </h2>
-                </div>
-                <div className="mb-6 space-y-2">
-                  <StarRating value={reviews.reduce((s, r) => s + (r.cleanliness_rating || 0), 0) / reviews.filter(r => r.cleanliness_rating).length || undefined} label="Propreté" />
-                  <StarRating value={reviews.reduce((s, r) => s + (r.location_rating || 0), 0) / reviews.filter(r => r.location_rating).length || undefined} label="Emplacement" />
-                  <StarRating value={reviews.reduce((s, r) => s + (r.value_rating || 0), 0) / reviews.filter(r => r.value_rating).length || undefined} label="Rapport qualité/prix" />
-                  <StarRating value={reviews.reduce((s, r) => s + (r.communication_rating || 0), 0) / reviews.filter(r => r.communication_rating).length || undefined} label="Communication" />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {reviews.slice(0, 6).map(r => (
-                    <div key={r.id} className="space-y-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
-                          {r.reviewer_avatar ? <img src={r.reviewer_avatar} className="w-full h-full object-cover" /> : r.reviewer_name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-sm text-gray-900 dark:text-white">{r.reviewer_name}</p>
-                          <p className="text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-0.5">
-                        {[1,2,3,4,5].map(s => <StarSolid key={s} className={`w-3.5 h-3.5 ${s <= r.rating ? "text-amber-400" : "text-gray-300"}`} />)}
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">{r.comment}</p>
+            {/* Reviews — Airbnb style */}
+            {(reviews.length > 0 || property.rating_avg > 0) && (
+              <div className="border-t border-gray-100 dark:border-gray-800 pt-8">
+
+                {/* Hero rating */}
+                <div className="flex flex-col items-center text-center mb-8 py-6 bg-gray-50 dark:bg-gray-900 rounded-2xl">
+                  {property.rating_avg >= 4.5 && (
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="text-3xl">🏆</span>
+                      <span className="text-4xl font-black text-gray-900 dark:text-white">{Number(property.rating_avg).toFixed(2)}</span>
+                      <span className="text-3xl">🏆</span>
                     </div>
-                  ))}
+                  )}
+                  {property.rating_avg > 0 && property.rating_avg < 4.5 && (
+                    <div className="flex items-center gap-1 mb-2">
+                      {[1,2,3,4,5].map(s => <StarSolid key={s} className={`w-6 h-6 ${s <= Math.round(property.rating_avg) ? "text-amber-400" : "text-gray-300"}`} />)}
+                      <span className="ml-2 text-2xl font-black text-gray-900 dark:text-white">{Number(property.rating_avg).toFixed(1)}</span>
+                    </div>
+                  )}
+                  {property.rating_avg >= 4.5 && (
+                    <>
+                      <p className="font-bold text-gray-900 dark:text-white text-lg">Favori des voyageurs</p>
+                      <p className="text-sm text-gray-500 mt-1 max-w-xs">Ce logement figure parmi les 5 % des annonces les mieux notées</p>
+                    </>
+                  )}
+                  <p className="text-sm text-gray-500 mt-2">{property.review_count || reviews.length} avis</p>
                 </div>
+
+                {/* Ratings breakdown */}
+                {reviews.length > 0 && (
+                  <div className="mb-8">
+                    {/* Star distribution bar */}
+                    <div className="mb-6">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Note globale</p>
+                      <div className="space-y-1.5">
+                        {[5,4,3,2,1].map(star => {
+                          const count = reviews.filter(r => Math.round(r.rating) === star).length;
+                          const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                          return (
+                            <div key={star} className="flex items-center gap-2 text-xs">
+                              <span className="text-gray-500 w-3 text-right">{star}</span>
+                              <StarSolid className="w-3 h-3 text-amber-400 shrink-0" />
+                              <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div className="h-full bg-gray-700 dark:bg-gray-300 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Category ratings grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {[
+                        { label: "Propreté", key: "cleanliness_rating" as const, icon: "🧹" },
+                        { label: "Emplacement", key: "location_rating" as const, icon: "📍" },
+                        { label: "Valeur", key: "value_rating" as const, icon: "💰" },
+                        { label: "Communication", key: "communication_rating" as const, icon: "💬" },
+                      ].map(cat => {
+                        const vals = reviews.filter(r => r[cat.key]).map(r => r[cat.key] as number);
+                        const avg = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+                        if (!avg) return null;
+                        return (
+                          <div key={cat.key} className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">{cat.label}</span>
+                              <span className="text-lg">{cat.icon}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div className="h-full bg-gray-900 dark:bg-white rounded-full" style={{ width: `${(avg / 5) * 100}%` }} />
+                              </div>
+                              <span className="text-sm font-bold text-gray-900 dark:text-white w-6 text-right">{avg.toFixed(1)}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Reviews grid */}
+                {reviews.length > 0 && (
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+                      <StarSolid className="w-5 h-5 text-amber-400" />
+                      {reviews.length} avis
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {reviews.slice(0, 6).map(r => (
+                        <div key={r.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-5 space-y-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white font-bold overflow-hidden shrink-0">
+                              {r.reviewer_avatar ? <img src={r.reviewer_avatar} className="w-full h-full object-cover" /> : r.reviewer_name.charAt(0)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm text-gray-900 dark:text-white">{r.reviewer_name}</p>
+                              <p className="text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}</p>
+                            </div>
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              {[1,2,3,4,5].map(s => <StarSolid key={s} className={`w-3 h-3 ${s <= r.rating ? "text-amber-400" : "text-gray-200 dark:text-gray-700"}`} />)}
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-4">{r.comment}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
