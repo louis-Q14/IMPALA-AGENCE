@@ -48,6 +48,7 @@ async function initDb() {
     "migrate-reservation.sql",
     "migrate-reviews-accuracy-checkin.sql",
     "migrate-booking-cancel-request.sql",
+    "migrate-reviews-preserve-on-delete.sql",
   ];
 
   for (const file of migrationFiles) {
