@@ -55,7 +55,7 @@ function ReservationDashboard() {
   const [guestBookings, setGuestBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [myId, setMyId] = useState<string | null>(null);
-  const [reviewForms, setReviewForms] = useState<Record<string, { open: boolean; stars: number; comment: string; submitting: boolean; submitted: boolean }>>({});
+  const [reviewForms, setReviewForms] = useState<Record<string, { open: boolean; stars: number; comment: string; submitting: boolean; submitted: boolean; cleanliness: number; accuracy: number; checkin: number; communication: number; location: number; value: number }>>({});
   const [approvedBookings, setApprovedBookings] = useState<any[]>([]);
   const [agendaLoading, setAgendaLoading] = useState(false);
   const [subStatus, setSubStatus] = useState<SubStatus>("none");
@@ -564,7 +564,7 @@ function ReservationDashboard() {
                                 ...prev,
                                 [b.id]: prev[b.id]?.open
                                   ? { ...prev[b.id], open: false }
-                                  : { open: true, stars: prev[b.id]?.stars || 5, comment: prev[b.id]?.comment || "", submitting: false, submitted: false }
+                                  : { open: true, stars: prev[b.id]?.stars || 5, comment: prev[b.id]?.comment || "", submitting: false, submitted: false, cleanliness: prev[b.id]?.cleanliness || 5, accuracy: prev[b.id]?.accuracy || 5, checkin: prev[b.id]?.checkin || 5, communication: prev[b.id]?.communication || 5, location: prev[b.id]?.location || 5, value: prev[b.id]?.value || 5 }
                               }))}
                               className="text-sm text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
                             >
@@ -585,21 +585,40 @@ function ReservationDashboard() {
                         {reviewForms[b.id]?.open && !reviewForms[b.id]?.submitted && (
                           <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4 space-y-3">
                             <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Votre avis sur {b.title}</p>
-                            {/* Stars */}
-                            <div className="flex items-center gap-1">
-                              {[1,2,3,4,5].map(s => (
-                                <button
-                                  key={s}
-                                  type="button"
-                                  onClick={() => setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], stars: s } }))}
-                                  className="transition-transform hover:scale-110"
-                                >
-                                  <StarSolid className={`w-7 h-7 ${s <= (reviewForms[b.id]?.stars || 5) ? "text-amber-400" : "text-gray-300 dark:text-gray-600"}`} />
-                                </button>
+                            {/* Overall stars */}
+                            <div className="space-y-1">
+                              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Note globale</p>
+                              <div className="flex items-center gap-1">
+                                {[1,2,3,4,5].map(s => (
+                                  <button key={s} type="button" onClick={() => setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], stars: s } }))} className="transition-transform hover:scale-110">
+                                    <StarSolid className={`w-7 h-7 ${s <= (reviewForms[b.id]?.stars || 5) ? "text-amber-400" : "text-gray-300 dark:text-gray-600"}`} />
+                                  </button>
+                                ))}
+                                <span className="ml-2 text-sm font-medium text-gray-600 dark:text-gray-400">{["", "Mauvais", "Passable", "Bien", "Très bien", "Excellent"][reviewForms[b.id]?.stars || 5]}</span>
+                              </div>
+                            </div>
+
+                            {/* Per-category stars */}
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-1">
+                              {([
+                                { label: "Propreté",      field: "cleanliness" as const,    icon: "🧹" },
+                                { label: "Précision",     field: "accuracy"    as const,    icon: "✅" },
+                                { label: "Arrivée",       field: "checkin"     as const,    icon: "🔑" },
+                                { label: "Communication", field: "communication" as const,  icon: "💬" },
+                                { label: "Emplacement",   field: "location"    as const,    icon: "📍" },
+                                { label: "Valeur",        field: "value"       as const,    icon: "💰" },
+                              ] as const).map(cat => (
+                                <div key={cat.field} className="space-y-0.5">
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">{cat.icon} {cat.label}</p>
+                                  <div className="flex gap-0.5">
+                                    {[1,2,3,4,5].map(s => (
+                                      <button key={s} type="button" onClick={() => setReviewForms(prev => ({ ...prev, [b.id]: { ...prev[b.id], [cat.field]: s } }))} className="transition-transform hover:scale-110">
+                                        <StarSolid className={`w-5 h-5 ${s <= ((reviewForms[b.id] as any)?.[cat.field] || 5) ? "text-amber-400" : "text-gray-300 dark:text-gray-600"}`} />
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
                               ))}
-                              <span className="ml-2 text-sm font-medium text-gray-600 dark:text-gray-400">
-                                {["", "Mauvais", "Passable", "Bien", "Très bien", "Excellent"][reviewForms[b.id]?.stars || 5]}
-                              </span>
                             </div>
                             {/* Comment */}
                             <textarea
@@ -625,10 +644,12 @@ function ReservationDashboard() {
                                         booking_id: b.id,
                                         rating: form.stars,
                                         comment: form.comment.trim(),
-                                        cleanliness_rating: form.stars,
-                                        location_rating: form.stars,
-                                        value_rating: form.stars,
-                                        communication_rating: form.stars,
+                                        cleanliness_rating: form.cleanliness || form.stars,
+                                        accuracy_rating: form.accuracy || form.stars,
+                                        checkin_rating: form.checkin || form.stars,
+                                        communication_rating: form.communication || form.stars,
+                                        location_rating: form.location || form.stars,
+                                        value_rating: form.value || form.stars,
                                       }),
                                     });
                                     if (res.ok) {

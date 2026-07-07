@@ -640,22 +640,22 @@ router.patch("/properties/:id/reactivate", authenticateToken, async (req, res) =
 // POST /api/reservation/properties/:id/reviews
 router.post("/properties/:id/reviews", authenticateToken, async (req, res) => {
   try {
-    const { booking_id, rating, comment, cleanliness_rating, location_rating, value_rating, communication_rating } = req.body;
+    const { booking_id, rating, comment, cleanliness_rating, location_rating, value_rating, communication_rating, accuracy_rating, checkin_rating } = req.body;
 
     if (!booking_id || !rating) return res.status(400).json({ error: "Booking ID et note requis" });
 
-    // Verify user booked this property
+    // Verify user booked this property (confirmed or completed)
     const b = await db.query(
-      "SELECT id FROM reservation_bookings WHERE id = $1 AND guest_id = $2 AND property_id = $3 AND status = 'completed'",
+      "SELECT id FROM reservation_bookings WHERE id = $1 AND guest_id = $2 AND property_id = $3 AND status IN ('confirmed','completed')",
       [booking_id, req.user.userId, req.params.id]
     );
-    if (!b.rows[0]) return res.status(403).json({ error: "Vous devez avoir séjourné ici pour donner un avis" });
+    if (!b.rows[0]) return res.status(403).json({ error: "Vous devez avoir une réservation confirmée pour donner un avis" });
 
     await db.query(
-      `INSERT INTO reservation_reviews (property_id, booking_id, reviewer_id, rating, comment, cleanliness_rating, location_rating, value_rating, communication_rating)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      `INSERT INTO reservation_reviews (property_id, booking_id, reviewer_id, rating, comment, cleanliness_rating, location_rating, value_rating, communication_rating, accuracy_rating, checkin_rating)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        ON CONFLICT (booking_id, reviewer_id) DO NOTHING`,
-      [req.params.id, booking_id, req.user.userId, rating, comment, cleanliness_rating, location_rating, value_rating, communication_rating]
+      [req.params.id, booking_id, req.user.userId, rating, comment, cleanliness_rating, location_rating, value_rating, communication_rating, accuracy_rating, checkin_rating]
     );
 
     // Recalculate avg rating

@@ -47,6 +47,7 @@ interface Review {
   rating: number; comment: string; created_at: string;
   cleanliness_rating?: number; location_rating?: number;
   value_rating?: number; communication_rating?: number;
+  accuracy_rating?: number; checkin_rating?: number;
 }
 
 function StarRating({ value, label }: { value?: number; label: string }) {
@@ -341,6 +342,64 @@ export default function PropertyDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* ── Ratings summary bar (after amenities, Airbnb-style) ── */}
+            {(reviews.length > 0 || property.rating_avg > 0) && (() => {
+              const cats = [
+                { label: "Propreté",       key: "cleanliness_rating" as const,   icon: "🧹" },
+                { label: "Précision",      key: "accuracy_rating"    as const,   icon: "✅" },
+                { label: "Arrivée",        key: "checkin_rating"     as const,   icon: "🔑" },
+                { label: "Communication",  key: "communication_rating" as const, icon: "💬" },
+                { label: "Emplacement",    key: "location_rating"    as const,   icon: "📍" },
+                { label: "Valeur",         key: "value_rating"       as const,   icon: "💰" },
+              ];
+              const catAvg = (key: keyof Review) => {
+                const vals = reviews.filter(r => r[key] != null).map(r => r[key] as number);
+                return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
+              };
+              return (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                  <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-700">
+                    {/* Left — overall distribution */}
+                    <div className="p-5 flex flex-col justify-center min-w-[180px]">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Note globale</p>
+                      <div className="space-y-1.5">
+                        {[5,4,3,2,1].map(star => {
+                          const count = reviews.filter(r => Math.round(r.rating) === star).length;
+                          const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                          return (
+                            <div key={star} className="flex items-center gap-2 text-xs">
+                              <span className="text-gray-500 w-2 text-right">{star}</span>
+                              <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <div className="h-full bg-gray-800 dark:bg-gray-200 rounded-full" style={{ width: `${pct}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {/* Right — category scores */}
+                    <div className="grid grid-cols-3 md:grid-cols-6 divide-x divide-gray-200 dark:divide-gray-700">
+                      {cats.map(cat => {
+                        const avg = catAvg(cat.key);
+                        return (
+                          <div key={cat.key} className="flex flex-col items-start p-4 gap-1">
+                            <span className="text-sm font-semibold text-gray-800 dark:text-white">
+                              {avg != null ? avg.toFixed(1) : (property.rating_avg > 0 ? Number(property.rating_avg).toFixed(1) : "—")}
+                            </span>
+                            <div className="w-full h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-0.5">
+                              <div className="h-full bg-gray-900 dark:bg-white rounded-full" style={{ width: `${((avg ?? Number(property.rating_avg)) / 5) * 100}%` }} />
+                            </div>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 leading-tight mt-1">{cat.label}</span>
+                            <span className="text-lg">{cat.icon}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Reviews — Airbnb style */}
             {(reviews.length > 0 || property.rating_avg > 0) && (
